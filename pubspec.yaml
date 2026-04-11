@@ -1,0 +1,35 @@
+name: vizag_bus_live
+description: Vizag Bus Live — real-time bus tracking for Visakhapatnam
+publish_to: 'none'
+version: 2.0.0+1
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+  # Firebase
+  firebase_core: ^2.32.0
+  firebase_database: ^10.4.0
+  cloud_firestore: ^4.17.5
+  firebase_auth: ^4.20.0
+  # Location
+  geolocator: ^11.0.0
+  geolocator_android: ^4.6.2
+  permission_handler: ^11.2.0
+  # State
+  provider: ^6.1.1
+  # Storage
+  shared_preferences: ^2.2.2
+  uuid: ^4.5.1
+  # UI
+  cupertino_icons: ^1.0.6
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true

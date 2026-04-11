@@ -1,0 +1,25 @@
+{
+  "firestore": {
+    "rules": "firestore.rules",
+    "indexes": "firestore.indexes.json"
+  },
+  "flutter": {
+    "platforms": {
+      "android": {
+        "default": {
+          "projectId": "vizag-bus-live",
+          "appId": "1:367255219047:android:1428c839e4c0c70b5f5dc2",
+          "fileOutput": "android/app/google-services.json"
+        }
+      },
+      "dart": {
+        "lib/firebase_options.dart": {
+          "projectId": "vizag-bus-live",
+          "configurations": {
+            "android": "1:367255219047:android:1428c839e4c0c70b5f5dc2"
+          }
+        }
+      }
+    }
+  }
+}

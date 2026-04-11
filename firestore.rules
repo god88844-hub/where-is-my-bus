@@ -1,0 +1,116 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function userExists() {
+      return isSignedIn()
+          && exists(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function userRole() {
+      return userExists() ? userDoc().data.role : null;
+    }
+
+    function isConductor() {
+      return isSignedIn() && (userRole() == 'conductor' || userRole() == 'admin');
+    }
+
+    function requestedRole() {
+      return 'role' in request.resource.data ? request.resource.data.role : null;
+    }
+
+    function existingRole() {
+      return resource != null && 'role' in resource.data ? resource.data.role : null;
+    }
+
+    function validUserCreate(uid) {
+      return request.resource.data.uid == uid
+          && requestedRole() == 'passenger';
+    }
+
+    function validUserUpdate(uid) {
+      return request.resource.data.uid == uid
+          && (
+            existingRole() == null
+              ? (requestedRole() == null || requestedRole() == 'passenger')
+              : requestedRole() == existingRole()
+          );
+    }
+
+    function validLiveBusWrite() {
+      return request.resource.data.bus_id is string
+          && (
+            request.resource.data.route_key is string
+            || (resource != null && !('route_key' in resource.data))
+          )
+          && request.resource.data.route is string
+          && request.resource.data.current_stop is string
+          && request.resource.data.next_stop is string
+          && request.resource.data.lat is number
+          && request.resource.data.lng is number
+          && request.resource.data.speed is number
+          && request.resource.data.crowd is int
+          && request.resource.data.eta is int
+          && request.resource.data.active is bool
+          && request.resource.data.writer_uid == request.auth.uid;
+    }
+
+    function validPassengerSession(sessionId) {
+      return request.resource.data.session_id == sessionId
+          && request.resource.data.user_id == request.auth.uid
+          && request.resource.data.route is string
+          && request.resource.data.active is bool;
+    }
+
+    function validPassengerReport() {
+      return request.resource.data.user_id == request.auth.uid
+          && request.resource.data.session_id is string
+          && request.resource.data.route is string
+          && request.resource.data.lat is number
+          && request.resource.data.lng is number
+          && request.resource.data.speed is number;
+    }
+
+    match /users/{uid} {
+      allow read: if isSignedIn() && request.auth.uid == uid;
+      allow create: if isSignedIn() && request.auth.uid == uid
+          && validUserCreate(uid);
+      allow update: if isSignedIn() && request.auth.uid == uid
+          && validUserUpdate(uid);
+      allow delete: if false;
+    }
+
+    match /live_buses/{busId} {
+      allow read: if true;
+      allow create: if isConductor()
+          && request.resource.data.bus_id == busId
+          && validLiveBusWrite();
+      allow update: if isConductor()
+          && resource.data.writer_uid == request.auth.uid
+          && request.resource.data.bus_id == busId
+          && validLiveBusWrite();
+      allow delete: if false;
+    }
+
+    match /active_sessions/{sessionId} {
+      allow read: if isSignedIn() && (request.auth.uid == sessionId || isConductor());
+      allow create, update: if isSignedIn()
+          && request.auth.uid == sessionId
+          && validPassengerSession(sessionId);
+      allow delete: if false;
+    }
+
+    match /passenger_reports/{reportId} {
+      allow create: if isSignedIn() && validPassengerReport();
+      allow read: if isConductor();
+      allow update, delete: if false;
+    }
+  }
+}
