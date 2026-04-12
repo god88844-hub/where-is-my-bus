@@ -30,27 +30,29 @@ class RouteResultsScreen extends StatelessWidget {
         ),
         title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text('${from.name} → ${to.name}',
-              style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600,
+              style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w600,
                   color: AppTheme.textPrimary)),
           Text('${from.nameTelugu} → ${to.nameTelugu}',
-              style: const TextStyle(fontSize: 11,
-                  color: AppTheme.textSecondary)),
+              style:
+                  const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
         ]),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.5),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(0.5),
           child: Divider(height: 0.5, color: AppTheme.divider),
         ),
       ),
       body: results.isEmpty
-          ? const Center(child: EmptyState(
-              'No direct routes found',
-              sub: 'Try selecting different stops',
-              icon: Icons.route_outlined))
+          ? const Center(
+              child: EmptyState('No direct routes found',
+                  sub: 'Try selecting different stops',
+                  icon: Icons.route_outlined))
           : ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: results.length,
-              itemBuilder: (_, i) => _RouteResultCard(
-                  result: results[i], from: from, to: to),
+              itemBuilder: (_, i) =>
+                  _RouteResultCard(result: results[i], from: from, to: to),
             ),
     );
   }
@@ -65,9 +67,9 @@ class _RouteResultCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final route      = result.route;
+    final route = result.route;
     final routeColor = AppTheme.routeColor(route.number);
-    final liveBuses  = result.liveBuses;
+    final liveBuses = result.liveBuses;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
@@ -92,7 +94,8 @@ class _RouteResultCard extends StatelessWidget {
                     children: [
                       Text(route.name,
                           style: const TextStyle(
-                              fontSize: 13, fontWeight: FontWeight.w500,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
                               color: AppTheme.textPrimary)),
                       Text(route.nameTelugu,
                           style: const TextStyle(
@@ -102,11 +105,12 @@ class _RouteResultCard extends StatelessWidget {
                 ),
                 // Next bus ETA
                 Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 10, vertical: 6),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(
                     color: result.nextBusEtaMins <= 5
-                        ? AppTheme.greenDim : AppTheme.amberDim,
+                        ? AppTheme.greenDim
+                        : AppTheme.amberDim,
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: result.nextBusEtaMins <= 5
@@ -118,14 +122,17 @@ class _RouteResultCard extends StatelessWidget {
                   child: Column(children: [
                     Text('${result.nextBusEtaMins}',
                         style: TextStyle(
-                            fontSize: 18, fontWeight: FontWeight.w700,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w700,
                             color: result.nextBusEtaMins <= 5
-                                ? AppTheme.green : AppTheme.amber)),
+                                ? AppTheme.green
+                                : AppTheme.amber)),
                     Text('min',
                         style: TextStyle(
                             fontSize: 9,
                             color: result.nextBusEtaMins <= 5
-                                ? AppTheme.green : AppTheme.amber)),
+                                ? AppTheme.green
+                                : AppTheme.amber)),
                   ]),
                 ),
               ],
@@ -136,19 +143,17 @@ class _RouteResultCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
             child: _MiniTimeline(
-                route: route, fromStop: from, toStop: to,
-                color: routeColor),
+                route: route, fromStop: from, toStop: to, color: routeColor),
           ),
 
-          Divider(color: AppTheme.divider, height: 1),
+          const Divider(color: AppTheme.divider, height: 1),
 
           // ── Live buses on this route ──
           if (liveBuses.isEmpty)
             Padding(
               padding: const EdgeInsets.all(12),
               child: Row(children: [
-                const Icon(Icons.schedule, size: 13,
-                    color: AppTheme.textMuted),
+                const Icon(Icons.schedule, size: 13, color: AppTheme.textMuted),
                 const SizedBox(width: 6),
                 Text('Every ${route.frequencyMins} min · No live bus data',
                     style: const TextStyle(
@@ -157,11 +162,15 @@ class _RouteResultCard extends StatelessWidget {
             )
           else
             Column(
-              children: liveBuses.map((bus) => _LiveBusRow(
-                  bus: bus, fromStop: from,
-                  onTap: () => Navigator.push(context,
-                      MaterialPageRoute(builder: (_) =>
-                          StopDetailScreen(stop: from))))).toList(),
+              children: liveBuses
+                  .map((bus) => _LiveBusRow(
+                      bus: bus,
+                      fromStop: from,
+                      onTap: () => Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (_) => StopDetailScreen(stop: from)))))
+                  .toList(),
             ),
         ],
       ),
@@ -175,8 +184,11 @@ class _MiniTimeline extends StatelessWidget {
   final BusStop fromStop;
   final BusStop toStop;
   final Color color;
-  const _MiniTimeline({required this.route, required this.fromStop,
-      required this.toStop, required this.color});
+  const _MiniTimeline(
+      {required this.route,
+      required this.fromStop,
+      required this.toStop,
+      required this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -207,7 +219,8 @@ class _MiniTimeline extends StatelessWidget {
                   ),
                 ),
                 if (!isL)
-                  Expanded(child: Container(
+                  Expanded(
+                      child: Container(
                     height: 1.5,
                     color: color.withOpacity(0.35),
                   )),
@@ -265,20 +278,18 @@ class _LiveBusRow extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-          border: Border(
-              top: BorderSide(color: AppTheme.divider, width: 0.5))),
+        decoration: const BoxDecoration(
+            border:
+                Border(top: BorderSide(color: AppTheme.divider, width: 0.5))),
         child: Row(children: [
-          Icon(Icons.directions_bus_rounded, size: 14,
-              color: AppTheme.routeColor(bus.routeNumber)),
+          Icon(Icons.directions_bus_rounded,
+              size: 14, color: AppTheme.routeColor(bus.routeNumber)),
           const SizedBox(width: 8),
           Expanded(
             child: Text(
-              currentStop != null
-                  ? 'At ${currentStop.name}'
-                  : 'En route',
-              style: const TextStyle(
-                  fontSize: 12, color: AppTheme.textSecondary)),
+                currentStop != null ? 'At ${currentStop.name}' : 'En route',
+                style: const TextStyle(
+                    fontSize: 12, color: AppTheme.textSecondary)),
           ),
           BusTypePill(bus.routeBusType),
           const SizedBox(width: 10),

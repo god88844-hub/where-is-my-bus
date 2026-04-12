@@ -1,9 +1,10 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import '../utils/constants.dart';
 import 'firestore_service.dart';
 
-class BeaconService {
+class BeaconService extends ChangeNotifier {
   BeaconService(this._fs);
 
   final FirestoreService _fs;
@@ -32,9 +33,10 @@ class BeaconService {
     _routeNumber = routeNumber;
     _sessionId = await _fs.startPassengerSession(routeNumber: routeNumber);
     _active = true;
+    notifyListeners();
     await _push();
     _timer = Timer.periodic(
-      Duration(seconds: AppConstants.beaconIntervalSec),
+      const Duration(seconds: AppConstants.beaconIntervalSec),
       (_) => _push(),
     );
   }
@@ -78,11 +80,13 @@ class BeaconService {
 
   Future<void> stop() async {
     _timer?.cancel();
+    _timer = null;
     _active = false;
     if (_sessionId != null) {
       await _fs.endPassengerSession(_sessionId!);
     }
     _sessionId = null;
     _routeNumber = null;
+    notifyListeners();
   }
 }

@@ -33,7 +33,10 @@ class _StopSearchFieldState extends State<StopSearchField> {
     super.initState();
     if (widget.value != null) _ctrl.text = widget.value!.name;
     _focus.addListener(() {
-      if (!_focus.hasFocus) setState(() { _open = false; });
+      if (!_focus.hasFocus)
+        setState(() {
+          _open = false;
+        });
     });
   }
 
@@ -48,11 +51,13 @@ class _StopSearchFieldState extends State<StopSearchField> {
   void _query(String q) {
     final lower = q.toLowerCase();
     setState(() {
-      _results = VizagStops.list.where((s) =>
-        s.id != widget.exclude?.id &&
-        (s.name.toLowerCase().contains(lower) ||
-         s.nameTelugu.contains(q))
-      ).take(6).toList();
+      _results = VizagStops.list
+          .where((s) =>
+              s.id != widget.exclude?.id &&
+              (s.name.toLowerCase().contains(lower) ||
+                  s.nameTelugu.contains(q)))
+          .take(6)
+          .toList();
       _open = q.isNotEmpty;
     });
   }
@@ -77,7 +82,7 @@ class _StopSearchFieldState extends State<StopSearchField> {
           child: Row(
             children: [
               const SizedBox(width: 12),
-              Icon(Icons.search, size: 16, color: AppTheme.textSecondary),
+              const Icon(Icons.search, size: 16, color: AppTheme.textSecondary),
               const SizedBox(width: 8),
               Expanded(
                 child: TextField(
@@ -100,12 +105,15 @@ class _StopSearchFieldState extends State<StopSearchField> {
                 GestureDetector(
                   onTap: () {
                     _ctrl.clear();
-                    setState(() { _results = []; _open = false; });
+                    setState(() {
+                      _results = [];
+                      _open = false;
+                    });
                   },
                   child: const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 10),
-                    child: Icon(Icons.close, size: 14,
-                        color: AppTheme.textSecondary),
+                    child: Icon(Icons.close,
+                        size: 14, color: AppTheme.textSecondary),
                   ),
                 ),
             ],
@@ -129,20 +137,25 @@ class _StopSearchFieldState extends State<StopSearchField> {
                   onTap: () {
                     widget.onSelected(stop);
                     _ctrl.text = stop.name;
-                    setState(() { _open = false; _results = []; });
+                    setState(() {
+                      _open = false;
+                      _results = [];
+                    });
                     _focus.unfocus();
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 11),
                     decoration: BoxDecoration(
-                      border: last ? null : Border(
-                          bottom: BorderSide(
-                              color: AppTheme.border, width: 0.5)),
+                      border: last
+                          ? null
+                          : const Border(
+                              bottom: BorderSide(
+                                  color: AppTheme.border, width: 0.5)),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.place_outlined,
+                        const Icon(Icons.place_outlined,
                             size: 14, color: AppTheme.textMuted),
                         const SizedBox(width: 8),
                         Column(

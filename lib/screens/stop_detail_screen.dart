@@ -14,9 +14,9 @@ class StopDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final p       = context.watch<AppProvider>();
-    final buses   = p.busesAtStop(stop);
-    final routes  = VizagRoutes.servingStop(stop.id);
+    final p = context.watch<AppProvider>();
+    final buses = p.busesAtStop(stop);
+    final routes = VizagRoutes.servingStop(stop.id);
 
     return Scaffold(
       backgroundColor: AppTheme.bg,
@@ -29,14 +29,16 @@ class StopDetailScreen extends StatelessWidget {
         ),
         title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(stop.name,
-              style: const TextStyle(fontSize: 16,
-                  fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
-          Text(stop.nameTelugu,
               style: const TextStyle(
-                  fontSize: 11, color: AppTheme.textSecondary)),
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textPrimary)),
+          Text(stop.nameTelugu,
+              style:
+                  const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
         ]),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.5),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(0.5),
           child: Divider(height: 0.5, color: AppTheme.divider),
         ),
       ),
@@ -105,10 +107,12 @@ class StopDetailScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             child: Column(
-              children: routes.map((route) => _RouteChip(
-                route: route,
-                currentStopId: stop.id,
-              )).toList(),
+              children: routes
+                  .map((route) => _RouteChip(
+                        route: route,
+                        currentStopId: stop.id,
+                      ))
+                  .toList(),
             ),
           ),
 
@@ -127,19 +131,19 @@ class _StopStatsRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    margin: const EdgeInsets.all(16),
-    padding: const EdgeInsets.all(14),
-    decoration: BoxDecoration(
-      color: AppTheme.surface,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: AppTheme.border, width: 0.5),
-    ),
-    child: Row(children: [
-      _Stat('$busCount', 'buses incoming', AppTheme.green),
-      _Divider(),
-      _Stat('$routeCount', 'routes', AppTheme.blue),
-    ]),
-  );
+        margin: const EdgeInsets.all(16),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppTheme.border, width: 0.5),
+        ),
+        child: Row(children: [
+          _Stat('$busCount', 'buses incoming', AppTheme.green),
+          _Divider(),
+          _Stat('$routeCount', 'routes', AppTheme.blue),
+        ]),
+      );
 }
 
 class _Stat extends StatelessWidget {
@@ -150,19 +154,23 @@ class _Stat extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Expanded(
-    child: Column(children: [
-      Text(value, style: TextStyle(fontSize: 22,
-          fontWeight: FontWeight.w700, color: color)),
-      Text(label, style: const TextStyle(
-          fontSize: 11, color: AppTheme.textSecondary)),
-    ]),
-  );
+        child: Column(children: [
+          Text(value,
+              style: TextStyle(
+                  fontSize: 22, fontWeight: FontWeight.w700, color: color)),
+          Text(label,
+              style:
+                  const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+        ]),
+      );
 }
 
 class _Divider extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
-      width: 0.5, height: 32, color: AppTheme.border,
+      width: 0.5,
+      height: 32,
+      color: AppTheme.border,
       margin: const EdgeInsets.symmetric(horizontal: 8));
 }
 
@@ -187,13 +195,16 @@ class _RouteChip extends StatelessWidget {
         RouteBadge(route.number),
         const SizedBox(width: 10),
         Expanded(
-          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+          child:
+              Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(route.name,
-                style: const TextStyle(fontSize: 13,
-                    color: AppTheme.textPrimary, fontWeight: FontWeight.w500)),
+                style: const TextStyle(
+                    fontSize: 13,
+                    color: AppTheme.textPrimary,
+                    fontWeight: FontWeight.w500)),
             Text(route.nameTelugu,
-                style: const TextStyle(fontSize: 11,
-                    color: AppTheme.textSecondary)),
+                style: const TextStyle(
+                    fontSize: 11, color: AppTheme.textSecondary)),
           ]),
         ),
         Text('every ${route.frequencyMins}m',

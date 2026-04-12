@@ -7,7 +7,6 @@ import 'package:permission_handler/permission_handler.dart'
     as permission_handler;
 import 'package:shared_preferences/shared_preferences.dart';
 
-import '../data/bus_plate_registry.dart';
 import '../data/vizag_data.dart';
 import '../models/bus.dart';
 import 'firestore_service.dart';
@@ -21,7 +20,8 @@ class ConductorTrackingService extends ChangeNotifier {
   static const prefsKeyTracking = 'conductor_tracking';
   static const prefsKeyRoute = 'conductor_route';
   static const prefsKeyStopId = 'conductor_stop_id';
-  static const prefsKeyPlate = 'conductor_plate';
+  static const prefsKeyBusType = 'conductor_bus_type';
+  static const prefsKeyPlate = 'conductor_plate'; // deprecated
   static const prefsKeyCrowd = 'conductor_crowd';
   static const prefsKeyBusId = 'conductor_bus_id';
   static const prefsKeyStatus = 'conductor_status';
@@ -42,7 +42,7 @@ class ConductorTrackingService extends ChangeNotifier {
   bool autoStopEnabled = true;
   String? selectedRoute;
   String? selectedStopId;
-  String plateNumber = '';
+  BusType? selectedBusType;
   BusCrowd crowd = BusCrowd.moderate;
   String? busId;
   String? statusMessage;
@@ -53,10 +53,10 @@ class ConductorTrackingService extends ChangeNotifier {
 
   BusRoute? get activeRoute {
     if (selectedRoute == null) return null;
-    return VizagRoutes.byRouteId(selectedRoute!);
+    return VizagRoutes.byNumber(selectedRoute!);
   }
 
-  String get normalizedPlate => plateNumber.toUpperCase().trim();
+  String get normalizedPlate => ''; // Deprecated: bus type no longer uses plate
 
   int get currentStopIndex {
     final route = activeRoute;
@@ -74,12 +74,7 @@ class ConductorTrackingService extends ChangeNotifier {
   }
 
   BusType get resolvedBusType {
-    return BusPlateRegistry.resolveType(
-          plateNumber: normalizedPlate,
-          routeNumber: selectedRoute,
-        ) ??
-        activeRoute?.busType ??
-        BusType.redOrdinary;
+    return selectedBusType ?? activeRoute?.busType ?? BusType.redOrdinary;
   }
 
   Future<void> init() async {
@@ -93,17 +88,16 @@ class ConductorTrackingService extends ChangeNotifier {
   }
 
   Future<void> setDraftRoute(BusRoute route) async {
-    selectedRoute = route.routeId;
-    if (selectedStopId != null && !route.stopIds.contains(selectedStopId)) {
-      selectedStopId = null;
-    }
+    selectedRoute = route.number;
+    selectedStopId = route.stopIds.isNotEmpty ? route.stopIds.first : null;
+    selectedBusType ??= _defaultBusTypeForRoute(route);
     statusMessage ??= 'Trip details saved';
     await _persistSession();
     notifyListeners();
   }
 
-  Future<void> setDraftPlate(String plate) async {
-    plateNumber = plate;
+  Future<void> setDraftBusType(BusType type) async {
+    selectedBusType = type;
     await _persistSession();
     notifyListeners();
   }
@@ -132,12 +126,20 @@ class ConductorTrackingService extends ChangeNotifier {
     if (_starting) return tracking;
     _starting = true;
     try {
-      if (activeRoute == null || normalizedPlate.isEmpty) {
+      if (activeRoute == null ||
+          selectedBusType == null ||
+          selectedStopId == null) {
         statusMessage = 'Missing trip details';
         await _persistSession();
         notifyListeners();
         return false;
       }
+
+      busId ??= _buildBusId();
+      tracking = true;
+      statusMessage = 'Starting live tracking...';
+      await _persistSession();
+      notifyListeners();
 
       final permission = await _ensurePermission();
       if (!permission) {
@@ -148,13 +150,6 @@ class ConductorTrackingService extends ChangeNotifier {
         return false;
       }
 
-      busId ??= _buildBusId(normalizedPlate);
-      tracking = true;
-      statusMessage = 'Starting live tracking...';
-      await _resolveCurrentStopFromLocation();
-      await _persistSession();
-      notifyListeners();
-
       await _startPositionStream();
       await syncNow();
       return true;
@@ -164,16 +159,14 @@ class ConductorTrackingService extends ChangeNotifier {
   }
 
   Future<void> syncNow() async {
-    if (!tracking || activeRoute == null || busId == null) {
+    if (!tracking ||
+        activeRoute == null ||
+        selectedStopId == null ||
+        busId == null) {
       return;
     }
 
-    if (selectedStopId == null) {
-      await _resolveCurrentStopFromLocation();
-    }
-
-    final fallbackStop =
-        selectedStopId == null ? null : VizagStops.get(selectedStopId!);
+    final fallbackStop = VizagStops.get(selectedStopId!);
     double lat = fallbackStop?.lat ?? 0;
     double lng = fallbackStop?.lng ?? 0;
     double speed = 0;
@@ -191,49 +184,6 @@ class ConductorTrackingService extends ChangeNotifier {
     }
 
     await _pushUpdate(lat: lat, lng: lng, speed: speed);
-  }
-
-  Future<void> changeRoute(BusRoute route) async {
-    selectedRoute = route.routeId;
-    selectedStopId = null;
-    statusMessage =
-        'Changing route to ${route.number} ${route.from} to ${route.to}...';
-    await _resolveCurrentStopFromLocation();
-    await _persistSession();
-    notifyListeners();
-
-    if (tracking) {
-      await syncNow();
-    }
-  }
-
-  bool get canReverseDirection =>
-      activeRoute?.returnRouteNumber != null &&
-      VizagRoutes.byRouteId(activeRoute!.returnRouteNumber!) != null;
-
-  Future<void> reverseDirection() async {
-    final route = activeRoute;
-    final returnRouteId = route?.returnRouteNumber;
-    if (route == null || returnRouteId == null) return;
-
-    final returnRoute = VizagRoutes.byRouteId(returnRouteId);
-    if (returnRoute == null) return;
-
-    final currentStop = selectedStopId;
-    selectedRoute = returnRoute.routeId;
-    selectedStopId = currentStop != null &&
-            returnRoute.stopIds.contains(currentStop)
-        ? currentStop
-        : (returnRoute.stopIds.isNotEmpty ? returnRoute.stopIds.first : null);
-    statusMessage =
-        'Direction changed: ${returnRoute.from} to ${returnRoute.to}';
-
-    await _persistSession();
-    notifyListeners();
-
-    if (tracking) {
-      await syncNow();
-    }
   }
 
   Future<void> stopTracking() async {
@@ -261,24 +211,18 @@ class ConductorTrackingService extends ChangeNotifier {
     _positionSub = Geolocator.getPositionStream(
       locationSettings: settings,
     ).listen((position) async {
-      try {
-        if (!tracking ||
-            activeRoute == null ||
-            selectedStopId == null ||
-            busId == null) {
-          return;
-        }
-
-        final lat = position.latitude;
-        final lng = position.longitude;
-        final speed = (position.speed * 3.6).clamp(0.0, 120.0);
-        _advanceStopFromLocation(lat: lat, lng: lng);
-        await _pushUpdate(lat: lat, lng: lng, speed: speed);
-      } catch (e) {
-        statusMessage = 'Tracking update failed: $e';
-        await _persistSession();
-        notifyListeners();
+      if (!tracking ||
+          activeRoute == null ||
+          selectedStopId == null ||
+          busId == null) {
+        return;
       }
+
+      final lat = position.latitude;
+      final lng = position.longitude;
+      final speed = (position.speed * 3.6).clamp(0.0, 120.0);
+      _advanceStopFromLocation(lat: lat, lng: lng);
+      await _pushUpdate(lat: lat, lng: lng, speed: speed);
     }, onError: (Object error) async {
       statusMessage = 'Location stream error: $error';
       await _persistSession();
@@ -317,7 +261,7 @@ class ConductorTrackingService extends ChangeNotifier {
       busId: busId!,
       routeKey: activeRoute!.routeId,
       routeNumber: activeRoute!.number,
-      busPlateNumber: normalizedPlate,
+      busPlateNumber: '', // No longer using plate
       lat: lat,
       lng: lng,
       speedKmh: speed,
@@ -334,64 +278,6 @@ class ConductorTrackingService extends ChangeNotifier {
     statusMessage = 'Tracking live at ${_timeAgo(lastUpdate!)}';
     await _persistSession();
     notifyListeners();
-  }
-
-  Future<void> _resolveCurrentStopFromLocation() async {
-    final route = activeRoute;
-    if (route == null) return;
-
-    double? lat = lastLat;
-    double? lng = lastLng;
-
-    try {
-      final pos = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-      lat = pos.latitude;
-      lng = pos.longitude;
-      lastLat = lat;
-      lastLng = lng;
-      lastSpeed = (pos.speed * 3.6).clamp(0.0, 120.0);
-    } catch (e) {
-      debugPrint(
-          'ConductorTrackingService: failed to resolve current stop: $e');
-    }
-
-    final derivedStopId = lat == null || lng == null
-        ? (route.stopIds.isNotEmpty ? route.stopIds.first : null)
-        : _nearestStopIdForRoute(
-            route: route,
-            lat: lat,
-            lng: lng,
-          );
-
-    if (derivedStopId != null) {
-      selectedStopId = derivedStopId;
-      final stopName = VizagStops.get(derivedStopId)?.name ?? derivedStopId;
-      statusMessage = 'Tracking from $stopName';
-    }
-  }
-
-  String? _nearestStopIdForRoute({
-    required BusRoute route,
-    required double lat,
-    required double lng,
-  }) {
-    String? bestStopId;
-    var bestDistance = double.infinity;
-
-    for (final stopId in route.stopIds) {
-      final stop = VizagStops.get(stopId);
-      if (stop == null) continue;
-
-      final distance = LocationService.distanceKm(lat, lng, stop.lat, stop.lng);
-      if (distance < bestDistance) {
-        bestDistance = distance;
-        bestStopId = stopId;
-      }
-    }
-
-    return bestStopId;
   }
 
   void _advanceStopFromLocation({
@@ -466,15 +352,13 @@ class ConductorTrackingService extends ChangeNotifier {
         finalPermission == LocationPermission.always;
   }
 
-  String _buildBusId(String plate) =>
-      'bus_${BusPlateRegistry.normalize(plate)}';
-
   Future<void> _restoreSession() async {
     final prefs = await SharedPreferences.getInstance();
     tracking = prefs.getBool(prefsKeyTracking) ?? false;
     selectedRoute = prefs.getString(prefsKeyRoute);
     selectedStopId = prefs.getString(prefsKeyStopId);
-    plateNumber = prefs.getString(prefsKeyPlate) ?? '';
+    selectedBusType = _busTypeFromName(prefs.getString(prefsKeyBusType)) ??
+        _defaultBusTypeForRoute(activeRoute);
 
     final crowdIndex = prefs.getInt(prefsKeyCrowd);
     if (crowdIndex != null &&
@@ -497,7 +381,7 @@ class ConductorTrackingService extends ChangeNotifier {
 
     if (activeRoute == null ||
         selectedStopId == null ||
-        normalizedPlate.isEmpty) {
+        selectedBusType == null) {
       tracking = false;
     }
 
@@ -542,11 +426,14 @@ class ConductorTrackingService extends ChangeNotifier {
       await prefs.remove(prefsKeyStopId);
     }
 
-    if (normalizedPlate.isNotEmpty) {
-      await prefs.setString(prefsKeyPlate, normalizedPlate);
+    if (selectedBusType != null) {
+      await prefs.setString(prefsKeyBusType, selectedBusType!.name);
     } else {
-      await prefs.remove(prefsKeyPlate);
+      await prefs.remove(prefsKeyBusType);
     }
+
+    // Clean up old plate preference
+    await prefs.remove(prefsKeyPlate);
 
     await prefs.setInt(prefsKeyCrowd, crowd.index);
     await prefs.setBool(prefsKeyAutoStop, autoStopEnabled);
@@ -593,7 +480,8 @@ class ConductorTrackingService extends ChangeNotifier {
     await prefs.remove(prefsKeyTracking);
     await prefs.remove(prefsKeyRoute);
     await prefs.remove(prefsKeyStopId);
-    await prefs.remove(prefsKeyPlate);
+    await prefs.remove(prefsKeyBusType);
+    await prefs.remove(prefsKeyPlate); // Also clean up deprecated plate key
     await prefs.remove(prefsKeyCrowd);
     await prefs.remove(prefsKeyBusId);
     await prefs.remove(prefsKeyStatus);
@@ -609,5 +497,32 @@ class ConductorTrackingService extends ChangeNotifier {
     if (diff < 10) return 'just now';
     if (diff < 60) return '${diff}s ago';
     return '${diff ~/ 60}m ago';
+  }
+
+  String _buildBusId() {
+    final routeToken = (selectedRoute ?? 'route')
+        .replaceAll(RegExp(r'[^A-Za-z0-9]'), '')
+        .toLowerCase();
+    final typeToken = resolvedBusType.name;
+    final nonce = DateTime.now().millisecondsSinceEpoch.toRadixString(36);
+    return 'bus_${routeToken}_${typeToken}_$nonce';
+  }
+
+  BusType? _defaultBusTypeForRoute(BusRoute? route) {
+    if (route == null) return null;
+    return switch (route.busType) {
+      BusType.redOrdinary => BusType.redOrdinary,
+      BusType.ultraDeluxe => BusType.ultraDeluxe,
+      BusType.metro || BusType.metroExpress || BusType.greenCity => BusType.metro,
+      BusType.palleVelugu || BusType.blueExpress => BusType.palleVelugu,
+    };
+  }
+
+  BusType? _busTypeFromName(String? value) {
+    if (value == null || value.isEmpty) return null;
+    for (final type in BusType.values) {
+      if (type.name == value) return type;
+    }
+    return null;
   }
 }

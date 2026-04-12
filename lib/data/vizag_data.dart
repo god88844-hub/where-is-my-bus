@@ -6,7 +6,15 @@
 // ─────────────────────────────────────────────────────────────
 //  BUS TYPES
 // ─────────────────────────────────────────────────────────────
-enum BusType { redOrdinary, blueExpress, greenCity, ultraDeluxe, metroExpress }
+enum BusType {
+  redOrdinary,
+  blueExpress,
+  greenCity,
+  ultraDeluxe,
+  metroExpress,
+  metro,
+  palleVelugu,
+}
 
 extension BusTypeExt on BusType {
   String get label {
@@ -21,6 +29,10 @@ extension BusTypeExt on BusType {
         return 'Ultra Deluxe';
       case BusType.metroExpress:
         return 'Metro Express';
+      case BusType.metro:
+        return 'Metro';
+      case BusType.palleVelugu:
+        return 'Palle Velugu';
     }
   }
 
@@ -36,6 +48,10 @@ extension BusTypeExt on BusType {
         return 'అల్ట్రా డీలక్స్';
       case BusType.metroExpress:
         return 'మెట్రో ఎక్స్‌ప్రెస్';
+      case BusType.metro:
+        return 'మెట్రో';
+      case BusType.palleVelugu:
+        return 'పల్లె వెలుగు';
     }
   }
 
@@ -52,6 +68,10 @@ extension BusTypeExt on BusType {
         return 0xFF534AB7;
       case BusType.metroExpress:
         return 0xFFBA7517;
+      case BusType.metro:
+        return 0xFFBA7517;
+      case BusType.palleVelugu:
+        return 0xFF1D9E75;
     }
   }
 }

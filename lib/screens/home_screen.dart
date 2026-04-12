@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../data/vizag_data.dart';
 import '../services/app_provider.dart';
+import '../services/firestore_service.dart';
 import '../utils/app_theme.dart';
 import '../widgets/shared_widgets.dart';
-import '../widgets/staff_mode_access.dart';
 import '../widgets/stop_search.dart';
 import 'route_results_screen.dart';
 import 'stop_detail_screen.dart';
 import 'beacon_screen.dart';
+import 'conductor_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -123,198 +124,234 @@ class HomeScreen extends StatelessWidget {
   }
 }
 
-class _TopBar extends StatelessWidget {
+class _TopBar extends StatefulWidget {
   final AppProvider p;
   const _TopBar({required this.p});
+
+  @override
+  State<_TopBar> createState() => _TopBarState();
+}
+
+class _TopBarState extends State<_TopBar> {
+  static const String _staffCode = 'vizag2026';
+  int _tapCount = 0;
+  DateTime? _lastTapAt;
+
+  void _onVersionTap() {
+    final now = DateTime.now();
+    if (_lastTapAt == null || now.difference(_lastTapAt!).inSeconds > 2) {
+      _tapCount = 0;
+    }
+    _lastTapAt = now;
+    _tapCount += 1;
+    if (_tapCount >= 5) {
+      _tapCount = 0;
+      _showStaffUnlockSheet();
+    }
+  }
+
+  Future<void> _showStaffUnlockSheet() async {
+    final controller = TextEditingController();
+    String? error;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: AppTheme.surface,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
+      ),
+      builder: (sheetContext) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Padding(
+              padding: EdgeInsets.fromLTRB(
+                20,
+                20,
+                20,
+                MediaQuery.of(context).viewInsets.bottom + 20,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'Staff Mode',
+                    style: TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 18,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  const Text(
+                    'Tap the version label five times, then enter the demo access code.',
+                    style: TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 13,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextField(
+                    controller: controller,
+                    autofocus: true,
+                    obscureText: true,
+                    style: const TextStyle(color: AppTheme.textPrimary),
+                    decoration: InputDecoration(
+                      hintText: 'Access code',
+                      hintStyle: const TextStyle(color: AppTheme.textMuted),
+                      filled: true,
+                      fillColor: AppTheme.card,
+                      errorText: error,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppTheme.border),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppTheme.border),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(12),
+                        borderSide: const BorderSide(color: AppTheme.green),
+                      ),
+                    ),
+                    onSubmitted: (_) => _submitStaffCode(
+                      controller.text.trim(),
+                      sheetContext,
+                      setModalState,
+                      (msg) => error = msg,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: () => _submitStaffCode(
+                        controller.text.trim(),
+                        sheetContext,
+                        setModalState,
+                        (msg) => error = msg,
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.green,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: const Text(
+                        'Open Staff Mode',
+                        style: TextStyle(fontWeight: FontWeight.w700),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  void _submitStaffCode(
+    String value,
+    BuildContext sheetContext,
+    StateSetter setModalState,
+    void Function(String) setError,
+  ) async {
+    if (value == _staffCode) {
+      // Promote user to conductor role in Firestore
+      try {
+        await FirestoreService().promoteToConductor();
+      } catch (_) {}
+      if (sheetContext.mounted) Navigator.pop(sheetContext);
+      if (context.mounted) {
+        Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const ConductorScreen()),
+        );
+      }
+    } else {
+      setModalState(() => setError('Invalid access code'));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 12),
       color: AppTheme.surface,
-      child: Column(
+      child: Row(
         children: [
-          Row(
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Vizag Bus Live',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                      color: AppTheme.textPrimary,
-                    ),
-                  ),
-                  Text(
-                    'విశాఖ బస్ లైవ్',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: AppTheme.green.withValues(alpha: 0.8),
-                    ),
-                  ),
-                  const SizedBox(height: 2),
-                  const Text(
-                    'v2.0 live',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: AppTheme.textMuted,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                decoration: BoxDecoration(
-                  color: AppTheme.greenDim,
-                  borderRadius: BorderRadius.circular(999),
-                  border: Border.all(
-                    color: AppTheme.green.withValues(alpha: 0.3),
-                    width: 0.5,
-                  ),
+              const Text(
+                'Vizag Bus Live',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textPrimary,
                 ),
-                child: Row(
-                  children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: const BoxDecoration(
-                        color: AppTheme.green,
-                        shape: BoxShape.circle,
-                      ),
-                    ),
-                    const SizedBox(width: 5),
-                    Text(
-                      '${p.buses.length} live',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: AppTheme.green,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ],
+              ),
+              Text(
+                'విశాఖ బస్ లైవ్',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: AppTheme.green.withOpacity(0.8),
+                ),
+              ),
+              const SizedBox(height: 2),
+              GestureDetector(
+                onTap: _onVersionTap,
+                child: const Text(
+                  'v2.0 demo',
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: AppTheme.textMuted,
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 14),
-          Row(
-            children: [
-              const Expanded(
-                child: _ModeCard(
-                  icon: Icons.people_alt_outlined,
-                  title: 'Passenger Mode',
-                  subtitle: 'Search routes and live buses',
-                  color: AppTheme.blue,
-                  active: true,
-                ),
+          const Spacer(),
+          Container(
+            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+            decoration: BoxDecoration(
+              color: AppTheme.greenDim,
+              borderRadius: BorderRadius.circular(999),
+              border: Border.all(
+                color: AppTheme.green.withOpacity(0.3),
+                width: 0.5,
               ),
-              const SizedBox(width: 10),
-              Expanded(
-                child: _ModeCard(
-                  icon: Icons.badge_outlined,
-                  title: 'Staff Mode',
-                  subtitle: 'Enter code for conductor tracking',
-                  color: AppTheme.green,
-                  onTap: () => showStaffModeAccessSheet(context),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _ModeCard extends StatelessWidget {
-  final IconData icon;
-  final String title;
-  final String subtitle;
-  final Color color;
-  final bool active;
-  final VoidCallback? onTap;
-
-  const _ModeCard({
-    required this.icon,
-    required this.title,
-    required this.subtitle,
-    required this.color,
-    this.active = false,
-    this.onTap,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(12),
-        decoration: BoxDecoration(
-          color: active ? color.withValues(alpha: 0.12) : AppTheme.card,
-          borderRadius: BorderRadius.circular(14),
-          border: Border.all(
-            color: active ? color.withValues(alpha: 0.35) : AppTheme.border,
-            width: active ? 1 : 0.5,
-          ),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+            ),
+            child: Row(
               children: [
                 Container(
-                  padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.14),
-                    borderRadius: BorderRadius.circular(10),
+                  width: 6,
+                  height: 6,
+                  decoration: const BoxDecoration(
+                    color: AppTheme.green,
+                    shape: BoxShape.circle,
                   ),
-                  child: Icon(icon, size: 18, color: color),
                 ),
-                const Spacer(),
-                if (active)
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: color.withValues(alpha: 0.16),
-                      borderRadius: BorderRadius.circular(999),
-                    ),
-                    child: Text(
-                      'Current',
-                      style: TextStyle(
-                        color: color,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
+                const SizedBox(width: 5),
+                Text(
+                  '${widget.p.buses.length} live',
+                  style: const TextStyle(
+                    fontSize: 11,
+                    color: AppTheme.green,
+                    fontWeight: FontWeight.w600,
                   ),
+                ),
               ],
             ),
-            const SizedBox(height: 10),
-            Text(
-              title,
-              style: const TextStyle(
-                color: AppTheme.textPrimary,
-                fontSize: 13,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              subtitle,
-              style: const TextStyle(
-                color: AppTheme.textSecondary,
-                fontSize: 11,
-                height: 1.35,
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -360,8 +397,8 @@ class _SearchPanel extends StatelessWidget {
               ),
             ],
           ),
-          const Padding(
-            padding: EdgeInsets.only(left: 6),
+          Padding(
+            padding: const EdgeInsets.only(left: 6),
             child: _VLine(),
           ),
           Row(
@@ -427,7 +464,7 @@ class _DotLine extends StatelessWidget {
       width: 12,
       height: 12,
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.15),
+        color: color.withOpacity(0.15),
         shape: BoxShape.circle,
         border: Border.all(color: color, width: 2),
       ),
@@ -436,8 +473,6 @@ class _DotLine extends StatelessWidget {
 }
 
 class _VLine extends StatelessWidget {
-  const _VLine();
-
   @override
   Widget build(BuildContext context) {
     return Container(

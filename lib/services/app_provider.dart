@@ -10,7 +10,8 @@ import 'location_service.dart';
 
 class AppProvider extends ChangeNotifier {
   final FirestoreService _fs = FirestoreService();
-  late final BeaconService _beacon = BeaconService(_fs);
+  late final BeaconService _beacon = BeaconService(_fs)
+    ..addListener(_onBeaconChanged);
 
   List<LiveBus> _buses = [];
   Position? _userPos;
@@ -32,6 +33,10 @@ class AppProvider extends ChangeNotifier {
   BusStop? get toStop => _toStop;
   BeaconService get beacon => _beacon;
   bool get hasLocation => _userPos != null;
+
+  void _onBeaconChanged() {
+    notifyListeners();
+  }
 
   List<BusStop> get nearbyStops {
     if (_userPos == null) return [];
@@ -210,6 +215,7 @@ class AppProvider extends ChangeNotifier {
   void dispose() {
     _sub?.cancel();
     _locTimer?.cancel();
+    _beacon.removeListener(_onBeaconChanged);
     super.dispose();
   }
 }

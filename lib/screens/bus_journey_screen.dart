@@ -18,9 +18,9 @@ class BusJourneyScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final p = context.watch<AppProvider>();
+    final route = VizagRoutes.byNumber(bus.routeNumber);
     // Get latest bus data (refreshes every tick)
     final liveBus = p.buses.where((b) => b.id == bus.id).firstOrNull ?? bus;
-    final route = liveBus.routeRef ?? bus.routeRef;
 
     if (route == null) {
       return Scaffold(
@@ -62,8 +62,8 @@ class BusJourneyScreen extends StatelessWidget {
             child: SourcePill(liveBus.source),
           ),
         ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.5),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(0.5),
           child: Divider(height: 0.5, color: AppTheme.divider),
         ),
       ),
@@ -200,11 +200,11 @@ class _SummaryCard extends StatelessWidget {
                     fontSize: 11, color: AppTheme.textSecondary)),
             const SizedBox(width: 10),
             if (bus.isStale)
-              Row(children: [
-                const Icon(Icons.warning_amber_rounded,
+              const Row(children: [
+                Icon(Icons.warning_amber_rounded,
                     size: 12, color: AppTheme.amber),
-                const SizedBox(width: 4),
-                const Text('Location may be outdated',
+                SizedBox(width: 4),
+                Text('Location may be outdated',
                     style: TextStyle(fontSize: 11, color: AppTheme.amber)),
               ]),
           ]),

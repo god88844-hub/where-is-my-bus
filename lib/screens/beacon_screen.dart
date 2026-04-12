@@ -21,7 +21,6 @@ class _BeaconScreenState extends State<BeaconScreen> {
   Widget build(BuildContext context) {
     final provider = context.watch<AppProvider>();
     final active = provider.beacon.isActive;
-    final passengerRoutes = VizagRoutes.passengerRoutes;
 
     return Scaffold(
       backgroundColor: AppTheme.bg,
@@ -36,8 +35,8 @@ class _BeaconScreenState extends State<BeaconScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text('Passenger Help Mode'),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.5),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(0.5),
           child: Divider(height: 0.5, color: AppTheme.divider),
         ),
       ),
@@ -143,7 +142,7 @@ class _BeaconScreenState extends State<BeaconScreen> {
                         TextStyle(fontSize: 12, color: AppTheme.textSecondary),
                   ),
                   const SizedBox(height: 12),
-                  ...passengerRoutes.map((route) {
+                  ...VizagRoutes.all.map((route) {
                     final selected = _selectedRoute == route.number;
                     final color = AppTheme.routeColor(route.number);
                     return GestureDetector(
@@ -205,8 +204,8 @@ class _BeaconScreenState extends State<BeaconScreen> {
                 16, 16, 16, MediaQuery.of(context).padding.bottom + 16),
             decoration: BoxDecoration(
               color: AppTheme.surface,
-              border:
-                  Border(top: BorderSide(color: AppTheme.border, width: 0.5)),
+              border: const Border(
+                  top: BorderSide(color: AppTheme.border, width: 0.5)),
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),

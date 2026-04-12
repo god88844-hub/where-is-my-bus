@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:vizag_bus_live/screens/mobile_only_screen.dart';
 import 'package:vizag_bus_live/data/vizag_data.dart';
 import 'package:vizag_bus_live/models/bus.dart';
+import 'package:vizag_bus_live/utils/platform_support.dart';
 import 'package:vizag_bus_live/widgets/shared_widgets.dart';
 
 void main() {
@@ -45,5 +47,48 @@ void main() {
     );
 
     expect(find.text('28K'), findsOneWidget);
+  });
+
+  test('mobile platform helper only allows Android and iOS', () {
+    expect(
+      isSupportedMobilePlatform(
+        isWeb: false,
+        platform: TargetPlatform.android,
+      ),
+      isTrue,
+    );
+    expect(
+      isSupportedMobilePlatform(
+        isWeb: false,
+        platform: TargetPlatform.iOS,
+      ),
+      isTrue,
+    );
+    expect(
+      isSupportedMobilePlatform(
+        isWeb: true,
+        platform: TargetPlatform.android,
+      ),
+      isFalse,
+    );
+    expect(
+      isSupportedMobilePlatform(
+        isWeb: false,
+        platform: TargetPlatform.windows,
+      ),
+      isFalse,
+    );
+  });
+
+  testWidgets('mobile only screen explains unsupported platforms',
+      (WidgetTester tester) async {
+    await tester.pumpWidget(
+      const MaterialApp(
+        home: MobileOnlyScreen(),
+      ),
+    );
+
+    expect(find.text('Mobile App Only'), findsOneWidget);
+    expect(find.textContaining('Android and iPhone users'), findsOneWidget);
   });
 }

@@ -129,7 +129,7 @@ class IncomingBusCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final bus = nb.bus;
     final stop = nb.stop;
-    final route = bus.routeRef;
+    final route = VizagRoutes.byNumber(bus.routeNumber);
     final routeColor = AppTheme.routeColor(bus.routeNumber);
     final nextStop = VizagStops.get(bus.nextStopId);
     final busType = bus.routeBusType;
@@ -237,7 +237,7 @@ class IncomingBusCard extends StatelessWidget {
             ),
 
             const SizedBox(height: 10),
-            Divider(color: AppTheme.divider, height: 1),
+            const Divider(color: AppTheme.divider, height: 1),
             const SizedBox(height: 10),
 
             // Row 2: current stop → next stop + crowd + source
