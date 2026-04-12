@@ -513,7 +513,10 @@ class ConductorTrackingService extends ChangeNotifier {
     return switch (route.busType) {
       BusType.redOrdinary => BusType.redOrdinary,
       BusType.ultraDeluxe => BusType.ultraDeluxe,
-      BusType.metro || BusType.metroExpress || BusType.greenCity => BusType.metro,
+      BusType.metro ||
+      BusType.metroExpress ||
+      BusType.greenCity =>
+        BusType.metro,
       BusType.palleVelugu || BusType.blueExpress => BusType.palleVelugu,
     };
   }
