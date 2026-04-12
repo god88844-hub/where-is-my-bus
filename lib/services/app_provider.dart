@@ -7,6 +7,7 @@ import '../utils/constants.dart';
 import 'beacon_service.dart';
 import 'firestore_service.dart';
 import 'location_service.dart';
+import 'route_progress_service.dart';
 
 class AppProvider extends ChangeNotifier {
   final FirestoreService _fs = FirestoreService();
@@ -74,12 +75,10 @@ class AppProvider extends ChangeNotifier {
       for (final bus in _buses) {
         final route = bus.routeRef;
         if (route == null || !route.stopIds.contains(stop.id)) continue;
-        final busIdx = route.stopIds.indexOf(bus.currentStopId);
+        final busIdx = route.stopIds.indexOf(bus.segmentStartIdResolved);
         final stopIdx = route.stopIds.indexOf(stop.id);
         if (busIdx < 0 || stopIdx < 0 || busIdx > stopIdx) continue;
-        final stopsAway = stopIdx - busIdx;
-        final eta =
-            bus.etaToNextStopMins + (stopsAway > 1 ? (stopsAway - 1) * 6 : 0);
+        final eta = _etaToStopMins(bus, stop.id);
         result.add(
           NearbyBus(
             bus: bus,
@@ -104,11 +103,9 @@ class AppProvider extends ChangeNotifier {
           _buses.where((bus) => bus.routeKey == route.routeId).toList();
       var minEta = 99;
       for (final bus in liveBuses) {
-        final busIndex = route.stopIds.indexOf(bus.currentStopId);
+        final busIndex = route.stopIds.indexOf(bus.segmentStartIdResolved);
         if (busIndex < 0 || busIndex > fromIndex) continue;
-        final stopsAway = fromIndex - busIndex;
-        final eta =
-            bus.etaToNextStopMins + (stopsAway > 1 ? (stopsAway - 1) * 6 : 0);
+        final eta = _etaToStopMins(bus, from.id);
         if (eta < minEta) minEta = eta;
       }
       results.add(
@@ -132,12 +129,10 @@ class AppProvider extends ChangeNotifier {
     for (final bus in _buses) {
       final route = bus.routeRef;
       if (route == null) continue;
-      final busIdx = route.stopIds.indexOf(bus.currentStopId);
+      final busIdx = route.stopIds.indexOf(bus.segmentStartIdResolved);
       final stopIdx = route.stopIds.indexOf(stop.id);
       if (busIdx < 0 || stopIdx < 0 || busIdx > stopIdx) continue;
-      final stopsAway = stopIdx - busIdx;
-      final eta =
-          bus.etaToNextStopMins + (stopsAway > 1 ? (stopsAway - 1) * 6 : 0);
+      final eta = _etaToStopMins(bus, stop.id);
       result.add(
         NearbyBus(
           bus: bus,
@@ -174,6 +169,34 @@ class AppProvider extends ChangeNotifier {
     _fromStop = null;
     _toStop = null;
     notifyListeners();
+  }
+
+  int etaToStopMins(LiveBus bus, String stopId) => _etaToStopMins(bus, stopId);
+
+  int _etaToStopMins(LiveBus bus, String stopId) {
+    final route = bus.routeRef;
+    final distanceKm = bus.distanceToStopKm(stopId);
+    final effectiveSpeed = bus.effectiveSpeedResolvedKmh ??
+        (route == null
+            ? null
+            : RouteProgressService.defaultRouteSpeedKmh(route));
+
+    if (route != null && distanceKm != null) {
+      return RouteProgressService.etaMinutesForDistance(
+        distanceKm: distanceKm,
+        route: route,
+        effectiveSpeedKmh: effectiveSpeed,
+      );
+    }
+
+    final busIdx = route?.stopIds.indexOf(bus.segmentStartIdResolved) ?? -1;
+    final stopIdx = route?.stopIds.indexOf(stopId) ?? -1;
+    if (busIdx < 0 || stopIdx < 0 || busIdx > stopIdx) {
+      return bus.etaToNextStopMins;
+    }
+
+    final stopsAway = stopIdx - busIdx;
+    return bus.etaToNextStopMins + (stopsAway > 1 ? (stopsAway - 1) * 6 : 0);
   }
 
   void init() {

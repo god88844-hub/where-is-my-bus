@@ -131,7 +131,8 @@ class IncomingBusCard extends StatelessWidget {
     final stop = nb.stop;
     final route = bus.routeRef;
     final routeColor = AppTheme.routeColor(bus.routeNumber);
-    final nextStop = VizagStops.get(bus.nextStopId);
+    final currentStop = VizagStops.get(bus.segmentStartIdResolved);
+    final nextStop = VizagStops.get(bus.segmentEndIdResolved);
     final busType = bus.routeBusType;
 
     return GestureDetector(
@@ -251,7 +252,8 @@ class IncomingBusCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
-                          _stopName(bus.currentStopId) +
+                          _stopName(currentStop?.id ??
+                                  bus.segmentStartIdResolved) +
                               (nextStop != null ? ' → ${nextStop.name}' : ''),
                           style: const TextStyle(
                               fontSize: 11, color: AppTheme.textSecondary),
@@ -267,6 +269,28 @@ class IncomingBusCard extends StatelessWidget {
                 SourcePill(bus.source),
               ],
             ),
+
+            if (bus.hasContinuousProgress && nextStop != null) ...[
+              const SizedBox(height: 8),
+              ClipRRect(
+                borderRadius: BorderRadius.circular(999),
+                child: LinearProgressIndicator(
+                  minHeight: 6,
+                  value: bus.segmentProgressResolved,
+                  backgroundColor: routeColor.withOpacity(0.12),
+                  valueColor: AlwaysStoppedAnimation<Color>(routeColor),
+                ),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                '${(bus.segmentProgressResolved * 100).round()}% to ${nextStop.name}'
+                '${bus.distanceToNextStopKmResolved == null ? '' : ' · ${bus.distanceToNextStopKmResolved!.toStringAsFixed(2)} km left'}',
+                style: const TextStyle(
+                  fontSize: 11,
+                  color: AppTheme.textSecondary,
+                ),
+              ),
+            ],
 
             if (nb.distanceKm > 0) ...[
               const SizedBox(height: 6),

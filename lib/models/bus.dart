@@ -1,6 +1,7 @@
 // lib/models/bus.dart
 
 import '../data/vizag_data.dart';
+import '../services/route_progress_service.dart';
 import '../utils/constants.dart';
 
 enum BusDataSource { beacon, manual, timetable }
@@ -19,6 +20,14 @@ class LiveBus {
   final double speedKmh;
   final int etaToNextStopMins;
   final String nextStopId;
+  final String? segmentStartStopId;
+  final String? segmentEndStopId;
+  final double? segmentProgress;
+  final double? distanceToNextStopKm;
+  final double? remainingRouteKm;
+  final double? snappedLat;
+  final double? snappedLng;
+  final double? effectiveSpeedKmh;
   final BusCrowd crowd;
   final BusDataSource source;
   final DateTime lastUpdated;
@@ -35,6 +44,14 @@ class LiveBus {
     this.speedKmh = 0,
     this.etaToNextStopMins = 0,
     this.nextStopId = '',
+    this.segmentStartStopId,
+    this.segmentEndStopId,
+    this.segmentProgress,
+    this.distanceToNextStopKm,
+    this.remainingRouteKm,
+    this.snappedLat,
+    this.snappedLng,
+    this.effectiveSpeedKmh,
     this.crowd = BusCrowd.moderate,
     this.source = BusDataSource.timetable,
     required this.lastUpdated,
@@ -58,6 +75,14 @@ class LiveBus {
       speedKmh: (m['speed'] as num?)?.toDouble() ?? 0,
       etaToNextStopMins: (m['eta'] as num?)?.toInt() ?? 0,
       nextStopId: m['next_stop'] as String? ?? '',
+      segmentStartStopId: m['segment_start_stop'] as String?,
+      segmentEndStopId: m['segment_end_stop'] as String?,
+      segmentProgress: (m['segment_progress'] as num?)?.toDouble(),
+      distanceToNextStopKm: (m['distance_to_next_stop_km'] as num?)?.toDouble(),
+      remainingRouteKm: (m['remaining_route_km'] as num?)?.toDouble(),
+      snappedLat: (m['snapped_lat'] as num?)?.toDouble(),
+      snappedLng: (m['snapped_lng'] as num?)?.toDouble(),
+      effectiveSpeedKmh: (m['effective_speed_kmh'] as num?)?.toDouble(),
       crowd: _crowdFromValue(m['crowd']),
       source: _sourceFromValue(m['source']),
       lastUpdated: DateTime.fromMillisecondsSinceEpoch(
@@ -76,6 +101,14 @@ class LiveBus {
         'speed': speedKmh,
         'eta': etaToNextStopMins,
         'next_stop': nextStopId,
+        'segment_start_stop': segmentStartStopId,
+        'segment_end_stop': segmentEndStopId,
+        'segment_progress': segmentProgress,
+        'distance_to_next_stop_km': distanceToNextStopKm,
+        'remaining_route_km': remainingRouteKm,
+        'snapped_lat': snappedLat,
+        'snapped_lng': snappedLng,
+        'effective_speed_kmh': effectiveSpeedKmh,
         'crowd': crowd.index,
         'source': source.index,
         'ts': lastUpdated.millisecondsSinceEpoch,
@@ -121,6 +154,82 @@ class LiveBus {
 
   BusType get routeBusType =>
       busType ?? routeRef?.busType ?? BusType.redOrdinary;
+
+  String get segmentStartIdResolved => (segmentStartStopId?.isNotEmpty ?? false)
+      ? segmentStartStopId!
+      : currentStopId;
+
+  String get segmentEndIdResolved =>
+      (segmentEndStopId?.isNotEmpty ?? false) ? segmentEndStopId! : nextStopId;
+
+  double get segmentProgressResolved => (segmentProgress ?? 0).clamp(0.0, 1.0);
+
+  bool get hasContinuousProgress =>
+      routeRef != null &&
+      segmentEndIdResolved.isNotEmpty &&
+      segmentEndIdResolved != segmentStartIdResolved;
+
+  bool get isBetweenStops =>
+      hasContinuousProgress &&
+      segmentProgressResolved > 0.02 &&
+      segmentProgressResolved < 0.98;
+
+  double? get distanceToNextStopKmResolved {
+    if (distanceToNextStopKm != null) return distanceToNextStopKm;
+
+    final route = routeRef;
+    final currentIndex = route?.stopIds.indexOf(segmentStartIdResolved) ?? -1;
+    final nextIndex = route?.stopIds.indexOf(segmentEndIdResolved) ?? -1;
+    if (route == null || currentIndex < 0 || nextIndex != currentIndex + 1) {
+      return null;
+    }
+
+    final segmentKm =
+        RouteProgressService.segmentDistanceKmForRoute(route, currentIndex);
+    return segmentKm * (1 - segmentProgressResolved);
+  }
+
+  double? get effectiveSpeedResolvedKmh {
+    if (effectiveSpeedKmh != null && effectiveSpeedKmh! > 0) {
+      return effectiveSpeedKmh;
+    }
+    if (speedKmh >= 3) return speedKmh;
+
+    final distanceKm = distanceToNextStopKmResolved;
+    if (distanceKm != null && distanceKm > 0 && etaToNextStopMins > 0) {
+      return (distanceKm / etaToNextStopMins) * 60;
+    }
+    return null;
+  }
+
+  double? distanceToStopKm(String stopId) {
+    final route = routeRef;
+    if (route == null) return null;
+
+    final currentIndex = route.stopIds.indexOf(segmentStartIdResolved);
+    final nextIndex = route.stopIds.indexOf(segmentEndIdResolved);
+    final targetIndex = route.stopIds.indexOf(stopId);
+    if (currentIndex < 0 || targetIndex < 0) return null;
+
+    if (targetIndex <= currentIndex) return 0;
+
+    if (nextIndex != currentIndex + 1) {
+      return null;
+    }
+
+    var distanceKm = distanceToNextStopKmResolved ??
+        RouteProgressService.segmentDistanceKmForRoute(route, currentIndex);
+
+    if (targetIndex == nextIndex) {
+      return distanceKm;
+    }
+
+    for (var i = nextIndex; i < targetIndex; i++) {
+      distanceKm += RouteProgressService.segmentDistanceKmForRoute(route, i);
+    }
+
+    return distanceKm;
+  }
 
   String get busTypeLabel => routeBusType.label;
   String get displayBusIdentity =>

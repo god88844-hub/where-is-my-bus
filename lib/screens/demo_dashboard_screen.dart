@@ -423,8 +423,8 @@ class _LiveBusTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final route = bus.routeRef;
-    final current = VizagStops.get(bus.currentStopId);
-    final next = VizagStops.get(bus.nextStopId);
+    final current = VizagStops.get(bus.segmentStartIdResolved);
+    final next = VizagStops.get(bus.segmentEndIdResolved);
     final routeColor = Color(bus.routeBusType.colorValue);
 
     return Container(
@@ -474,7 +474,11 @@ class _LiveBusTile extends StatelessWidget {
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  current == null ? 'Current stop unknown' : current.name,
+                  current == null
+                      ? 'Current stop unknown'
+                      : bus.isBetweenStops
+                          ? 'Passed ${current.name}'
+                          : current.name,
                   style: const TextStyle(
                     color: AppTheme.textPrimary,
                     fontSize: 12,

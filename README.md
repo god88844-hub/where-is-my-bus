@@ -2,6 +2,12 @@
 
 Real-time bus tracking for Visakhapatnam. Dark theme. No maps. Just stops, ETAs, and live buses.
 
+## Local setup
+
+Use [docs/setup.md](/Users/hrishabh/Desktop/Code/where-is-my-bus/docs/setup.md) for the current development setup, version requirements, and bootstrap steps.
+
+Important: the running app is currently wired to Firebase/Firestore on Android. Older mock-mode and Realtime Database notes lower in this README are legacy instructions and should not be used as the source of truth for local setup.
+
 ---
 
 ## App flow

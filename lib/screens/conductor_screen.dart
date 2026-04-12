@@ -1,4 +1,6 @@
 import 'dart:async';
+
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import '../data/bus_plate_registry.dart';
 import '../data/vizag_data.dart';
@@ -24,12 +26,17 @@ class _ConductorScreenState extends State<ConductorScreen> {
   bool _loading = false;
   String? _selectedRoute;
   String? _selectedStopId;
+  String? _segmentEndStopId;
   BusCrowd _crowd = BusCrowd.moderate;
   String? _statusMessage;
   double? _lastLat;
   double? _lastLng;
   double? _lastSpeed;
   DateTime? _lastUpdate;
+  double? _segmentProgress;
+  double? _distanceToNextStopKm;
+  double? _effectiveSpeedKmh;
+  bool _debugSimulationActive = false;
   bool _autoStopEnabled = true;
   List<BusRoute> _filtered = [];
   bool _showDropdown = false;
@@ -71,6 +78,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
   }
 
   String? get _nextStopId {
+    if (_segmentEndStopId != null) return _segmentEndStopId;
     final route = _activeRoute;
     final index = _currentStopIndex;
     if (route == null || index < 0 || index >= route.stopIds.length - 1) {
@@ -205,6 +213,30 @@ class _ConductorScreenState extends State<ConductorScreen> {
     _syncFromService();
   }
 
+  Future<void> _toggleDebugSimulation() async {
+    setState(() => _loading = true);
+    try {
+      if (_debugSimulationActive) {
+        await _trackingService.stopDebugSimulation();
+        _show('Debug simulation stopped');
+      } else {
+        await _trackingService.startDebugSimulation();
+        _show('Debug simulation started');
+      }
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _statusMessage = 'Could not toggle debug simulation: $e';
+      });
+      _show('Could not toggle debug simulation');
+    } finally {
+      if (mounted) {
+        setState(() => _loading = false);
+        _syncFromService();
+      }
+    }
+  }
+
   void _show(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(content: Text(msg), duration: const Duration(seconds: 2)),
@@ -231,6 +263,11 @@ class _ConductorScreenState extends State<ConductorScreen> {
       _lastLng = _trackingService.lastLng;
       _lastSpeed = _trackingService.lastSpeed;
       _lastUpdate = _trackingService.lastUpdate;
+      _segmentEndStopId = _trackingService.nextStopId;
+      _segmentProgress = _trackingService.segmentProgress;
+      _distanceToNextStopKm = _trackingService.distanceToNextStopKm;
+      _effectiveSpeedKmh = _trackingService.effectiveSpeedKmh;
+      _debugSimulationActive = _trackingService.debugSimulationActive;
       _autoStopEnabled = _trackingService.autoStopEnabled;
     });
 
@@ -312,11 +349,16 @@ class _ConductorScreenState extends State<ConductorScreen> {
                 stopName: _selectedStopId == null
                     ? null
                     : VizagStops.all[_selectedStopId!]?.name,
+                nextStopName: _nextStopName,
                 lat: _lastLat,
                 lng: _lastLng,
-                speed: _lastSpeed,
+                speed: _effectiveSpeedKmh ?? _lastSpeed,
+                segmentProgress: _segmentProgress,
+                distanceToNextStopKm: _distanceToNextStopKm,
                 lastUpdate: _lastUpdate,
                 statusMessage: _statusMessage,
+                isBetweenStops: (_segmentProgress ?? 0) > 0.02 &&
+                    (_segmentProgress ?? 0) < 0.98,
               ),
               const SizedBox(height: 24),
               const Text(
@@ -490,7 +532,10 @@ class _ConductorScreenState extends State<ConductorScreen> {
                     Text(
                       _nextStopName == null
                           ? 'The app will detect the current stop automatically when tracking starts.'
-                          : 'Next stop: $_nextStopName',
+                          : (_segmentProgress ?? 0) > 0.02 &&
+                                  (_segmentProgress ?? 0) < 0.98
+                              ? 'Between stops · ${(100 * (_segmentProgress ?? 0)).round()}% to $_nextStopName'
+                              : 'Next stop: $_nextStopName',
                       style: const TextStyle(
                         color: AppTheme.textMuted,
                         fontSize: 12,
@@ -668,6 +713,37 @@ class _ConductorScreenState extends State<ConductorScreen> {
                           ),
                   ),
                 ),
+                if (kDebugMode) ...[
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      onPressed: _loading ? null : _toggleDebugSimulation,
+                      icon: Icon(
+                        _debugSimulationActive
+                            ? Icons.pause_circle_outline
+                            : Icons.play_circle_outline,
+                        size: 18,
+                      ),
+                      label: Text(
+                        _debugSimulationActive
+                            ? 'Stop Debug Simulation'
+                            : 'Start Debug Simulation',
+                      ),
+                      style: OutlinedButton.styleFrom(
+                        foregroundColor: const Color(0xFF185FA5),
+                        side: const BorderSide(
+                          color: Color(0xFF185FA5),
+                          width: 0.8,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                      ),
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 12),
                 SizedBox(
                   width: double.infinity,
@@ -695,7 +771,9 @@ class _ConductorScreenState extends State<ConductorScreen> {
               Center(
                 child: Text(
                   _tracking
-                      ? 'Live tracking is active. Selecting another route above switches the same bus to the new route.'
+                      ? _debugSimulationActive
+                          ? 'Debug simulation is driving the bus forward using the same route-snapping logic as live GPS.'
+                          : 'Live tracking is active. Selecting another route above switches the same bus to the new route.'
                       : 'Select a route, enter the bus plate, and start tracking once',
                   style: const TextStyle(
                     color: AppTheme.textMuted,
@@ -718,11 +796,15 @@ class _StatusCard extends StatelessWidget {
   final String? plateNumber;
   final String? busTypeLabel;
   final String? stopName;
+  final String? nextStopName;
   final double? lat;
   final double? lng;
   final double? speed;
+  final double? segmentProgress;
+  final double? distanceToNextStopKm;
   final DateTime? lastUpdate;
   final String? statusMessage;
+  final bool isBetweenStops;
 
   const _StatusCard({
     required this.tracking,
@@ -730,11 +812,15 @@ class _StatusCard extends StatelessWidget {
     this.plateNumber,
     this.busTypeLabel,
     this.stopName,
+    this.nextStopName,
     this.lat,
     this.lng,
     this.speed,
+    this.segmentProgress,
+    this.distanceToNextStopKm,
     this.lastUpdate,
     this.statusMessage,
+    this.isBetweenStops = false,
   });
 
   @override
@@ -799,11 +885,25 @@ class _StatusCard extends StatelessWidget {
           if (stopName != null) ...[
             const SizedBox(height: 10),
             Text(
-              'Current stop: $stopName',
+              isBetweenStops
+                  ? 'Last passed stop: $stopName'
+                  : 'Current stop: $stopName',
               style: const TextStyle(
                 color: AppTheme.textPrimary,
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
+              ),
+            ),
+          ],
+          if (nextStopName != null) ...[
+            const SizedBox(height: 4),
+            Text(
+              distanceToNextStopKm == null
+                  ? 'Next stop: $nextStopName'
+                  : 'Next stop: $nextStopName · ${distanceToNextStopKm!.toStringAsFixed(2)} km left',
+              style: const TextStyle(
+                color: AppTheme.textMuted,
+                fontSize: 12,
               ),
             ),
           ],
@@ -837,6 +937,13 @@ class _StatusCard extends StatelessWidget {
                   value: '${speed?.toStringAsFixed(0) ?? '--'} km/h',
                 ),
                 const SizedBox(width: 24),
+                if (segmentProgress != null) ...[
+                  _Stat(
+                    label: 'Progress',
+                    value: '${(segmentProgress! * 100).round()}%',
+                  ),
+                  const SizedBox(width: 24),
+                ],
                 _Stat(label: 'Lat', value: lat!.toStringAsFixed(5)),
                 const SizedBox(width: 24),
                 _Stat(label: 'Lng', value: lng!.toStringAsFixed(5)),

@@ -29,9 +29,59 @@ class BusJourneyScreen extends StatelessWidget {
       );
     }
 
-    final currentIdx = route.stopIds.indexOf(liveBus.currentStopId);
-    final nextIdx = route.stopIds.indexOf(liveBus.nextStopId);
+    final currentIdx = route.stopIds.indexOf(liveBus.segmentStartIdResolved);
+    final nextIdx = route.stopIds.indexOf(liveBus.segmentEndIdResolved);
     final userStopIdx = route.stopIds.indexOf(stop.id);
+    final timelineChildren = <Widget>[];
+
+    for (final entry in route.stopIds.asMap().entries) {
+      final idx = entry.key;
+      final stopId = entry.value;
+      final s = VizagStops.get(stopId);
+      if (s == null) continue;
+
+      final isBusHere = idx == currentIdx && !liveBus.isBetweenStops;
+      final isCurrentSegmentStart = idx == currentIdx && liveBus.isBetweenStops;
+      final isNextStop = idx == nextIdx && !isBusHere;
+      final isPassed = currentIdx >= 0 && idx < currentIdx;
+      final isUserStop = stopId == stop.id;
+      final isFirst = idx == 0;
+      final isLast = idx == route.stopIds.length - 1;
+
+      int? eta;
+      if (!isPassed && !isBusHere && currentIdx >= 0) {
+        eta = p.etaToStopMins(liveBus, stopId);
+      }
+
+      timelineChildren.add(
+        _StopRow(
+          stop: s,
+          isBusHere: isBusHere,
+          isCurrentSegmentStart: isCurrentSegmentStart,
+          isNextStop: isNextStop,
+          isPassed: isPassed,
+          isUserStop: isUserStop,
+          isFirst: isFirst,
+          isLast: isLast,
+          eta: eta,
+          bus: liveBus,
+          routeColor: AppTheme.routeColor(route.number),
+        ),
+      );
+
+      if (liveBus.isBetweenStops &&
+          idx == currentIdx &&
+          nextIdx == currentIdx + 1 &&
+          nextIdx >= 0) {
+        timelineChildren.add(
+          _BetweenStopsRow(
+            bus: liveBus,
+            nextStop: VizagStops.get(route.stopIds[nextIdx]),
+            routeColor: AppTheme.routeColor(route.number),
+          ),
+        );
+      }
+    }
 
     return Scaffold(
       backgroundColor: AppTheme.bg,
@@ -75,45 +125,13 @@ class BusJourneyScreen extends StatelessWidget {
               userStop: stop,
               currentIdx: currentIdx,
               userStopIdx: userStopIdx,
-              route: route),
+              route: route,
+              etaToUserStopMins: p.etaToStopMins(liveBus, stop.id)),
 
           // ── Timeline ──
           const SectionHeader('Stop timeline'),
 
-          ...route.stopIds.asMap().entries.map((e) {
-            final idx = e.key;
-            final stopId = e.value;
-            final s = VizagStops.get(stopId);
-            if (s == null) return const SizedBox.shrink();
-
-            final isBusHere = idx == currentIdx;
-            final isNextStop = idx == nextIdx && !isBusHere;
-            final isPassed = currentIdx >= 0 && idx < currentIdx;
-            final isUserStop = stopId == stop.id;
-            final isFirst = idx == 0;
-            final isLast = idx == route.stopIds.length - 1;
-
-            // ETA for upcoming stops
-            int? eta;
-            if (!isPassed && !isBusHere && currentIdx >= 0) {
-              final stopsAway = idx - currentIdx;
-              eta = liveBus.etaToNextStopMins +
-                  (stopsAway > 1 ? (stopsAway - 1) * 6 : 0);
-            }
-
-            return _StopRow(
-              stop: s,
-              isBusHere: isBusHere,
-              isNextStop: isNextStop,
-              isPassed: isPassed,
-              isUserStop: isUserStop,
-              isFirst: isFirst,
-              isLast: isLast,
-              eta: eta,
-              bus: liveBus,
-              routeColor: AppTheme.routeColor(route.number),
-            );
-          }),
+          ...timelineChildren,
 
           const SizedBox(height: 40),
         ],
@@ -129,6 +147,7 @@ class _SummaryCard extends StatelessWidget {
   final int currentIdx;
   final int userStopIdx;
   final BusRoute route;
+  final int etaToUserStopMins;
 
   const _SummaryCard({
     required this.bus,
@@ -136,17 +155,16 @@ class _SummaryCard extends StatelessWidget {
     required this.currentIdx,
     required this.userStopIdx,
     required this.route,
+    required this.etaToUserStopMins,
   });
 
   @override
   Widget build(BuildContext context) {
     final stopsAway = (userStopIdx - currentIdx).clamp(0, 99);
-    final eta = stopsAway == 0
-        ? 0
-        : bus.etaToNextStopMins + (stopsAway > 1 ? (stopsAway - 1) * 6 : 0);
+    final eta = stopsAway == 0 ? 0 : etaToUserStopMins;
     final color = AppTheme.routeColor(bus.routeNumber);
-    final currentStop = VizagStops.get(bus.currentStopId);
-    final nextStop = VizagStops.get(bus.nextStopId);
+    final currentStop = VizagStops.get(bus.segmentStartIdResolved);
+    final nextStop = VizagStops.get(bus.segmentEndIdResolved);
     final age = DateTime.now().difference(bus.lastUpdated);
     final lastUpdated =
         age.inSeconds < 60 ? '${age.inSeconds}s ago' : '${age.inMinutes}m ago';
@@ -187,9 +205,18 @@ class _SummaryCard extends StatelessWidget {
             const SizedBox(width: 10),
             _SummaryChip(
               label: 'Speed',
-              value: '${bus.speedKmh.round()} km/h',
+              value:
+                  '${(bus.effectiveSpeedResolvedKmh ?? bus.speedKmh).round()} km/h',
               color: AppTheme.textSecondary,
             ),
+            if (bus.hasContinuousProgress) ...[
+              const SizedBox(width: 10),
+              _SummaryChip(
+                label: 'Progress',
+                value: '${(bus.segmentProgressResolved * 100).round()}%',
+                color: color,
+              ),
+            ],
           ]),
           const SizedBox(height: 12),
           Row(children: [
@@ -217,14 +244,17 @@ class _SummaryCard extends StatelessWidget {
                 icon: Icons.radio_button_checked,
                 label: currentStop == null
                     ? 'Current stop unknown'
-                    : 'Current: ${currentStop.name}',
+                    : bus.isBetweenStops
+                        ? 'Last passed: ${currentStop.name}'
+                        : 'Current: ${currentStop.name}',
                 color: color,
               ),
               _StatusPill(
                 icon: Icons.arrow_forward,
                 label: nextStop == null
                     ? 'Next stop unavailable'
-                    : 'Next: ${nextStop.name}',
+                    : 'Next: ${nextStop.name}'
+                        '${bus.distanceToNextStopKmResolved == null ? '' : ' · ${bus.distanceToNextStopKmResolved!.toStringAsFixed(2)} km'}',
                 color: AppTheme.green,
               ),
               _StatusPill(
@@ -313,6 +343,7 @@ class _SummaryChip extends StatelessWidget {
 class _StopRow extends StatelessWidget {
   final BusStop stop;
   final bool isBusHere;
+  final bool isCurrentSegmentStart;
   final bool isNextStop;
   final bool isPassed;
   final bool isUserStop;
@@ -325,6 +356,7 @@ class _StopRow extends StatelessWidget {
   const _StopRow({
     required this.stop,
     required this.isBusHere,
+    required this.isCurrentSegmentStart,
     required this.isNextStop,
     required this.isPassed,
     required this.isUserStop,
@@ -398,7 +430,10 @@ class _StopRow extends StatelessWidget {
                       child: Text(stop.name,
                           style: TextStyle(
                             fontSize: isBusHere ? 15 : 13,
-                            fontWeight: isBusHere || isUserStop || isNextStop
+                            fontWeight: isBusHere ||
+                                    isCurrentSegmentStart ||
+                                    isUserStop ||
+                                    isNextStop
                                 ? FontWeight.w600
                                 : FontWeight.w400,
                             color: isPassed && !isUserStop
@@ -416,6 +451,14 @@ class _StopRow extends StatelessWidget {
                     if (isNextStop) ...[
                       const SizedBox(width: 8),
                       Text('Next',
+                          style: TextStyle(
+                              fontSize: 11,
+                              color: routeColor,
+                              fontWeight: FontWeight.w600)),
+                    ],
+                    if (isCurrentSegmentStart) ...[
+                      const SizedBox(width: 8),
+                      Text('Last passed',
                           style: TextStyle(
                               fontSize: 11,
                               color: routeColor,
@@ -449,13 +492,38 @@ class _StopRow extends StatelessWidget {
                         Icon(Icons.directions_bus_rounded,
                             size: 14, color: routeColor),
                         const SizedBox(width: 6),
-                        Text('Bus is here · ${bus.speedKmh.round()} km/h',
+                        Text(
+                            'Bus is here · ${(bus.effectiveSpeedResolvedKmh ?? bus.speedKmh).round()} km/h',
                             style: TextStyle(
                                 fontSize: 12,
                                 color: routeColor,
                                 fontWeight: FontWeight.w500)),
                         const Spacer(),
                         CrowdBar(bus.crowd),
+                      ]),
+                    ),
+                  ],
+
+                  if (isCurrentSegmentStart) ...[
+                    const SizedBox(height: 8),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: routeColor.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                            color: routeColor.withOpacity(0.25), width: 0.5),
+                      ),
+                      child: Row(children: [
+                        Icon(Icons.check_circle_outline,
+                            size: 12, color: routeColor),
+                        const SizedBox(width: 4),
+                        Text('Bus passed this stop',
+                            style: TextStyle(
+                                fontSize: 11,
+                                color: routeColor,
+                                fontWeight: FontWeight.w600)),
                       ]),
                     ),
                   ],
@@ -512,6 +580,108 @@ class _StopRow extends StatelessWidget {
                     ),
                   ],
                 ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _BetweenStopsRow extends StatelessWidget {
+  final LiveBus bus;
+  final BusStop? nextStop;
+  final Color routeColor;
+
+  const _BetweenStopsRow({
+    required this.bus,
+    required this.nextStop,
+    required this.routeColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final progress = bus.segmentProgressResolved;
+    final progressPct = (progress * 100).round();
+    final nextLabel = nextStop?.name ?? 'next stop';
+    final etaLabel =
+        bus.etaToNextStopMins <= 0 ? '' : ' · ${bus.etaToNextStopMins} min';
+    final distanceLabel = bus.distanceToNextStopKmResolved == null
+        ? ''
+        : ' · ${bus.distanceToNextStopKmResolved!.toStringAsFixed(2)} km left';
+
+    return SizedBox(
+      height: 64,
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          SizedBox(
+            width: 48,
+            child: LayoutBuilder(
+              builder: (context, constraints) {
+                const markerSize = 18.0;
+                final top = (constraints.maxHeight - markerSize) *
+                    progress.clamp(0.0, 1.0);
+                return Stack(
+                  children: [
+                    Center(
+                      child: Container(width: 2, color: routeColor),
+                    ),
+                    Positioned(
+                      top: top,
+                      left: (48 - markerSize) / 2,
+                      child: Container(
+                        width: markerSize,
+                        height: markerSize,
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          shape: BoxShape.circle,
+                          border: Border.all(color: routeColor, width: 3),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(0, 0, 16, 0),
+              child: Center(
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: routeColor.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                        color: routeColor.withOpacity(0.25), width: 0.5),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        'Bus is between stops',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w700,
+                          color: routeColor,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        '$progressPct% to $nextLabel$distanceLabel$etaLabel',
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),

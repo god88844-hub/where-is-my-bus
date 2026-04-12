@@ -7,11 +7,12 @@ import 'package:permission_handler/permission_handler.dart'
     as permission_handler;
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../dev/mock_coordinate_scenarios.dart';
 import '../data/bus_plate_registry.dart';
 import '../data/vizag_data.dart';
 import '../models/bus.dart';
 import 'firestore_service.dart';
-import 'location_service.dart';
+import 'route_progress_service.dart';
 
 class ConductorTrackingService extends ChangeNotifier {
   ConductorTrackingService._();
@@ -30,13 +31,17 @@ class ConductorTrackingService extends ChangeNotifier {
   static const prefsKeySpeed = 'conductor_last_speed';
   static const prefsKeyUpdateMs = 'conductor_last_update_ms';
   static const prefsKeyAutoStop = 'conductor_auto_stop';
-  static const double autoStopArrivalRadiusKm = 0.18;
 
   final FirestoreService _fs = FirestoreService();
 
   StreamSubscription<Position>? _positionSub;
+  Timer? _simulationTimer;
+  MockCoordinateScenario? _mockScenario;
+  int _mockScenarioIndex = 0;
   bool _initialized = false;
   bool _starting = false;
+  bool _debugSimulationActive = false;
+  double _simulationSpeedKmh = 24;
 
   bool tracking = false;
   bool autoStopEnabled = true;
@@ -50,6 +55,14 @@ class ConductorTrackingService extends ChangeNotifier {
   double? lastLng;
   double? lastSpeed;
   DateTime? lastUpdate;
+  String? _segmentStartStopId;
+  String? _segmentEndStopId;
+  double? _segmentProgress;
+  double? _distanceToNextStopKm;
+  double? _remainingRouteKm;
+  double? _snappedLat;
+  double? _snappedLng;
+  double? _effectiveSpeedKmh;
 
   BusRoute? get activeRoute {
     if (selectedRoute == null) return null;
@@ -65,6 +78,7 @@ class ConductorTrackingService extends ChangeNotifier {
   }
 
   String? get nextStopId {
+    if (_segmentEndStopId != null) return _segmentEndStopId;
     final route = activeRoute;
     final index = currentStopIndex;
     if (route == null || index < 0 || index >= route.stopIds.length - 1) {
@@ -72,6 +86,14 @@ class ConductorTrackingService extends ChangeNotifier {
     }
     return route.stopIds[index + 1];
   }
+
+  double? get segmentProgress => _segmentProgress;
+  double? get distanceToNextStopKm => _distanceToNextStopKm;
+  double? get remainingRouteKm => _remainingRouteKm;
+  double? get snappedLat => _snappedLat;
+  double? get snappedLng => _snappedLng;
+  double? get effectiveSpeedKmh => _effectiveSpeedKmh;
+  bool get debugSimulationActive => _debugSimulationActive;
 
   BusType get resolvedBusType {
     return BusPlateRegistry.resolveType(
@@ -168,6 +190,11 @@ class ConductorTrackingService extends ChangeNotifier {
       return;
     }
 
+    if (_debugSimulationActive) {
+      await _emitSimulatedTick();
+      return;
+    }
+
     if (selectedStopId == null) {
       await _resolveCurrentStopFromLocation();
     }
@@ -194,8 +221,16 @@ class ConductorTrackingService extends ChangeNotifier {
   }
 
   Future<void> changeRoute(BusRoute route) async {
+    await stopDebugSimulation(resumeGps: false);
     selectedRoute = route.routeId;
     selectedStopId = null;
+    _segmentStartStopId = null;
+    _segmentEndStopId = null;
+    _segmentProgress = null;
+    _distanceToNextStopKm = null;
+    _remainingRouteKm = null;
+    _snappedLat = null;
+    _snappedLng = null;
     statusMessage =
         'Changing route to ${route.number} ${route.from} to ${route.to}...';
     await _resolveCurrentStopFromLocation();
@@ -219,6 +254,7 @@ class ConductorTrackingService extends ChangeNotifier {
     final returnRoute = VizagRoutes.byRouteId(returnRouteId);
     if (returnRoute == null) return;
 
+    await stopDebugSimulation(resumeGps: false);
     final currentStop = selectedStopId;
     selectedRoute = returnRoute.routeId;
     selectedStopId = currentStop != null &&
@@ -237,6 +273,7 @@ class ConductorTrackingService extends ChangeNotifier {
   }
 
   Future<void> stopTracking() async {
+    await stopDebugSimulation(resumeGps: false);
     await _positionSub?.cancel();
     _positionSub = null;
     if (busId != null) {
@@ -249,9 +286,60 @@ class ConductorTrackingService extends ChangeNotifier {
     lastLng = null;
     lastSpeed = null;
     lastUpdate = null;
+    _segmentStartStopId = null;
+    _segmentEndStopId = null;
+    _segmentProgress = null;
+    _distanceToNextStopKm = null;
+    _remainingRouteKm = null;
+    _snappedLat = null;
+    _snappedLng = null;
+    _effectiveSpeedKmh = null;
     statusMessage = 'Trip ended';
     await _clearPersistedSession();
     notifyListeners();
+  }
+
+  Future<void> startDebugSimulation({double speedKmh = 24}) async {
+    if (!tracking || activeRoute == null || busId == null) return;
+
+    _simulationSpeedKmh = speedKmh.clamp(8.0, 40.0);
+    _mockScenario = MockCoordinateScenarios.forRoute(activeRoute!.routeId);
+    _mockScenarioIndex = 0;
+    _debugSimulationActive = true;
+    await _positionSub?.cancel();
+    _positionSub = null;
+    _simulationTimer?.cancel();
+    statusMessage = _mockScenario == null
+        ? 'Debug simulation running at ${_simulationSpeedKmh.toStringAsFixed(0)} km/h'
+        : 'Debug stream: ${_mockScenario!.displayName}';
+    await _persistSession();
+    notifyListeners();
+
+    _simulationTimer = Timer.periodic(const Duration(seconds: 4), (_) {
+      unawaited(_emitSimulatedTick());
+    });
+
+    await _emitSimulatedTick();
+  }
+
+  Future<void> stopDebugSimulation({bool resumeGps = true}) async {
+    _simulationTimer?.cancel();
+    _simulationTimer = null;
+    _mockScenario = null;
+    _mockScenarioIndex = 0;
+
+    final wasActive = _debugSimulationActive;
+    _debugSimulationActive = false;
+
+    if (resumeGps && wasActive && tracking) {
+      await _startPositionStream();
+    }
+
+    if (wasActive) {
+      statusMessage = 'Debug simulation stopped';
+      await _persistSession();
+      notifyListeners();
+    }
   }
 
   Future<void> _startPositionStream() async {
@@ -313,6 +401,20 @@ class ConductorTrackingService extends ChangeNotifier {
   }) async {
     if (activeRoute == null || selectedStopId == null || busId == null) return;
 
+    _effectiveSpeedKmh = RouteProgressService.effectiveSpeedKmh(
+      route: activeRoute!,
+      rawSpeedKmh: speed,
+      previousEffectiveSpeedKmh: _effectiveSpeedKmh,
+    );
+
+    final nextStopEtaMins = nextStopId == null
+        ? 0
+        : RouteProgressService.etaMinutesForDistance(
+            distanceKm: _distanceToNextStopKm ?? 0,
+            route: activeRoute!,
+            effectiveSpeedKmh: _effectiveSpeedKmh,
+          );
+
     await _fs.pushConductorLocation(
       busId: busId!,
       routeKey: activeRoute!.routeId,
@@ -324,6 +426,15 @@ class ConductorTrackingService extends ChangeNotifier {
       crowd: crowd,
       currentStopId: selectedStopId!,
       nextStopId: nextStopId,
+      segmentStartStopId: _segmentStartStopId,
+      segmentEndStopId: _segmentEndStopId,
+      segmentProgress: _segmentProgress,
+      distanceToNextStopKm: _distanceToNextStopKm,
+      remainingRouteKm: _remainingRouteKm,
+      snappedLat: _snappedLat,
+      snappedLng: _snappedLng,
+      effectiveSpeedKmh: _effectiveSpeedKmh,
+      etaToNextStopMins: nextStopEtaMins,
       busType: resolvedBusType,
     );
 
@@ -331,9 +442,162 @@ class ConductorTrackingService extends ChangeNotifier {
     lastLng = lng;
     lastSpeed = speed;
     lastUpdate = DateTime.now();
-    statusMessage = 'Tracking live at ${_timeAgo(lastUpdate!)}';
+    statusMessage = _progressStatusMessage(lastUpdate!);
     await _persistSession();
     notifyListeners();
+  }
+
+  Future<void> _emitSimulatedTick() async {
+    if (_mockScenario != null) {
+      await _emitMockScenarioTick();
+      return;
+    }
+
+    final route = activeRoute;
+    if (!_debugSimulationActive ||
+        !tracking ||
+        route == null ||
+        busId == null ||
+        selectedStopId == null) {
+      return;
+    }
+
+    final currentIndex = route.stopIds.indexOf(selectedStopId!);
+    if (currentIndex < 0) return;
+
+    if (currentIndex >= route.stopIds.length - 1) {
+      final terminal = VizagStops.get(route.stopIds.last);
+      if (terminal != null) {
+        _segmentStartStopId = terminal.id;
+        _segmentEndStopId = null;
+        _segmentProgress = 1;
+        _distanceToNextStopKm = 0;
+        _remainingRouteKm = 0;
+        _snappedLat = terminal.lat;
+        _snappedLng = terminal.lng;
+        await _pushUpdate(lat: terminal.lat, lng: terminal.lng, speed: 0);
+      }
+      await stopDebugSimulation(resumeGps: false);
+      statusMessage =
+          'Debug simulation reached ${terminal?.name ?? 'terminus'}';
+      await _persistSession();
+      notifyListeners();
+      return;
+    }
+
+    var segmentIndex = currentIndex;
+    var progress = (_segmentProgress ?? 0).clamp(0.0, 1.0);
+    var remainingStepKm = _simulationSpeedKmh * (4 / 3600);
+
+    while (remainingStepKm > 0 && segmentIndex < route.stopIds.length - 1) {
+      final segmentKm =
+          RouteProgressService.segmentDistanceKmForRoute(route, segmentIndex);
+      if (segmentKm <= 0) {
+        segmentIndex++;
+        progress = 0;
+        continue;
+      }
+
+      final remainingSegmentKm = segmentKm * (1 - progress);
+      if (remainingStepKm < remainingSegmentKm) {
+        progress += remainingStepKm / segmentKm;
+        remainingStepKm = 0;
+      } else {
+        remainingStepKm -= remainingSegmentKm;
+        segmentIndex++;
+        progress = 0;
+      }
+    }
+
+    if (segmentIndex >= route.stopIds.length - 1) {
+      final terminal = VizagStops.get(route.stopIds.last);
+      if (terminal == null) return;
+
+      _segmentStartStopId = terminal.id;
+      _segmentEndStopId = null;
+      _segmentProgress = 1;
+      _distanceToNextStopKm = 0;
+      _remainingRouteKm = 0;
+      _snappedLat = terminal.lat;
+      _snappedLng = terminal.lng;
+      await _pushUpdate(lat: terminal.lat, lng: terminal.lng, speed: 0);
+      await stopDebugSimulation(resumeGps: false);
+      statusMessage = 'Debug simulation reached ${terminal.name}';
+      await _persistSession();
+      notifyListeners();
+      return;
+    }
+
+    final startStop = VizagStops.get(route.stopIds[segmentIndex]);
+    final endStop = VizagStops.get(route.stopIds[segmentIndex + 1]);
+    if (startStop == null || endStop == null) return;
+
+    final lat = startStop.lat + ((endStop.lat - startStop.lat) * progress);
+    final lng = startStop.lng + ((endStop.lng - startStop.lng) * progress);
+
+    final snapshot = RouteProgressService.snapToRoute(
+      route: route,
+      lat: lat,
+      lng: lng,
+      hintCurrentStopId: selectedStopId,
+    );
+    if (snapshot != null) {
+      _applyProgressSnapshot(snapshot);
+    }
+
+    await _pushUpdate(
+      lat: lat,
+      lng: lng,
+      speed: _simulationSpeedKmh,
+    );
+  }
+
+  Future<void> _emitMockScenarioTick() async {
+    final route = activeRoute;
+    final scenario = _mockScenario;
+    if (!_debugSimulationActive ||
+        !tracking ||
+        route == null ||
+        busId == null ||
+        scenario == null ||
+        scenario.samples.isEmpty) {
+      return;
+    }
+
+    if (_mockScenarioIndex >= scenario.samples.length) {
+      final terminalName = VizagStops.get(route.stopIds.last)?.name ?? route.to;
+      await stopDebugSimulation(resumeGps: false);
+      statusMessage = 'Debug stream reached $terminalName';
+      await _persistSession();
+      notifyListeners();
+      return;
+    }
+
+    final sample = scenario.samples[_mockScenarioIndex];
+    final snapshot = RouteProgressService.snapToRoute(
+      route: route,
+      lat: sample.lat,
+      lng: sample.lng,
+      hintCurrentStopId: selectedStopId,
+    );
+    if (snapshot != null) {
+      _applyProgressSnapshot(snapshot);
+    }
+
+    await _pushUpdate(
+      lat: sample.lat,
+      lng: sample.lng,
+      speed: sample.speedKmh,
+    );
+    _mockScenarioIndex += 1;
+
+    if (_mockScenarioIndex >= scenario.samples.length) {
+      final terminalName = VizagStops.get(route.stopIds.last)?.name ?? route.to;
+      await stopDebugSimulation(resumeGps: false);
+      statusMessage = 'Debug stream reached $terminalName';
+      await _persistSession();
+      notifyListeners();
+    }
   }
 
   Future<void> _resolveCurrentStopFromLocation() async {
@@ -357,41 +621,34 @@ class ConductorTrackingService extends ChangeNotifier {
           'ConductorTrackingService: failed to resolve current stop: $e');
     }
 
-    final derivedStopId = lat == null || lng == null
-        ? (route.stopIds.isNotEmpty ? route.stopIds.first : null)
-        : _nearestStopIdForRoute(
-            route: route,
-            lat: lat,
-            lng: lng,
-          );
+    if (lat == null || lng == null) {
+      if (route.stopIds.isNotEmpty) {
+        selectedStopId = route.stopIds.first;
+        _segmentStartStopId = selectedStopId;
+        _segmentEndStopId = route.stopIds.length > 1 ? route.stopIds[1] : null;
+        _segmentProgress = 0;
+        _distanceToNextStopKm = _segmentEndStopId == null
+            ? 0
+            : RouteProgressService.segmentDistanceKmForRoute(route, 0);
+        _remainingRouteKm = route.stopIds.length > 1
+            ? _remainingDistanceFromSegment(route, 0, _distanceToNextStopKm!)
+            : 0;
+      }
+      return;
+    }
 
-    if (derivedStopId != null) {
-      selectedStopId = derivedStopId;
-      final stopName = VizagStops.get(derivedStopId)?.name ?? derivedStopId;
+    final snapshot = RouteProgressService.snapToRoute(
+      route: route,
+      lat: lat,
+      lng: lng,
+      hintCurrentStopId: selectedStopId,
+    );
+    if (snapshot != null) {
+      _applyProgressSnapshot(snapshot);
+      final stopName = VizagStops.get(snapshot.currentStopId)?.name ??
+          snapshot.currentStopId;
       statusMessage = 'Tracking from $stopName';
     }
-  }
-
-  String? _nearestStopIdForRoute({
-    required BusRoute route,
-    required double lat,
-    required double lng,
-  }) {
-    String? bestStopId;
-    var bestDistance = double.infinity;
-
-    for (final stopId in route.stopIds) {
-      final stop = VizagStops.get(stopId);
-      if (stop == null) continue;
-
-      final distance = LocationService.distanceKm(lat, lng, stop.lat, stop.lng);
-      if (distance < bestDistance) {
-        bestDistance = distance;
-        bestStopId = stopId;
-      }
-    }
-
-    return bestStopId;
   }
 
   void _advanceStopFromLocation({
@@ -401,28 +658,68 @@ class ConductorTrackingService extends ChangeNotifier {
     if (!autoStopEnabled) return;
 
     final route = activeRoute;
-    final currentIndex = currentStopIndex;
-    if (route == null || currentIndex < 0) return;
+    if (route == null) return;
 
-    final lastIndex = route.stopIds.length - 1;
-    var bestIndex = currentIndex;
-    var bestDistance = double.infinity;
+    final snapshot = RouteProgressService.snapToRoute(
+      route: route,
+      lat: lat,
+      lng: lng,
+      hintCurrentStopId: selectedStopId,
+    );
+    if (snapshot != null) {
+      final previousStopId = selectedStopId;
+      _applyProgressSnapshot(snapshot);
 
-    for (var i = currentIndex; i <= currentIndex + 2 && i <= lastIndex; i++) {
-      final stop = VizagStops.get(route.stopIds[i]);
-      if (stop == null) continue;
-      final distance = LocationService.distanceKm(lat, lng, stop.lat, stop.lng);
-      if (distance < bestDistance) {
-        bestDistance = distance;
-        bestIndex = i;
+      if (previousStopId != selectedStopId) {
+        statusMessage =
+            'Auto-detected stop: ${VizagStops.get(selectedStopId!)?.name ?? selectedStopId!}';
       }
     }
+  }
 
-    if (bestIndex > currentIndex && bestDistance <= autoStopArrivalRadiusKm) {
-      selectedStopId = route.stopIds[bestIndex];
-      statusMessage =
-          'Auto-detected stop: ${VizagStops.get(selectedStopId!)?.name ?? selectedStopId!}';
+  void _applyProgressSnapshot(RouteProgressSnapshot snapshot) {
+    selectedStopId = snapshot.currentStopId;
+    _segmentStartStopId = snapshot.currentStopId;
+    _segmentEndStopId =
+        snapshot.nextStopId.isEmpty ? null : snapshot.nextStopId;
+    _segmentProgress = snapshot.segmentProgress;
+    _distanceToNextStopKm = snapshot.distanceToNextStopKm;
+    _remainingRouteKm = snapshot.remainingRouteKm;
+    _snappedLat = snapshot.snappedLat;
+    _snappedLng = snapshot.snappedLng;
+  }
+
+  double _remainingDistanceFromSegment(
+    BusRoute route,
+    int currentSegmentIndex,
+    double distanceToNextStopKm,
+  ) {
+    var remaining = distanceToNextStopKm;
+    for (var i = currentSegmentIndex + 1; i < route.stopIds.length - 1; i++) {
+      remaining += RouteProgressService.segmentDistanceKmForRoute(route, i);
     }
+    return remaining;
+  }
+
+  String _progressStatusMessage(DateTime updateTime) {
+    final nextId = nextStopId;
+    if (selectedStopId == null) {
+      return 'Tracking live at ${_timeAgo(updateTime)}';
+    }
+
+    final currentName =
+        VizagStops.get(selectedStopId!)?.name ?? selectedStopId!;
+    if (nextId == null || nextId.isEmpty) {
+      return 'Reached $currentName · updated ${_timeAgo(updateTime)}';
+    }
+
+    final nextName = VizagStops.get(nextId)?.name ?? nextId;
+    final progress = (_segmentProgress ?? 0).clamp(0.0, 1.0);
+    final progressPct = (progress * 100).round();
+    final distanceLabel = _distanceToNextStopKm == null
+        ? ''
+        : ' · ${_distanceToNextStopKm!.toStringAsFixed(2)} km left';
+    return 'Passed $currentName · $progressPct% to $nextName$distanceLabel · updated ${_timeAgo(updateTime)}';
   }
 
   Future<bool> _ensurePermission() async {
@@ -494,6 +791,14 @@ class ConductorTrackingService extends ChangeNotifier {
         updateMs == null ? null : DateTime.fromMillisecondsSinceEpoch(updateMs);
 
     autoStopEnabled = prefs.getBool(prefsKeyAutoStop) ?? true;
+    _segmentStartStopId = selectedStopId;
+    _segmentEndStopId = null;
+    _segmentProgress = null;
+    _distanceToNextStopKm = null;
+    _remainingRouteKm = null;
+    _snappedLat = null;
+    _snappedLng = null;
+    _effectiveSpeedKmh = null;
 
     if (activeRoute == null ||
         selectedStopId == null ||
