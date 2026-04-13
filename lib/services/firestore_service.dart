@@ -25,7 +25,6 @@ class FirestoreService {
 
   final FirebaseFirestore _db;
   final FirebaseAuth _auth;
-  String? _fallbackUid;
 
   // --- NEW METHOD TO FIX HOME_SCREEN ERROR ---
   /// Updates the current user's role to 'conductor' in Firestore.
@@ -49,31 +48,10 @@ class FirestoreService {
       await _ensureUserProfile(current);
       return current.uid;
     }
-    try {
-      final cred = await _auth.signInAnonymously();
-      final user = cred.user!;
-      await _ensureUserProfile(user);
-      return user.uid;
-    } catch (e) {
-      debugPrint('FirestoreService.ensureUserId anonymous sign-in failed: $e');
-      _fallbackUid ??=
-          'guest_${DateTime.now().millisecondsSinceEpoch.toRadixString(36)}';
-      try {
-        await _db.collection('users').doc(_fallbackUid).set({
-          'uid': _fallbackUid,
-          'role': 'passenger',
-          'anonymous': true,
-          'auth_provider': 'fallback_guest',
-          'created_at': FieldValue.serverTimestamp(),
-          'last_seen_at': FieldValue.serverTimestamp(),
-        }, SetOptions(merge: true));
-      } catch (fallbackError) {
-        debugPrint(
-          'FirestoreService.ensureUserId fallback profile write failed: $fallbackError',
-        );
-      }
-      return _fallbackUid!;
-    }
+    final cred = await _auth.signInAnonymously();
+    final user = cred.user!;
+    await _ensureUserProfile(user);
+    return user.uid;
   }
 
   Future<void> _ensureUserProfile(User user) async {

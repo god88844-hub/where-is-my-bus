@@ -4,12 +4,10 @@ import '../screens/conductor_screen.dart';
 import '../services/firestore_service.dart';
 import '../utils/app_theme.dart';
 
-const String staffAccessCode = 'vizag2026';
-
 Future<void> showStaffModeAccessSheet(
   BuildContext context, {
   String title = 'Staff Mode',
-  String subtitle = 'Enter the staff access code to open conductor tracking.',
+  String subtitle = 'Tap below to verify your staff access.',
   String buttonLabel = 'Open Staff Mode',
 }) async {
   final shouldOpenConductor = await showModalBottomSheet<bool>(
@@ -50,89 +48,90 @@ class _StaffModeAccessSheet extends StatefulWidget {
 }
 
 class _StaffModeAccessSheetState extends State<_StaffModeAccessSheet> {
-  final TextEditingController _controller = TextEditingController();
   bool _submitting = false;
   String? _error;
 
   @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    // Immediately verify staff access on open — no client-side code gate.
+    _verifyAccess();
   }
 
-  Future<void> _submit() async {
-    final value = _controller.text.trim();
-    if (value != staffAccessCode) {
-      setState(() => _error = 'Invalid access code');
-      return;
-    }
-
-    FocusScope.of(context).unfocus();
+  Future<void> _verifyAccess() async {
     setState(() {
       _submitting = true;
       _error = null;
     });
 
-    final status = await FirestoreService().getStaffAccessStatus();
-    if (!mounted) return;
+    try {
+      final status = await FirestoreService().getStaffAccessStatus();
+      if (!mounted) return;
 
-    if (!status.isConductor) {
-      setState(() {
-        _submitting = false;
-        _error = 'This account is not approved for conductor mode yet';
-      });
+      if (!status.isConductor) {
+        setState(() {
+          _submitting = false;
+          _error = 'This account is not approved for conductor mode';
+        });
 
-      await showDialog<void>(
-        context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: AppTheme.surface,
-          title: const Text(
-            'Approve This Device',
-            style: TextStyle(color: AppTheme.textPrimary),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Add this UID in Firestore under users/{uid} with role = conductor or admin, then try again.',
-                style: TextStyle(
-                  color: AppTheme.textSecondary,
-                  fontSize: 13,
-                  height: 1.4,
+        await showDialog<void>(
+          context: context,
+          builder: (context) => AlertDialog(
+            backgroundColor: AppTheme.surface,
+            title: const Text(
+              'Approve This Device',
+              style: TextStyle(color: AppTheme.textPrimary),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Add this UID in Firestore under users/{uid} with role = conductor or admin, then try again.',
+                  style: TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'Current UID',
-                style: TextStyle(
-                  color: AppTheme.textMuted,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
+                const SizedBox(height: 12),
+                const Text(
+                  'Current UID',
+                  style: TextStyle(
+                    color: AppTheme.textMuted,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
-              ),
-              const SizedBox(height: 6),
-              SelectableText(
-                status.uid,
-                style: const TextStyle(
-                  color: AppTheme.textPrimary,
-                  fontSize: 12,
+                const SizedBox(height: 6),
+                SelectableText(
+                  status.uid,
+                  style: const TextStyle(
+                    color: AppTheme.textPrimary,
+                    fontSize: 12,
+                  ),
                 ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Close'),
               ),
             ],
           ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
-            ),
-          ],
-        ),
-      );
-      return;
-    }
+        );
+        return;
+      }
 
-    Navigator.pop(context, true);
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+      setState(() {
+        _submitting = false;
+        _error = 'Could not verify staff access. Please try again.';
+      });
+    }
   }
 
   @override
@@ -160,73 +159,55 @@ class _StaffModeAccessSheetState extends State<_StaffModeAccessSheet> {
               ),
               const SizedBox(height: 6),
               Text(
-                widget.subtitle,
+                _submitting ? 'Verifying your staff access...' : widget.subtitle,
                 style: const TextStyle(
                   color: AppTheme.textSecondary,
                   fontSize: 13,
                 ),
               ),
               const SizedBox(height: 16),
-              TextField(
-                controller: _controller,
-                autofocus: true,
-                obscureText: true,
-                enabled: !_submitting,
-                textInputAction: TextInputAction.done,
-                style: const TextStyle(color: AppTheme.textPrimary),
-                decoration: InputDecoration(
-                  hintText: 'Access code',
-                  hintStyle: const TextStyle(color: AppTheme.textMuted),
-                  filled: true,
-                  fillColor: AppTheme.card,
-                  errorText: _error,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppTheme.border),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppTheme.border),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppTheme.green),
+              if (_error != null) ...[                Text(
+                  _error!,
+                  style: const TextStyle(
+                    color: AppTheme.red,
+                    fontSize: 13,
                   ),
                 ),
-                onSubmitted: (_) {
-                  if (!_submitting) {
-                    _submit();
-                  }
-                },
-              ),
-              const SizedBox(height: 14),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _submitting ? null : _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppTheme.green,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
+                const SizedBox(height: 14),
+              ],
+              if (_submitting)
+                const Center(
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 14),
+                    child: SizedBox(
+                      width: 24,
+                      height: 24,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: AppTheme.green,
+                      ),
                     ),
                   ),
-                  child: _submitting
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : Text(
-                          widget.buttonLabel,
-                          style: const TextStyle(fontWeight: FontWeight.w700),
-                        ),
+                )
+              else
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _verifyAccess,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: AppTheme.green,
+                      foregroundColor: Colors.white,
+                      padding: const EdgeInsets.symmetric(vertical: 14),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Text(
+                      widget.buttonLabel,
+                      style: const TextStyle(fontWeight: FontWeight.w700),
+                    ),
+                  ),
                 ),
-              ),
             ],
           ),
         ),
