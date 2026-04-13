@@ -135,8 +135,8 @@ class BusRoute {
   String get nameTelugu => fromTelugu.isNotEmpty && toTelugu.isNotEmpty
       ? '$fromTelugu → $toTelugu'
       : '$from → $to';
-  String get origin => stopIds.first;
-  String get terminus => stopIds.last;
+  String get origin => stopIds.isNotEmpty ? stopIds.first : '';
+  String get terminus => stopIds.isNotEmpty ? stopIds.last : '';
 }
 
 // ─────────────────────────────────────────────────────────────

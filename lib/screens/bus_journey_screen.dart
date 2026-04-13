@@ -24,8 +24,28 @@ class BusJourneyScreen extends StatelessWidget {
 
     if (route == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Journey')),
-        body: const Center(child: Text('Route not found')),
+        backgroundColor: AppTheme.bg,
+        appBar: AppBar(
+          backgroundColor: AppTheme.surface,
+          leading: IconButton(
+            icon: const Icon(Icons.arrow_back,
+                size: 20, color: AppTheme.textPrimary),
+            onPressed: () => Navigator.pop(context),
+          ),
+          title: const Text('Journey',
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: AppTheme.textPrimary)),
+        ),
+        body: const Center(
+          child: EmptyState(
+            'Route not found',
+            sub:
+                'This route may have been removed or is temporarily unavailable. Please go back and try again.',
+            icon: Icons.wrong_location_outlined,
+          ),
+        ),
       );
     }
 
@@ -140,8 +160,10 @@ class _SummaryCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final stopsAway = (userStopIdx - currentIdx).clamp(0, 99);
-    final eta = stopsAway == 0
+    final hasValidPosition = currentIdx >= 0;
+    final stopsAway =
+        hasValidPosition ? (userStopIdx - currentIdx).clamp(0, 99) : -1;
+    final eta = !hasValidPosition || stopsAway <= 0
         ? 0
         : bus.etaToNextStopMins + (stopsAway > 1 ? (stopsAway - 1) * 6 : 0);
     final color = AppTheme.routeColor(bus.routeNumber);
@@ -175,13 +197,21 @@ class _SummaryCard extends StatelessWidget {
           Row(children: [
             _SummaryChip(
               label: 'ETA',
-              value: stopsAway == 0 ? 'HERE' : '$eta min',
-              color: eta <= 3 ? AppTheme.green : AppTheme.amber,
+              value: !hasValidPosition
+                  ? '--'
+                  : stopsAway == 0
+                      ? 'HERE'
+                      : '$eta min',
+              color: !hasValidPosition
+                  ? AppTheme.textSecondary
+                  : eta <= 3
+                      ? AppTheme.green
+                      : AppTheme.amber,
             ),
             const SizedBox(width: 10),
             _SummaryChip(
               label: 'Stops away',
-              value: '$stopsAway',
+              value: hasValidPosition ? '$stopsAway' : '--',
               color: color,
             ),
             const SizedBox(width: 10),

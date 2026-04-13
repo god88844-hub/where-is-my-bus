@@ -100,6 +100,7 @@ class AppProvider extends ChangeNotifier {
   }
 
   List<RouteResult> searchRoutes(BusStop from, BusStop to) {
+    if (from.id == to.id) return [];
     final results = <RouteResult>[];
     for (final route in VizagRoutes.all) {
       final fromIndex = route.stopIds.indexOf(from.id);

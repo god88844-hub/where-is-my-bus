@@ -414,7 +414,22 @@ class _SearchPanel extends StatelessWidget {
               ),
             ],
           ),
-          if (p.fromStop != null && p.toStop != null) ...[
+          if (p.fromStop != null &&
+              p.toStop != null &&
+              p.fromStop!.id == p.toStop!.id) ...[
+            const SizedBox(height: 8),
+            const Text(
+              'From and To stops cannot be the same',
+              style: TextStyle(
+                fontSize: 12,
+                color: AppTheme.red,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+          if (p.fromStop != null &&
+              p.toStop != null &&
+              p.fromStop!.id != p.toStop!.id) ...[
             const SizedBox(height: 12),
             SizedBox(
               width: double.infinity,
