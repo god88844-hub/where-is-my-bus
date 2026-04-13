@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../data/vizag_data.dart';
 import '../services/app_provider.dart';
-import '../services/firestore_service.dart';
 import '../utils/app_theme.dart';
 import '../widgets/shared_widgets.dart';
+import '../widgets/staff_mode_access.dart';
 import '../widgets/stop_search.dart';
 import 'route_results_screen.dart';
 import 'stop_detail_screen.dart';
 import 'beacon_screen.dart';
-import 'conductor_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -133,7 +132,6 @@ class _TopBar extends StatefulWidget {
 }
 
 class _TopBarState extends State<_TopBar> {
-  static const String _staffCode = 'vizag2026';
   int _tapCount = 0;
   DateTime? _lastTapAt;
 
@@ -146,135 +144,7 @@ class _TopBarState extends State<_TopBar> {
     _tapCount += 1;
     if (_tapCount >= 5) {
       _tapCount = 0;
-      _showStaffUnlockSheet();
-    }
-  }
-
-  Future<void> _showStaffUnlockSheet() async {
-    final controller = TextEditingController();
-    String? error;
-
-    await showModalBottomSheet<void>(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: AppTheme.surface,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-      ),
-      builder: (sheetContext) {
-        return StatefulBuilder(
-          builder: (context, setModalState) {
-            return Padding(
-              padding: EdgeInsets.fromLTRB(
-                20,
-                20,
-                20,
-                MediaQuery.of(context).viewInsets.bottom + 20,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'Staff Mode',
-                    style: TextStyle(
-                      color: AppTheme.textPrimary,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w700,
-                    ),
-                  ),
-                  const SizedBox(height: 6),
-                  const Text(
-                    'Tap the version label five times, then enter the demo access code.',
-                    style: TextStyle(
-                      color: AppTheme.textSecondary,
-                      fontSize: 13,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: controller,
-                    autofocus: true,
-                    obscureText: true,
-                    style: const TextStyle(color: AppTheme.textPrimary),
-                    decoration: InputDecoration(
-                      hintText: 'Access code',
-                      hintStyle: const TextStyle(color: AppTheme.textMuted),
-                      filled: true,
-                      fillColor: AppTheme.card,
-                      errorText: error,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppTheme.border),
-                      ),
-                      enabledBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppTheme.border),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: AppTheme.green),
-                      ),
-                    ),
-                    onSubmitted: (_) => _submitStaffCode(
-                      controller.text.trim(),
-                      sheetContext,
-                      setModalState,
-                      (msg) => error = msg,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => _submitStaffCode(
-                        controller.text.trim(),
-                        sheetContext,
-                        setModalState,
-                        (msg) => error = msg,
-                      ),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.green,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: const Text(
-                        'Open Staff Mode',
-                        style: TextStyle(fontWeight: FontWeight.w700),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-  void _submitStaffCode(
-    String value,
-    BuildContext sheetContext,
-    StateSetter setModalState,
-    void Function(String) setError,
-  ) async {
-    if (value == _staffCode) {
-      // Promote user to conductor role in Firestore
-      try {
-        await FirestoreService().promoteToConductor();
-      } catch (_) {}
-      if (!mounted) return;
-      if (sheetContext.mounted) Navigator.pop(sheetContext);
-      Navigator.push(
-        context,
-        MaterialPageRoute(builder: (_) => const ConductorScreen()),
-      );
-    } else {
-      setModalState(() => setError('Invalid access code'));
+      showStaffModeAccessSheet(context);
     }
   }
 
