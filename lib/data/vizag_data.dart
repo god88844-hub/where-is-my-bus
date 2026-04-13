@@ -693,6 +693,37 @@ class VizagStops {
 class VizagRoutes {
   static final List<BusRoute> all = _generateAllRoutes();
 
+  // ── Indexes built once from [all] for O(1) lookups ──
+  static final Map<String, BusRoute> _byRouteId = {
+    for (final r in all) r.routeId: r,
+  };
+
+  static final Map<String, List<BusRoute>> _byNumber = () {
+    final map = <String, List<BusRoute>>{};
+    for (final r in all) {
+      (map[r.number] ??= []).add(r);
+    }
+    return map;
+  }();
+
+  static final Map<BusType, List<BusRoute>> _byType = () {
+    final map = <BusType, List<BusRoute>>{};
+    for (final r in all) {
+      (map[r.busType] ??= []).add(r);
+    }
+    return map;
+  }();
+
+  static final Map<String, List<BusRoute>> _byStop = () {
+    final map = <String, List<BusRoute>>{};
+    for (final r in all) {
+      for (final stopId in r.stopIds) {
+        (map[stopId] ??= []).add(r);
+      }
+    }
+    return map;
+  }();
+
   static List<BusRoute> _generateAllRoutes() {
     final routes = <BusRoute>[];
     for (final base in _baseRoutes) {
@@ -2686,19 +2717,27 @@ class VizagRoutes {
         frequencyMins: 30),
   ];
 
-  static BusRoute? byRouteId(String routeId) =>
-      all.where((r) => r.routeId == routeId).firstOrNull;
+  /// O(1) lookup by directional route ID (e.g. '38Y', '38Y-R').
+  static BusRoute? byRouteId(String routeId) => _byRouteId[routeId];
 
-  static BusRoute? byNumber(String n) =>
-      all.where((r) => r.number == n).firstOrNull;
+  /// O(1) lookup — returns the first route that shares this number.
+  static BusRoute? byNumber(String n) => _byNumber[n]?.first;
 
+  /// All routes with a given number (forward + return).
+  static List<BusRoute> allByNumber(String n) => _byNumber[n] ?? const [];
+
+  /// All routes of a given [BusType]. O(1) map lookup.
+  static List<BusRoute> byType(BusType type) => _byType[type] ?? const [];
+
+  /// Unique route numbers (de-duplicated, preserves first-seen order).
   static List<BusRoute> get passengerRoutes {
     final seen = <String>{};
     return all.where((route) => seen.add(route.number)).toList();
   }
 
+  /// All routes that pass through [stopId]. O(1) map lookup.
   static List<BusRoute> servingStop(String stopId) =>
-      all.where((r) => r.stopIds.contains(stopId)).toList();
+      _byStop[stopId] ?? const [];
 
   // Search routes by number or stop name
   static List<BusRoute> search(String query) {
