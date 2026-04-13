@@ -27,6 +27,22 @@ class FirestoreService {
   final FirebaseAuth _auth;
   String? _fallbackUid;
 
+  // --- NEW METHOD TO FIX HOME_SCREEN ERROR ---
+  /// Updates the current user's role to 'conductor' in Firestore.
+  Future<void> promoteToConductor() async {
+    try {
+      final uid = await ensureUserId();
+      await _db.collection('users').doc(uid).set({
+        'role': 'conductor',
+        'last_seen_at': FieldValue.serverTimestamp(),
+      }, SetOptions(merge: true));
+      debugPrint('User $uid promoted to conductor');
+    } catch (e) {
+      debugPrint('FirestoreService.promoteToConductor failed: $e');
+      rethrow;
+    }
+  }
+
   Future<String> ensureUserId() async {
     final current = _auth.currentUser;
     if (current != null) {
@@ -280,9 +296,6 @@ class FirestoreService {
     }, SetOptions(merge: true));
   }
 
-  /// Best-effort cleanup: deactivate buses not updated within [maxAgeMins].
-  /// Runs on app startup so stale data from yesterday / crashed sessions
-  /// doesn't keep showing as live. Silently ignores Firestore rule rejections.
   Future<void> cleanupStaleBuses({int maxAgeMins = 30}) async {
     try {
       final cutoff = DateTime.now().subtract(Duration(minutes: maxAgeMins));

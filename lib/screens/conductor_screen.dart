@@ -282,7 +282,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                 routeNumber: _selectedRoute,
                 plateNumber: _normalizedPlate.isEmpty ? null : _normalizedPlate,
                 busTypeLabel:
-                    _activeRoute == null ? null : _resolvedBusType.label,
+                _activeRoute == null ? null : _resolvedBusType?.label,
                 stopName: _selectedStopId == null
                     ? null
                     : VizagStops.all[_selectedStopId!]?.name,

@@ -267,13 +267,12 @@ class _TopBarState extends State<_TopBar> {
       try {
         await FirestoreService().promoteToConductor();
       } catch (_) {}
+      if (!mounted) return;
       if (sheetContext.mounted) Navigator.pop(sheetContext);
-      if (context.mounted) {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (_) => const ConductorScreen()),
-        );
-      }
+      Navigator.push(
+        context,
+        MaterialPageRoute(builder: (_) => const ConductorScreen()),
+      );
     } else {
       setModalState(() => setError('Invalid access code'));
     }
