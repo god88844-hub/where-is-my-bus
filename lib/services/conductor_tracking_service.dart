@@ -167,6 +167,11 @@ class ConductorTrackingService extends ChangeNotifier {
     }
 
     final fallbackStop = VizagStops.get(selectedStopId!);
+    if (fallbackStop == null) {
+      statusMessage = 'Current stop not found in route data';
+      await _persistSession();
+      notifyListeners();
+    }
     double lat = fallbackStop?.lat ?? 0;
     double lng = fallbackStop?.lng ?? 0;
     double speed = 0;

@@ -194,11 +194,29 @@ class _MiniTimeline extends StatelessWidget {
   Widget build(BuildContext context) {
     final fi = route.stopIds.indexOf(fromStop.id);
     final ti = route.stopIds.indexOf(toStop.id);
+    if (fi < 0 || ti < 0 || fi >= ti) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Text(
+          'Route stop data unavailable',
+          style: TextStyle(fontSize: 11, color: AppTheme.textMuted),
+        ),
+      );
+    }
     final stops = route.stopIds
         .sublist(fi, ti + 1)
         .map((id) => VizagStops.get(id))
         .whereType<BusStop>()
         .toList();
+    if (stops.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.symmetric(vertical: 4),
+        child: Text(
+          'Stop details not available for this segment',
+          style: TextStyle(fontSize: 11, color: AppTheme.textMuted),
+        ),
+      );
+    }
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
