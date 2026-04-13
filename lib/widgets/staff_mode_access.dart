@@ -7,7 +7,7 @@ import '../utils/app_theme.dart';
 Future<void> showStaffModeAccessSheet(
   BuildContext context, {
   String title = 'Staff Mode',
-  String subtitle = 'Verifying your staff access...',
+  String subtitle = 'Tap below to verify your staff access.',
   String buttonLabel = 'Open Staff Mode',
 }) async {
   final shouldOpenConductor = await showModalBottomSheet<bool>(
