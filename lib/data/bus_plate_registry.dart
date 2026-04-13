@@ -16,15 +16,15 @@ class BusPlateRegistry {
     String? routeNumber,
   }) {
     final normalized = normalize(plateNumber);
-    if (normalized.isEmpty) return null;
-
-    final known = _knownTypes[normalized];
-    if (known != null) return known;
-
     if (routeNumber != null) {
-      return VizagRoutes.byRouteId(routeNumber)?.busType ??
+      final routeType = VizagRoutes.byRouteId(routeNumber)?.busType ??
           VizagRoutes.byNumber(routeNumber)?.busType;
+      if (routeType != null) {
+        return routeType;
+      }
     }
-    return null;
+
+    if (normalized.isEmpty) return null;
+    return _knownTypes[normalized];
   }
 }

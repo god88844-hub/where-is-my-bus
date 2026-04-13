@@ -276,8 +276,13 @@ class ConductorTrackingService extends ChangeNotifier {
     await stopDebugSimulation(resumeGps: false);
     await _positionSub?.cancel();
     _positionSub = null;
+    var cloudDeactivateFailed = false;
     if (busId != null) {
-      await _fs.deactivateBus(busId!);
+      try {
+        await _fs.deactivateBus(busId!);
+      } catch (_) {
+        cloudDeactivateFailed = true;
+      }
     }
 
     tracking = false;
@@ -294,7 +299,9 @@ class ConductorTrackingService extends ChangeNotifier {
     _snappedLat = null;
     _snappedLng = null;
     _effectiveSpeedKmh = null;
-    statusMessage = 'Trip ended';
+    statusMessage = cloudDeactivateFailed
+        ? 'Trip ended locally · cloud clear failed'
+        : 'Trip ended';
     await _clearPersistedSession();
     notifyListeners();
   }
@@ -350,10 +357,8 @@ class ConductorTrackingService extends ChangeNotifier {
       locationSettings: settings,
     ).listen((position) async {
       try {
-        if (!tracking ||
-            activeRoute == null ||
-            selectedStopId == null ||
-            busId == null) {
+        final route = activeRoute;
+        if (!tracking || route == null || busId == null) {
           return;
         }
 
@@ -361,6 +366,15 @@ class ConductorTrackingService extends ChangeNotifier {
         final lng = position.longitude;
         final speed = (position.speed * 3.6).clamp(0.0, 120.0);
         _advanceStopFromLocation(lat: lat, lng: lng);
+
+        if (selectedStopId == null) {
+          statusMessage =
+              'Waiting for GPS to align with route ${route.number}...';
+          await _persistSession();
+          notifyListeners();
+          return;
+        }
+
         await _pushUpdate(lat: lat, lng: lng, speed: speed);
       } catch (e) {
         statusMessage = 'Tracking update failed: $e';
@@ -377,9 +391,9 @@ class ConductorTrackingService extends ChangeNotifier {
   LocationSettings _buildLocationSettings() {
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
       return AndroidSettings(
-        accuracy: LocationAccuracy.bestForNavigation,
-        distanceFilter: 20,
-        intervalDuration: const Duration(seconds: 12),
+        accuracy: LocationAccuracy.high,
+        distanceFilter: 3,
+        intervalDuration: const Duration(seconds: 3),
         foregroundNotificationConfig: const ForegroundNotificationConfig(
           notificationTitle: 'Vizag Bus Live tracking',
           notificationText: 'Conductor trip is running in the background.',
@@ -390,7 +404,7 @@ class ConductorTrackingService extends ChangeNotifier {
 
     return const LocationSettings(
       accuracy: LocationAccuracy.high,
-      distanceFilter: 20,
+      distanceFilter: 3,
     );
   }
 
@@ -415,34 +429,43 @@ class ConductorTrackingService extends ChangeNotifier {
             effectiveSpeedKmh: _effectiveSpeedKmh,
           );
 
-    await _fs.pushConductorLocation(
-      busId: busId!,
-      routeKey: activeRoute!.routeId,
-      routeNumber: activeRoute!.number,
-      busPlateNumber: normalizedPlate,
-      lat: lat,
-      lng: lng,
-      speedKmh: speed,
-      crowd: crowd,
-      currentStopId: selectedStopId!,
-      nextStopId: nextStopId,
-      segmentStartStopId: _segmentStartStopId,
-      segmentEndStopId: _segmentEndStopId,
-      segmentProgress: _segmentProgress,
-      distanceToNextStopKm: _distanceToNextStopKm,
-      remainingRouteKm: _remainingRouteKm,
-      snappedLat: _snappedLat,
-      snappedLng: _snappedLng,
-      effectiveSpeedKmh: _effectiveSpeedKmh,
-      etaToNextStopMins: nextStopEtaMins,
-      busType: resolvedBusType,
-    );
+    var cloudSyncFailed = false;
+    try {
+      await _fs.pushConductorLocation(
+        busId: busId!,
+        routeKey: activeRoute!.routeId,
+        routeNumber: activeRoute!.number,
+        busPlateNumber: normalizedPlate,
+        lat: lat,
+        lng: lng,
+        speedKmh: speed,
+        crowd: crowd,
+        currentStopId: selectedStopId!,
+        nextStopId: nextStopId,
+        segmentStartStopId: _segmentStartStopId,
+        segmentEndStopId: _segmentEndStopId,
+        segmentProgress: _segmentProgress,
+        distanceToNextStopKm: _distanceToNextStopKm,
+        remainingRouteKm: _remainingRouteKm,
+        snappedLat: _snappedLat,
+        snappedLng: _snappedLng,
+        effectiveSpeedKmh: _effectiveSpeedKmh,
+        etaToNextStopMins: nextStopEtaMins,
+        busType: resolvedBusType,
+      );
+    } catch (_) {
+      cloudSyncFailed = true;
+    }
 
+    final updateTime = DateTime.now();
     lastLat = lat;
     lastLng = lng;
     lastSpeed = speed;
-    lastUpdate = DateTime.now();
-    statusMessage = _progressStatusMessage(lastUpdate!);
+    lastUpdate = updateTime;
+    final progressMessage = _progressStatusMessage(updateTime);
+    statusMessage = cloudSyncFailed
+        ? '$progressMessage · cloud sync failed'
+        : progressMessage;
     await _persistSession();
     notifyListeners();
   }

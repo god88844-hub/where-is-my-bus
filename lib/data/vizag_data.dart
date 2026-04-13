@@ -816,6 +816,19 @@ class VizagRoutes {
         busType: BusType.redOrdinary,
         frequencyMins: 20),
     BusRoute(
+        number: '38B',
+        from: 'RTC Complex',
+        to: 'Bhanojithota',
+        viaStops: ['Gurudwara', 'NAD', 'Sheelanagar'],
+        stopIds: [
+          'rtc_complex',
+          'gurudwara',
+          'nad_junction',
+          'sheelanagar'
+        ],
+        busType: BusType.redOrdinary,
+        frequencyMins: 20),
+    BusRoute(
         number: '38C',
         from: 'RTC Complex',
         to: 'Sundarayya Colony',
@@ -1317,6 +1330,28 @@ class VizagRoutes {
         busType: BusType.redOrdinary,
         frequencyMins: 25),
     BusRoute(
+        number: '500A/C',
+        from: 'RTC Complex',
+        to: 'Achutapuram',
+        viaStops: [
+          'Gurudwara',
+          'NAD',
+          'Gajuwaka',
+          'Kurmannapalem',
+          'Anakapalle'
+        ],
+        stopIds: [
+          'rtc_complex',
+          'gurudwara',
+          'nad_junction',
+          'gajuwaka',
+          'kurmannapalem',
+          'anakapalli',
+          'achutapuram'
+        ],
+        busType: BusType.redOrdinary,
+        frequencyMins: 25),
+    BusRoute(
         number: '500P',
         from: 'Anakapalle',
         to: 'PM Palem',
@@ -1580,6 +1615,27 @@ class VizagRoutes {
 
     // ── 25 family ─────────────────────────────────────────────
     BusRoute(
+        number: '25D/M',
+        from: 'OHPO',
+        to: 'Midhilapuri Colony',
+        viaStops: [
+          'Jagadamba',
+          'RTC Complex',
+          'Maddilapalem',
+          'Endada',
+          'Carshed'
+        ],
+        stopIds: [
+          'old_post_office',
+          'jagadamba',
+          'rtc_complex',
+          'maddilapalem',
+          'endada',
+          'carshed'
+        ],
+        busType: BusType.redOrdinary,
+        frequencyMins: 20),
+    BusRoute(
         number: '25E',
         from: 'OHPO',
         to: 'Kommadi',
@@ -1663,6 +1719,27 @@ class VizagRoutes {
           'maddilapalem',
           'endada',
           'madhurawada'
+        ],
+        busType: BusType.redOrdinary,
+        frequencyMins: 25),
+    BusRoute(
+        number: '25S',
+        from: 'OHPO',
+        to: 'Nagarapalem',
+        viaStops: [
+          'Jagadamba',
+          'RTC Complex',
+          'Maddilapalem',
+          'Endada',
+          'Carshed'
+        ],
+        stopIds: [
+          'old_post_office',
+          'jagadamba',
+          'rtc_complex',
+          'maddilapalem',
+          'endada',
+          'carshed'
         ],
         busType: BusType.redOrdinary,
         frequencyMins: 25),
@@ -1754,6 +1831,25 @@ class VizagRoutes {
         ],
         busType: BusType.redOrdinary,
         frequencyMins: 25),
+    BusRoute(
+        number: '52S/52V',
+        from: 'Sagar Nagar',
+        to: 'OHPO',
+        viaStops: [
+          'Visalakshi Nagar',
+          'Maddilapalem',
+          'RTC Complex',
+          'Jagadamba'
+        ],
+        stopIds: [
+          'sagar_nagar',
+          'maddilapalem',
+          'rtc_complex',
+          'jagadamba',
+          'old_post_office'
+        ],
+        busType: BusType.redOrdinary,
+        frequencyMins: 20),
 
     // ── 60 family ─────────────────────────────────────────────
     BusRoute(
@@ -1961,6 +2057,72 @@ class VizagRoutes {
         busType: BusType.redOrdinary,
         frequencyMins: 30),
     BusRoute(
+        number: '28A/D',
+        from: 'RK Beach',
+        to: 'Denderu',
+        viaStops: [
+          'Jagadamba',
+          'RTC Complex',
+          'Railway Station',
+          'NAD',
+          'Gopalapatnam',
+          'Pendurthi'
+        ],
+        stopIds: [
+          'rk_beach',
+          'jagadamba',
+          'rtc_complex',
+          'railway_station',
+          'nad_junction',
+          'gopalapatnam',
+          'pendurthi'
+        ],
+        busType: BusType.redOrdinary,
+        frequencyMins: 30),
+    BusRoute(
+        number: '28A/P',
+        from: 'RTC Complex',
+        to: 'Ravalammapalem',
+        viaStops: [
+          'Railway Station',
+          'Kancharapalem',
+          'NAD',
+          'Gopalapatnam',
+          'Pendurthi'
+        ],
+        stopIds: [
+          'rtc_complex',
+          'railway_station',
+          'kancharapalem',
+          'nad_junction',
+          'gopalapatnam',
+          'pendurthi'
+        ],
+        busType: BusType.redOrdinary,
+        frequencyMins: 30),
+    BusRoute(
+        number: '28R',
+        from: 'RK Beach',
+        to: 'Simhachalam Bus Station',
+        viaStops: [
+          'Jagadamba',
+          'RTC Complex',
+          'Railway Station',
+          'NAD',
+          'Gopalapatnam'
+        ],
+        stopIds: [
+          'rk_beach',
+          'jagadamba',
+          'rtc_complex',
+          'railway_station',
+          'nad_junction',
+          'gopalapatnam',
+          'simhachalam'
+        ],
+        busType: BusType.redOrdinary,
+        frequencyMins: 20),
+    BusRoute(
         number: '28Z',
         from: 'Zilla Parishad',
         to: 'Simhachalam Hills',
@@ -1983,6 +2145,28 @@ class VizagRoutes {
         ],
         busType: BusType.redOrdinary,
         frequencyMins: 30),
+
+    BusRoute(
+        number: '5D',
+        from: 'Town Kotharoad',
+        to: 'Dabbanda',
+        viaStops: [
+          'Convent',
+          'Kancharapalem',
+          'NAD',
+          'Gopalapatnam',
+          'Pendurthi'
+        ],
+        stopIds: [
+          'town_kotharoad',
+          'convent_junction',
+          'kancharapalem',
+          'nad_junction',
+          'gopalapatnam',
+          'pendurthi'
+        ],
+        busType: BusType.redOrdinary,
+        frequencyMins: 25),
 
     // ── 6 family ──────────────────────────────────────────────
     BusRoute(
@@ -2420,6 +2604,27 @@ class VizagRoutes {
         busType: BusType.redOrdinary,
         frequencyMins: 25),
     BusRoute(
+        number: '64A',
+        from: 'Collector Office',
+        to: 'Swayambuvaram',
+        viaStops: [
+          'Jagadamba',
+          'Town Kotharoad',
+          'Convent',
+          'Scindia',
+          'Gajuwaka'
+        ],
+        stopIds: [
+          'collector_office',
+          'jagadamba',
+          'town_kotharoad',
+          'convent_junction',
+          'scindia',
+          'gajuwaka'
+        ],
+        busType: BusType.redOrdinary,
+        frequencyMins: 25),
+    BusRoute(
         number: '65F',
         from: 'Fishing Harbour',
         to: 'Gangavaram',
@@ -2468,6 +2673,27 @@ class VizagRoutes {
         number: '77',
         from: 'Collector Office',
         to: 'Thanam',
+        viaStops: [
+          'Jagadamba',
+          'Town Kotharoad',
+          'Convent',
+          'Scindia',
+          'Gajuwaka'
+        ],
+        stopIds: [
+          'collector_office',
+          'jagadamba',
+          'town_kotharoad',
+          'convent_junction',
+          'scindia',
+          'gajuwaka'
+        ],
+        busType: BusType.redOrdinary,
+        frequencyMins: 25),
+    BusRoute(
+        number: '77T',
+        from: 'Collector Office',
+        to: 'Thadi',
         viaStops: [
           'Jagadamba',
           'Town Kotharoad',

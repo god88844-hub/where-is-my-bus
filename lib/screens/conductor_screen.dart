@@ -53,6 +53,25 @@ class _ConductorScreenState extends State<ConductorScreen> {
     });
     _trackingService.addListener(_syncFromService);
     _syncFromService();
+    if (kDebugMode) {
+      unawaited(_primeDebugDraft());
+    }
+  }
+
+  Future<void> _primeDebugDraft() async {
+    if (_trackingService.tracking ||
+        _trackingService.selectedRoute != null ||
+        _trackingService.normalizedPlate.isNotEmpty) {
+      return;
+    }
+
+    final debugRoute = VizagRoutes.byNumber('10A');
+    if (debugRoute == null) return;
+
+    await _trackingService.setDraftRoute(debugRoute);
+    await _trackingService.setDraftPlate('AP31TE5929');
+    if (!mounted) return;
+    _syncFromService();
   }
 
   BusRoute? get _activeRoute {

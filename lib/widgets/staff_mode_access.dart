@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../screens/conductor_screen.dart';
@@ -5,6 +6,8 @@ import '../services/firestore_service.dart';
 import '../utils/app_theme.dart';
 
 const String staffAccessCode = 'vizag2026';
+const bool devStaffModeBypass =
+    bool.fromEnvironment('DEV_STAFF_BYPASS', defaultValue: false);
 
 Future<void> showStaffModeAccessSheet(
   BuildContext context, {
@@ -72,6 +75,11 @@ class _StaffModeAccessSheetState extends State<_StaffModeAccessSheet> {
       _submitting = true;
       _error = null;
     });
+
+    if (kDebugMode || devStaffModeBypass) {
+      Navigator.pop(context, true);
+      return;
+    }
 
     final status = await FirestoreService().getStaffAccessStatus();
     if (!mounted) return;
