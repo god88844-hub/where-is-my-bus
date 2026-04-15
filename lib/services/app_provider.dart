@@ -23,6 +23,8 @@ class AppProvider extends ChangeNotifier {
 
   StreamSubscription<List<LiveBus>>? _sub;
   Timer? _locTimer;
+  bool _initialized = false;
+  bool _disposed = false;
 
   List<LiveBus> get buses => _buses;
   Position? get userPos => _userPos;
@@ -99,15 +101,14 @@ class AppProvider extends ChangeNotifier {
       final fromIndex = route.stopIds.indexOf(from.id);
       final toIndex = route.stopIds.indexOf(to.id);
       if (fromIndex < 0 || toIndex < 0 || fromIndex >= toIndex) continue;
-      final liveBuses =
-          _buses.where((bus) => bus.routeKey == route.routeId).toList();
-      var minEta = 99;
-      for (final bus in liveBuses) {
-        final busIndex = route.stopIds.indexOf(bus.segmentStartIdResolved);
-        if (busIndex < 0 || busIndex > fromIndex) continue;
-        final eta = _etaToStopMins(bus, from.id);
-        if (eta < minEta) minEta = eta;
-      }
+
+      final liveBuses = _buses
+          .where((bus) => bus.routeKey == route.routeId && bus.isApproachingStop(from.id))
+          .toList()
+        ..sort((a, b) => _etaToStopMins(a, from.id).compareTo(_etaToStopMins(b, from.id)));
+
+      if (liveBuses.isEmpty) continue;
+
       results.add(
         RouteResult(
           route: route,
@@ -116,7 +117,7 @@ class AppProvider extends ChangeNotifier {
           fromIndex: fromIndex,
           toIndex: toIndex,
           liveBuses: liveBuses,
-          nextBusEtaMins: liveBuses.isEmpty ? route.frequencyMins : minEta,
+          nextBusEtaMins: _etaToStopMins(liveBuses.first, from.id),
         ),
       );
     }
@@ -157,18 +158,18 @@ class AppProvider extends ChangeNotifier {
 
   void setFromStop(BusStop? stop) {
     _fromStop = stop;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   void setToStop(BusStop? stop) {
     _toStop = stop;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   void clearSearch() {
     _fromStop = null;
     _toStop = null;
-    notifyListeners();
+    _safeNotifyListeners();
   }
 
   int etaToStopMins(LiveBus bus, String stopId) => _etaToStopMins(bus, stopId);
@@ -176,21 +177,26 @@ class AppProvider extends ChangeNotifier {
   int _etaToStopMins(LiveBus bus, String stopId) {
     final route = bus.routeRef;
     final distanceKm = bus.distanceToStopKm(stopId);
+    final busIdx = route?.stopIds.indexOf(bus.segmentStartIdResolved) ?? -1;
+    final stopIdx = route?.stopIds.indexOf(stopId) ?? -1;
     final effectiveSpeed = bus.effectiveSpeedResolvedKmh ??
         (route == null
             ? null
             : RouteProgressService.defaultRouteSpeedKmh(route));
 
     if (route != null && distanceKm != null) {
-      return RouteProgressService.etaMinutesForDistance(
+      final distanceEta = RouteProgressService.etaMinutesForDistance(
         distanceKm: distanceKm,
         route: route,
         effectiveSpeedKmh: effectiveSpeed,
       );
+      final intermediateStops =
+          busIdx < 0 || stopIdx < 0 ? 0 : (stopIdx - busIdx - 1).clamp(0, route.stopIds.length);
+      final dwellMins =
+          ((intermediateStops * AppConstants.stopDwellTimeSeconds) / 60).ceil();
+      return distanceEta + dwellMins;
     }
 
-    final busIdx = route?.stopIds.indexOf(bus.segmentStartIdResolved) ?? -1;
-    final stopIdx = route?.stopIds.indexOf(stopId) ?? -1;
     if (busIdx < 0 || stopIdx < 0 || busIdx > stopIdx) {
       return bus.etaToNextStopMins;
     }
@@ -200,37 +206,53 @@ class AppProvider extends ChangeNotifier {
   }
 
   void init() {
+    if (_initialized) return;
+    _initialized = true;
+    unawaited(_fs.cleanupStaleBuses());
     _startBusStream();
     _startLocationUpdates();
   }
 
   void _startBusStream() {
+    _sub?.cancel();
     _sub = _fs.liveBusStream().listen((buses) {
       // Only show buses updated recently & within today's service window.
       _buses =
           buses.where((b) => !b.isExpired && !b.isFromPreviousDay).toList();
       _busLoading = false;
       _error = null;
-      notifyListeners();
+      _safeNotifyListeners();
     }, onError: (e) {
       _error = e.toString();
       _busLoading = false;
-      notifyListeners();
+      _safeNotifyListeners();
     });
   }
 
   void _startLocationUpdates() async {
-    _userPos = await LocationService.getCurrentPosition();
+    _locTimer?.cancel();
+    final firstPosition = await LocationService.getCurrentPosition();
+    if (_disposed) return;
+    _userPos = firstPosition;
     _locLoading = false;
-    notifyListeners();
+    _safeNotifyListeners();
     _locTimer = Timer.periodic(const Duration(seconds: 30), (_) async {
-      _userPos = await LocationService.getCurrentPosition();
-      notifyListeners();
+      final updatedPosition = await LocationService.getCurrentPosition();
+      if (_disposed) return;
+      _userPos = updatedPosition;
+      _locLoading = false;
+      _safeNotifyListeners();
     });
+  }
+
+  void _safeNotifyListeners() {
+    if (_disposed) return;
+    notifyListeners();
   }
 
   @override
   void dispose() {
+    _disposed = true;
     _sub?.cancel();
     _locTimer?.cancel();
     super.dispose();

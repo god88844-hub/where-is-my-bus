@@ -17,9 +17,9 @@ class RouteBadge extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.18),
+        color: color.withValues(alpha: 0.18),
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withOpacity(0.4), width: 0.5),
+        border: Border.all(color: color.withValues(alpha: 0.4), width: 0.5),
       ),
       child: Text(number.replaceAll(RegExp(r'-R$'), ''),
           style: TextStyle(
@@ -53,7 +53,7 @@ class CrowdBar extends StatelessWidget {
                   height: 10,
                   margin: const EdgeInsets.only(right: 2),
                   decoration: BoxDecoration(
-                    color: i < filled ? color : color.withOpacity(0.15),
+                    color: i < filled ? color : color.withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(2),
                   ),
                 )),
@@ -81,9 +81,9 @@ class SourcePill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: color.withOpacity(0.3), width: 0.5),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 0.5),
       ),
       child: Text(label,
           style: TextStyle(
@@ -102,9 +102,9 @@ class BusTypePill extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
       decoration: BoxDecoration(
-        color: color.withOpacity(0.1),
+        color: color.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(999),
-        border: Border.all(color: color.withOpacity(0.3), width: 0.5),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 0.5),
       ),
       child: Text(
         type.label,
@@ -131,8 +131,10 @@ class IncomingBusCard extends StatelessWidget {
     final stop = nb.stop;
     final route = bus.routeRef;
     final routeColor = AppTheme.routeColor(bus.routeNumber);
-    final currentStop = VizagStops.get(bus.segmentStartIdResolved);
-    final nextStop = VizagStops.get(bus.segmentEndIdResolved);
+    final currentStop = VizagStops.resolve(bus.segmentStartIdResolved);
+    final nextStop = bus.segmentEndIdResolved.isEmpty
+        ? null
+        : VizagStops.resolve(bus.segmentEndIdResolved);
     final busType = bus.routeBusType;
 
     return GestureDetector(
@@ -174,27 +176,7 @@ class IncomingBusCard extends StatelessWidget {
                         runSpacing: 6,
                         children: [
                           BusTypePill(busType),
-                          if (bus.busPlateNumber.isNotEmpty)
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 7, vertical: 3),
-                              decoration: BoxDecoration(
-                                color: AppTheme.surface,
-                                borderRadius: BorderRadius.circular(999),
-                                border: Border.all(
-                                  color: AppTheme.border,
-                                  width: 0.5,
-                                ),
-                              ),
-                              child: Text(
-                                bus.busPlateNumber,
-                                style: const TextStyle(
-                                  fontSize: 10,
-                                  color: AppTheme.textSecondary,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
+                          SourcePill(bus.source),
                         ],
                       ),
                     ],
@@ -211,8 +193,8 @@ class IncomingBusCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: nb.etaToStopMins <= 3
-                          ? AppTheme.green.withOpacity(0.4)
-                          : AppTheme.amber.withOpacity(0.4),
+                          ? AppTheme.green.withValues(alpha: 0.4)
+                          : AppTheme.amber.withValues(alpha: 0.4),
                       width: 0.5,
                     ),
                   ),
@@ -238,7 +220,7 @@ class IncomingBusCard extends StatelessWidget {
             ),
 
             const SizedBox(height: 10),
-            Divider(color: AppTheme.divider, height: 1),
+            const Divider(color: AppTheme.divider, height: 1),
             const SizedBox(height: 10),
 
             // Row 2: current stop → next stop + crowd + source
@@ -252,8 +234,7 @@ class IncomingBusCard extends StatelessWidget {
                       const SizedBox(width: 4),
                       Expanded(
                         child: Text(
-                          _stopName(currentStop?.id ??
-                                  bus.segmentStartIdResolved) +
+                          _stopName(currentStop.id) +
                               (nextStop != null ? ' → ${nextStop.name}' : ''),
                           style: const TextStyle(
                               fontSize: 11, color: AppTheme.textSecondary),
@@ -277,7 +258,7 @@ class IncomingBusCard extends StatelessWidget {
                 child: LinearProgressIndicator(
                   minHeight: 6,
                   value: bus.segmentProgressResolved,
-                  backgroundColor: routeColor.withOpacity(0.12),
+                  backgroundColor: routeColor.withValues(alpha: 0.12),
                   valueColor: AlwaysStoppedAnimation<Color>(routeColor),
                 ),
               ),
@@ -305,7 +286,7 @@ class IncomingBusCard extends StatelessWidget {
     );
   }
 
-  String _stopName(String id) => VizagStops.get(id)?.name ?? id;
+  String _stopName(String id) => VizagStops.resolve(id).name;
 }
 
 // ── Section header ─────────────────────────────────────────────────

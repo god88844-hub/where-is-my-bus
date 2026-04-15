@@ -1,0 +1,676 @@
+Directional routes: 224
+Unique route numbers: 113
+Stops in database: 84
+
+10K | 10K | RTC Complex -> Kailasagiri
+RTC Complex -> Jagadamba Centre -> RK Beach -> VUDA Park -> Tenneti Park -> Kailasagiri
+
+10K-R | 10K | Kailasagiri -> RTC Complex
+Kailasagiri -> Tenneti Park -> VUDA Park -> RK Beach -> Jagadamba Centre -> RTC Complex
+
+28K | 28K | RK Beach -> Kothavalasa
+RK Beach -> Jagadamba Centre -> Collector Office -> RTC Complex -> Railway Station -> Kancharapalem -> NAD Junction -> Gopalapatnam -> Pendurthi -> Kothavalasa
+
+68K | 68K | Kothavalasa -> RK Beach
+Kothavalasa -> Pendurthi -> Vepagunta -> Hanumanthawaka Jn -> Simhachalam -> NAD Junction -> Kancharapalem -> Railway Station -> RTC Complex -> Jagadamba Centre -> RK Beach
+
+38Y | 38Y | RTC Complex -> Duvvada Railway Station
+RTC Complex -> Gurudwara -> NAD Junction -> BHPV -> Gajuwaka -> Kurmannapalem -> Duvvada Railway Station
+
+38Y-R | 38Y | Duvvada Railway Station -> RTC Complex
+Duvvada Railway Station -> Kurmannapalem -> Gajuwaka -> BHPV -> NAD Junction -> Gurudwara -> RTC Complex
+
+38 | 38 | RTC Complex -> Gajuwaka
+RTC Complex -> Gurudwara -> NAD Junction -> BHPV -> Gajuwaka
+
+38-R | 38 | Gajuwaka -> RTC Complex
+Gajuwaka -> BHPV -> NAD Junction -> Gurudwara -> RTC Complex
+
+38A | 38A | RTC Complex -> Mindi
+RTC Complex -> Gurudwara -> NAD Junction -> BHPV -> Mindi
+
+38A-R | 38A | Mindi -> RTC Complex
+Mindi -> BHPV -> NAD Junction -> Gurudwara -> RTC Complex
+
+38B | 38B | RTC Complex -> Bhanojithota
+RTC Complex -> Gurudwara -> NAD Junction -> Sheelanagar
+
+38B-R | 38B | Bhanojithota -> RTC Complex
+Sheelanagar -> NAD Junction -> Gurudwara -> RTC Complex
+
+38C | 38C | RTC Complex -> Sundarayya Colony
+RTC Complex -> Gurudwara -> NAD Junction -> BHPV -> Gajuwaka
+
+38C-R | 38C | Sundarayya Colony -> RTC Complex
+Gajuwaka -> BHPV -> NAD Junction -> Gurudwara -> RTC Complex
+
+38D | 38D | RTC Complex -> Nadupur Dairy Colony
+RTC Complex -> Gurudwara -> NAD Junction -> BHPV -> Gajuwaka -> Pedagantyada
+
+38D-R | 38D | Nadupur Dairy Colony -> RTC Complex
+Pedagantyada -> Gajuwaka -> BHPV -> NAD Junction -> Gurudwara -> RTC Complex
+
+38H | 38H | RTC Complex -> Gantyada HB Colony
+RTC Complex -> Visakhapatnam Airport -> Gurudwara -> NAD Junction -> BHPV -> Gajuwaka -> Pedagantyada
+
+38H-R | 38H | Gantyada HB Colony -> RTC Complex
+Pedagantyada -> Gajuwaka -> BHPV -> NAD Junction -> Gurudwara -> Visakhapatnam Airport -> RTC Complex
+
+38IT | 38IT | Kurmannapalem -> IT Park
+Kurmannapalem -> Gajuwaka -> BHPV -> NAD Junction -> Gurudwara -> RTC Complex -> Maddilapalem -> Carshed / IT Park -> IT Park
+
+38IT-R | 38IT | IT Park -> Kurmannapalem
+IT Park -> Carshed / IT Park -> Maddilapalem -> RTC Complex -> Gurudwara -> NAD Junction -> BHPV -> Gajuwaka -> Kurmannapalem
+
+38J | 38J | RTC Complex -> Janata Colony
+RTC Complex -> Gurudwara -> NAD Junction -> BHPV -> Gajuwaka -> Scindia
+
+38J-R | 38J | Janata Colony -> RTC Complex
+Scindia -> Gajuwaka -> BHPV -> NAD Junction -> Gurudwara -> RTC Complex
+
+38K | 38K | RTC Complex -> Steel Plant Sector 5
+RTC Complex -> Gurudwara -> NAD Junction -> BHPV -> Steel Plant
+
+38K-R | 38K | Steel Plant Sector 5 -> RTC Complex
+Steel Plant -> BHPV -> NAD Junction -> Gurudwara -> RTC Complex
+
+38M | 38M | Marikavalasa -> Kurmannapalem
+Madhurawada -> Maddilapalem -> Gurudwara -> NAD Junction -> BHPV -> Gajuwaka -> Kurmannapalem
+
+38M-R | 38M | Kurmannapalem -> Marikavalasa
+Kurmannapalem -> Gajuwaka -> BHPV -> NAD Junction -> Gurudwara -> Maddilapalem -> Madhurawada
+
+38N | 38N | RTC Complex -> Nadupuru
+RTC Complex -> Gurudwara -> NAD Junction -> BHPV -> Gajuwaka -> Pedagantyada
+
+38N-R | 38N | Nadupuru -> RTC Complex
+Pedagantyada -> Gajuwaka -> BHPV -> NAD Junction -> Gurudwara -> RTC Complex
+
+38R | 38R | Maddilapalem -> Rambilli
+Maddilapalem -> Gurudwara -> NAD Junction -> BHPV -> Parawada
+
+38R-R | 38R | Rambilli -> Maddilapalem
+Parawada -> BHPV -> NAD Junction -> Gurudwara -> Maddilapalem
+
+38T | 38T | RTC Complex -> Steel Plant Sector 11
+RTC Complex -> Gurudwara -> NAD Junction -> BHPV -> Gajuwaka -> Kurmannapalem -> Steel Plant
+
+38T-R | 38T | Steel Plant Sector 11 -> RTC Complex
+Steel Plant -> Kurmannapalem -> Gajuwaka -> BHPV -> NAD Junction -> Gurudwara -> RTC Complex
+
+55 | 55 | Simhachalam -> Scindia
+Simhachalam -> Gopalapatnam -> NAD Junction -> BHPV -> Gajuwaka -> Malkapuram -> Scindia
+
+55-R | 55 | Scindia -> Simhachalam
+Scindia -> Malkapuram -> Gajuwaka -> BHPV -> NAD Junction -> Gopalapatnam -> Simhachalam
+
+55K | 55K | Kothavalasa -> Scindia
+Kothavalasa -> Pendurthi -> Gopalapatnam -> NAD Junction -> BHPV -> Gajuwaka -> Malkapuram -> Scindia
+
+55K-R | 55K | Scindia -> Kothavalasa
+Scindia -> Malkapuram -> Gajuwaka -> BHPV -> NAD Junction -> Gopalapatnam -> Pendurthi -> Kothavalasa
+
+55T | 55T | Scindia -> Tagarapuvalasa
+Scindia -> Malkapuram -> Gajuwaka -> BHPV -> NAD Junction -> Gopalapatnam -> Pendurthi -> Sontyam -> Anandapuram -> Tagarapuvalasa
+
+55T-R | 55T | Tagarapuvalasa -> Scindia
+Tagarapuvalasa -> Anandapuram -> Sontyam -> Pendurthi -> Gopalapatnam -> NAD Junction -> BHPV -> Gajuwaka -> Malkapuram -> Scindia
+
+55V | 55V | Vepada -> Scindia
+Vepagunta -> Simhachalam -> Gopalapatnam -> NAD Junction -> BHPV -> Gajuwaka -> Malkapuram -> Scindia
+
+55V-R | 55V | Scindia -> Vepada
+Scindia -> Malkapuram -> Gajuwaka -> BHPV -> NAD Junction -> Gopalapatnam -> Simhachalam -> Vepagunta
+
+99 | 99 | Collector Office -> Gajuwaka
+Collector Office -> Jagadamba Centre -> Town Kotha Road -> Convent Junction -> Scindia -> Malkapuram -> Gajuwaka
+
+99-R | 99 | Gajuwaka -> Collector Office
+Gajuwaka -> Malkapuram -> Scindia -> Convent Junction -> Town Kotha Road -> Jagadamba Centre -> Collector Office
+
+99A | 99A | Collector Office -> Chodavaram
+Collector Office -> Jagadamba Centre -> Town Kotha Road -> Convent Junction -> Scindia -> Gajuwaka -> Kurmannapalem -> Anakapalle -> Chodavaram
+
+99A-R | 99A | Chodavaram -> Collector Office
+Chodavaram -> Anakapalle -> Kurmannapalem -> Gajuwaka -> Scindia -> Convent Junction -> Town Kotha Road -> Jagadamba Centre -> Collector Office
+
+99K | 99K | Collector Office -> Kurmannapalem
+Collector Office -> Jagadamba Centre -> Town Kotha Road -> Convent Junction -> Scindia -> Gajuwaka -> Kurmannapalem
+
+99K-R | 99K | Kurmannapalem -> Collector Office
+Kurmannapalem -> Gajuwaka -> Scindia -> Convent Junction -> Town Kotha Road -> Jagadamba Centre -> Collector Office
+
+400 | 400 | RTC Complex -> Kurmannapalem
+RTC Complex -> Railway Station -> Scindia -> Malkapuram -> Gajuwaka -> Kurmannapalem
+
+400-R | 400 | Kurmannapalem -> RTC Complex
+Kurmannapalem -> Gajuwaka -> Malkapuram -> Scindia -> Railway Station -> RTC Complex
+
+400H | 400H | Maddilapalem -> Gantyada HB Colony
+Maddilapalem -> RTC Complex -> Railway Station -> Scindia -> Gajuwaka -> Pedagantyada
+
+400H-R | 400H | Gantyada HB Colony -> Maddilapalem
+Pedagantyada -> Gajuwaka -> Scindia -> Railway Station -> RTC Complex -> Maddilapalem
+
+400K | 400K | Maddilapalem -> Duvvada Railway Station
+Maddilapalem -> RTC Complex -> Railway Station -> Scindia -> Gajuwaka -> Kurmannapalem -> Duvvada Railway Station
+
+400K-R | 400K | Duvvada Railway Station -> Maddilapalem
+Duvvada Railway Station -> Kurmannapalem -> Gajuwaka -> Scindia -> Railway Station -> RTC Complex -> Maddilapalem
+
+400N | 400N | RTC Complex -> Vadacheepurupalli
+RTC Complex -> Railway Station -> Scindia -> Gajuwaka -> Kurmannapalem -> Parawada -> NTPC
+
+400N-R | 400N | Vadacheepurupalli -> RTC Complex
+NTPC -> Parawada -> Kurmannapalem -> Gajuwaka -> Scindia -> Railway Station -> RTC Complex
+
+400S | 400S | Maddilapalem -> Narava
+Maddilapalem -> RTC Complex -> Railway Station -> Scindia -> Gajuwaka -> Kurmannapalem -> Narava
+
+400S-R | 400S | Narava -> Maddilapalem
+Narava -> Kurmannapalem -> Gajuwaka -> Scindia -> Railway Station -> RTC Complex -> Maddilapalem
+
+400Y | 400Y | Maddilapalem -> Yelamanchili
+Maddilapalem -> RTC Complex -> Railway Station -> Scindia -> Gajuwaka -> Kurmannapalem -> Achutapuram -> Yelamanchili
+
+400Y-R | 400Y | Yelamanchili -> Maddilapalem
+Yelamanchili -> Achutapuram -> Kurmannapalem -> Gajuwaka -> Scindia -> Railway Station -> RTC Complex -> Maddilapalem
+
+500 | 500 | RTC Complex -> Anakapalle
+RTC Complex -> Gurudwara -> NAD Junction -> Gajuwaka -> Kurmannapalem -> Aganampudi -> Anakapalle
+
+500-R | 500 | Anakapalle -> RTC Complex
+Anakapalle -> Aganampudi -> Kurmannapalem -> Gajuwaka -> NAD Junction -> Gurudwara -> RTC Complex
+
+500A | 500A | Maddilapalem -> Addaroad
+Maddilapalem -> Gurudwara -> NAD Junction -> Gajuwaka -> Kurmannapalem -> Anakapalle
+
+500A-R | 500A | Addaroad -> Maddilapalem
+Anakapalle -> Kurmannapalem -> Gajuwaka -> NAD Junction -> Gurudwara -> Maddilapalem
+
+500A/C | 500A/C | RTC Complex -> Achutapuram
+RTC Complex -> Gurudwara -> NAD Junction -> Gajuwaka -> Kurmannapalem -> Anakapalle -> Achutapuram
+
+500A/C-R | 500A/C | Achutapuram -> RTC Complex
+Achutapuram -> Anakapalle -> Kurmannapalem -> Gajuwaka -> NAD Junction -> Gurudwara -> RTC Complex
+
+500P | 500P | Anakapalle -> PM Palem
+Anakapalle -> Aganampudi -> Kurmannapalem -> Gajuwaka -> Scindia -> RTC Complex -> Maddilapalem -> Carshed / IT Park -> PM Palem
+
+500P-R | 500P | PM Palem -> Anakapalle
+PM Palem -> Carshed / IT Park -> Maddilapalem -> RTC Complex -> Scindia -> Gajuwaka -> Kurmannapalem -> Aganampudi -> Anakapalle
+
+500Y | 500Y | RTC Complex -> Yelamanchili
+RTC Complex -> Gurudwara -> NAD Junction -> Gajuwaka -> Kurmannapalem -> Anakapalle -> Yelamanchili
+
+500Y-R | 500Y | Yelamanchili -> RTC Complex
+Yelamanchili -> Anakapalle -> Kurmannapalem -> Gajuwaka -> NAD Junction -> Gurudwara -> RTC Complex
+
+541 | 541 | Maddilapalem -> Kothavalasa
+Maddilapalem -> Gurudwara -> NAD Junction -> Gopalapatnam -> Vepagunta -> Pendurthi -> Kothavalasa
+
+541-R | 541 | Kothavalasa -> Maddilapalem
+Kothavalasa -> Pendurthi -> NAD Junction -> Gurudwara -> Maddilapalem
+
+541P | 541P | Maddilapalem -> Padmanabham
+Maddilapalem -> Gurudwara -> NAD Junction -> Gopalapatnam -> Pendurthi -> Kothavalasa
+
+541P-R | 541P | Padmanabham -> Maddilapalem
+Kothavalasa -> Pendurthi -> Gopalapatnam -> NAD Junction -> Gurudwara -> Maddilapalem
+
+600 | 600 | Anakapalle -> Simhachalam
+Anakapalle -> Aganampudi -> Kurmannapalem -> Gajuwaka -> NAD Junction -> Gopalapatnam -> Simhachalam
+
+600-R | 600 | Simhachalam -> Anakapalle
+Simhachalam -> Gopalapatnam -> NAD Junction -> Gajuwaka -> Kurmannapalem -> Aganampudi -> Anakapalle
+
+600C | 600C | RTC Complex -> Anakapalle
+RTC Complex -> Railway Station -> Convent Junction -> Gajuwaka -> Kurmannapalem -> Aganampudi -> Anakapalle
+
+600C-R | 600C | Anakapalle -> RTC Complex
+Anakapalle -> Aganampudi -> Kurmannapalem -> Gajuwaka -> Convent Junction -> Railway Station -> RTC Complex
+
+900 | 900 | Maddilapalem -> Railway Station
+Maddilapalem -> MVP Complex -> MVP Colony -> Waltair -> RTC Complex -> Railway Station
+
+900-R | 900 | Railway Station -> Maddilapalem
+Railway Station -> RTC Complex -> Waltair -> MVP Colony -> MVP Complex -> Maddilapalem
+
+900K | 900K | Railway Station -> Bhimili
+Railway Station -> Waltair -> MVP Colony -> Rushikonda -> Sagarnagar -> INS Kalinga -> Bhimili
+
+900K-R | 900K | Bhimili -> Railway Station
+Bhimili -> INS Kalinga -> Sagarnagar -> Rushikonda -> MVP Colony -> Waltair -> Railway Station
+
+900R | 900R | RTC Complex -> Rushikonda
+RTC Complex -> INS Kalinga -> Sagarnagar -> Rushikonda
+
+900R-R | 900R | Rushikonda -> RTC Complex
+Rushikonda -> Sagarnagar -> INS Kalinga -> RTC Complex
+
+900T | 900T | RTC Complex -> Tagarapuvalasa
+RTC Complex -> Waltair -> MVP Colony -> Rushikonda -> INS Kalinga -> Anandapuram -> Tagarapuvalasa
+
+900T-R | 900T | Tagarapuvalasa -> RTC Complex
+Tagarapuvalasa -> Anandapuram -> INS Kalinga -> Rushikonda -> MVP Colony -> Waltair -> RTC Complex
+
+222 | 222 | RTC Complex -> Tagarapuvalasa
+RTC Complex -> Maddilapalem -> Endada -> Madhurawada -> Kommadi -> Anandapuram -> Tagarapuvalasa
+
+222-R | 222 | Tagarapuvalasa -> RTC Complex
+Tagarapuvalasa -> Anandapuram -> Kommadi -> Madhurawada -> Endada -> Maddilapalem -> RTC Complex
+
+222R | 222R | Railway Station -> Tagarapuvalasa
+Railway Station -> RTC Complex -> Maddilapalem -> Madhurawada -> Anandapuram -> Tagarapuvalasa
+
+222R-R | 222R | Tagarapuvalasa -> Railway Station
+Tagarapuvalasa -> Anandapuram -> Madhurawada -> Maddilapalem -> RTC Complex -> Railway Station
+
+222V | 222V | RTC Complex -> Vizianagaram
+RTC Complex -> Zoo Park -> Kambalakonda -> Vizianagaram
+
+222V-R | 222V | Vizianagaram -> RTC Complex
+Vizianagaram -> Kambalakonda -> Zoo Park -> RTC Complex
+
+999 | 999 | RTC Complex -> Bhimili
+RTC Complex -> Maddilapalem -> Endada -> Madhurawada -> Anandapuram -> Tagarapuvalasa -> Bhimili
+
+999-R | 999 | Bhimili -> RTC Complex
+Bhimili -> Tagarapuvalasa -> Anandapuram -> Madhurawada -> Endada -> Maddilapalem -> RTC Complex
+
+25D/M | 25D/M | OHPO -> Midhilapuri Colony
+Old Post Office (OHPO) -> Jagadamba Centre -> RTC Complex -> Maddilapalem -> Endada -> Carshed / IT Park
+
+25D/M-R | 25D/M | Midhilapuri Colony -> OHPO
+Carshed / IT Park -> Endada -> Maddilapalem -> RTC Complex -> Jagadamba Centre -> Old Post Office (OHPO)
+
+25E | 25E | OHPO -> Kommadi
+Old Post Office (OHPO) -> Jagadamba Centre -> RTC Complex -> Maddilapalem -> Endada -> Madhurawada -> Kommadi
+
+25E-R | 25E | Kommadi -> OHPO
+Kommadi -> Madhurawada -> Endada -> Maddilapalem -> RTC Complex -> Jagadamba Centre -> Old Post Office (OHPO)
+
+25G | 25G | OHPO -> Ganesh Nagar
+Old Post Office (OHPO) -> Jagadamba Centre -> RTC Complex -> Maddilapalem -> Endada -> Madhurawada
+
+25G-R | 25G | Ganesh Nagar -> OHPO
+Madhurawada -> Endada -> Maddilapalem -> RTC Complex -> Jagadamba Centre -> Old Post Office (OHPO)
+
+25IT | 25IT | RTC Complex -> IT Park
+RTC Complex -> Maddilapalem -> Endada -> Carshed / IT Park -> IT Park
+
+25IT-R | 25IT | IT Park -> RTC Complex
+IT Park -> Carshed / IT Park -> Endada -> Maddilapalem -> RTC Complex
+
+25K | 25K | OHPO -> Bakkannapalem
+Old Post Office (OHPO) -> Jagadamba Centre -> RTC Complex -> Maddilapalem -> Endada -> Madhurawada
+
+25K-R | 25K | Bakkannapalem -> OHPO
+Madhurawada -> Endada -> Maddilapalem -> RTC Complex -> Jagadamba Centre -> Old Post Office (OHPO)
+
+25M | 25M | OHPO -> Marikavalasa
+Old Post Office (OHPO) -> Jagadamba Centre -> RTC Complex -> Maddilapalem -> Endada -> Madhurawada
+
+25M-R | 25M | Marikavalasa -> OHPO
+Madhurawada -> Endada -> Maddilapalem -> RTC Complex -> Jagadamba Centre -> Old Post Office (OHPO)
+
+25S | 25S | OHPO -> Nagarapalem
+Old Post Office (OHPO) -> Jagadamba Centre -> RTC Complex -> Maddilapalem -> Endada -> Carshed / IT Park
+
+25S-R | 25S | Nagarapalem -> OHPO
+Carshed / IT Park -> Endada -> Maddilapalem -> RTC Complex -> Jagadamba Centre -> Old Post Office (OHPO)
+
+25P | 25P | Ratnagiri HB Colony -> Old Post Office
+HB Colony -> PM Palem -> Endada -> Maddilapalem -> RTC Complex -> Jagadamba Centre -> Old Post Office (OHPO)
+
+25P-R | 25P | Old Post Office -> Ratnagiri HB Colony
+Old Post Office (OHPO) -> Jagadamba Centre -> RTC Complex -> Maddilapalem -> Endada -> PM Palem -> HB Colony
+
+25J | 25J | Railway Station -> Sevanagar
+Railway Station -> RTC Complex -> Maddilapalem -> Endada -> Madhurawada
+
+25J-R | 25J | Sevanagar -> Railway Station
+Madhurawada -> Endada -> Maddilapalem -> RTC Complex -> Railway Station
+
+25R | 25R | Railway Station -> Gurajadanagar
+Railway Station -> RTC Complex -> Maddilapalem -> Endada -> PM Palem
+
+25R-R | 25R | Gurajadanagar -> Railway Station
+PM Palem -> Endada -> Maddilapalem -> RTC Complex -> Railway Station
+
+52D | 52D | Ravindra Nagar -> OHPO
+Madhurawada -> Hanumanthawaka Jn -> Maddilapalem -> RTC Complex -> Jagadamba Centre -> Old Post Office (OHPO)
+
+52D-R | 52D | OHPO -> Ravindra Nagar
+Old Post Office (OHPO) -> Jagadamba Centre -> RTC Complex -> Maddilapalem -> Hanumanthawaka Jn -> Madhurawada
+
+52E | 52E | Yendada Village -> OHPO
+Rushikonda -> Endada -> Maddilapalem -> RTC Complex -> Jagadamba Centre -> Old Post Office (OHPO)
+
+52E-R | 52E | OHPO -> Yendada Village
+Old Post Office (OHPO) -> Jagadamba Centre -> RTC Complex -> Maddilapalem -> Endada -> Rushikonda
+
+52S/52V | 52S/52V | Sagar Nagar -> OHPO
+Sagar Nagar -> Maddilapalem -> RTC Complex -> Jagadamba Centre -> Old Post Office (OHPO)
+
+52S/52V-R | 52S/52V | OHPO -> Sagar Nagar
+Old Post Office (OHPO) -> Jagadamba Centre -> RTC Complex -> Maddilapalem -> Sagar Nagar
+
+60 | 60 | Simhachalam -> OHPO
+Simhachalam -> Adavivaram -> Maddilapalem -> RTC Complex -> Jagadamba Centre -> Old Post Office (OHPO)
+
+60-R | 60 | OHPO -> Simhachalam
+Old Post Office (OHPO) -> Jagadamba Centre -> RTC Complex -> Maddilapalem -> Adavivaram -> Simhachalam
+
+60C | 60C | Arilova Colony -> OHPO
+Arilova Colony -> Maddilapalem -> RTC Complex -> Jagadamba Centre -> Old Post Office (OHPO)
+
+60C-R | 60C | OHPO -> Arilova Colony
+Old Post Office (OHPO) -> Jagadamba Centre -> RTC Complex -> Maddilapalem -> Hanumanthawaka Jn -> Arilova Colony
+
+60R | 60R | RK Beach -> Arilova Colony
+RK Beach -> Jagadamba Centre -> RTC Complex -> Maddilapalem -> Arilova Colony
+
+60R-R | 60R | Arilova Colony -> RK Beach
+Arilova Colony -> Maddilapalem -> RTC Complex -> Jagadamba Centre -> RK Beach
+
+12D | 12D | RTC Complex -> Devarapalli
+RTC Complex -> NAD Junction -> Gopalapatnam -> Pendurthi -> Kothavalasa -> Anandapuram -> Devarapalli
+
+12D-R | 12D | Devarapalli -> RTC Complex
+Devarapalli -> Kothavalasa -> Pendurthi -> NAD Junction -> Railway Station -> RTC Complex
+
+12K | 12K | Town Kotharoad -> Kothavalasa
+Town Kotha Road -> Railway Station -> Kancharapalem -> NAD Junction -> Gopalapatnam -> Pendurthi -> Kothavalasa
+
+12K-R | 12K | Kothavalasa -> Town Kotharoad
+Kothavalasa -> Pendurthi -> Gopalapatnam -> NAD Junction -> Kancharapalem -> Railway Station -> Town Kotha Road
+
+28 | 28 | RK Beach -> Simhachalam Bus Station
+RK Beach -> Jagadamba Centre -> RTC Complex -> NAD Junction -> Gopalapatnam -> Simhachalam
+
+28-R | 28 | Simhachalam Bus Station -> RK Beach
+Simhachalam -> Gopalapatnam -> NAD Junction -> RTC Complex -> Jagadamba Centre -> RK Beach
+
+28C | 28C | RK Beach -> Chintalagraharam
+RK Beach -> Jagadamba Centre -> RTC Complex -> NAD Junction -> Gopalapatnam -> Vepagunta
+
+28C-R | 28C | Chintalagraharam -> RK Beach
+Vepagunta -> Gopalapatnam -> NAD Junction -> RTC Complex -> Jagadamba Centre -> RK Beach
+
+28J | 28J | RK Beach -> Sujatanagar
+RK Beach -> Jagadamba Centre -> RTC Complex -> NAD Junction -> Gopalapatnam -> Vepagunta
+
+28J-R | 28J | Sujatanagar -> RK Beach
+Vepagunta -> Gopalapatnam -> NAD Junction -> RTC Complex -> Jagadamba Centre -> RK Beach
+
+28P | 28P | RK Beach -> Sabbavaram
+RK Beach -> Jagadamba Centre -> RTC Complex -> NAD Junction -> Gopalapatnam -> Pendurthi -> Sabbavaram
+
+28P-R | 28P | Sabbavaram -> RK Beach
+Sabbavaram -> Pendurthi -> Gopalapatnam -> NAD Junction -> RTC Complex -> Jagadamba Centre -> RK Beach
+
+28A/D | 28A/D | RK Beach -> Denderu
+RK Beach -> Jagadamba Centre -> RTC Complex -> Railway Station -> NAD Junction -> Gopalapatnam -> Pendurthi
+
+28A/D-R | 28A/D | Denderu -> RK Beach
+Pendurthi -> Gopalapatnam -> NAD Junction -> Railway Station -> RTC Complex -> Jagadamba Centre -> RK Beach
+
+28A/P | 28A/P | RTC Complex -> Ravalammapalem
+RTC Complex -> Railway Station -> Kancharapalem -> NAD Junction -> Gopalapatnam -> Pendurthi
+
+28A/P-R | 28A/P | Ravalammapalem -> RTC Complex
+Pendurthi -> Gopalapatnam -> NAD Junction -> Kancharapalem -> Railway Station -> RTC Complex
+
+28R | 28R | RK Beach -> Simhachalam Bus Station
+RK Beach -> Jagadamba Centre -> RTC Complex -> Railway Station -> NAD Junction -> Gopalapatnam -> Simhachalam
+
+28R-R | 28R | Simhachalam Bus Station -> RK Beach
+Simhachalam -> Gopalapatnam -> NAD Junction -> Railway Station -> RTC Complex -> Jagadamba Centre -> RK Beach
+
+28Z | 28Z | Zilla Parishad -> Simhachalam Hills
+Collector Office -> Jagadamba Centre -> RTC Complex -> Gurudwara -> NAD Junction -> Gopalapatnam -> Simhachalam -> Simhachalam Hill Top
+
+28Z-R | 28Z | Simhachalam Hills -> Zilla Parishad
+Simhachalam Hill Top -> Simhachalam -> Gopalapatnam -> NAD Junction -> Gurudwara -> RTC Complex -> Jagadamba Centre -> Collector Office
+
+5D | 5D | Town Kotharoad -> Dabbanda
+Town Kotha Road -> Convent Junction -> Kancharapalem -> NAD Junction -> Gopalapatnam -> Pendurthi
+
+5D-R | 5D | Dabbanda -> Town Kotharoad
+Pendurthi -> Gopalapatnam -> NAD Junction -> Kancharapalem -> Convent Junction -> Town Kotha Road
+
+6 | 6 | Simhachalam -> OHPO
+Simhachalam -> Gopalapatnam -> NAD Junction -> Kancharapalem -> Convent Junction -> Town Kotha Road -> Old Post Office (OHPO)
+
+6-R | 6 | OHPO -> Simhachalam
+Old Post Office (OHPO) -> Town Kotha Road -> Convent Junction -> Kancharapalem -> NAD Junction -> Gopalapatnam -> Simhachalam
+
+6A | 6A | RTC Complex -> Simhachalam Hills
+RTC Complex -> Railway Station -> Kancharapalem -> NAD Junction -> Gopalapatnam -> Simhachalam -> Simhachalam Hill Top
+
+6A-R | 6A | Simhachalam Hills -> RTC Complex
+Simhachalam Hill Top -> Simhachalam -> Gopalapatnam -> NAD Junction -> Kancharapalem -> Railway Station -> RTC Complex
+
+6B | 6B | OHPO -> Chintagatla
+Old Post Office (OHPO) -> Town Kotha Road -> Convent Junction -> NAD Junction -> Sheelanagar -> Narava
+
+6B-R | 6B | Chintagatla -> OHPO
+Narava -> Sheelanagar -> NAD Junction -> Convent Junction -> Town Kotha Road -> Old Post Office (OHPO)
+
+6H | 6H | RTC Complex -> Simhachalam Hills
+Purna Market -> Town Kotha Road -> NAD Junction -> Gopalapatnam -> Simhachalam -> Simhachalam Hill Top
+
+6H-R | 6H | Simhachalam Hills -> RTC Complex
+Simhachalam Hill Top -> Simhachalam -> Gopalapatnam -> NAD Junction -> Town Kotha Road -> Purna Market
+
+14 | 14 | Venkojipalem -> OHPO
+Venkojipalem -> MVP Colony -> Waltair -> AU Out Gate -> Jagadamba Centre -> Town Kotha Road -> Old Post Office (OHPO)
+
+14-R | 14 | OHPO -> Venkojipalem
+Old Post Office (OHPO) -> Town Kotha Road -> Jagadamba Centre -> AU Out Gate -> Waltair -> MVP Colony -> Venkojipalem
+
+14A | 14A | Arilova Colony -> OHPO
+Arilova Colony -> Venkojipalem -> MVP Colony -> Waltair -> AU Out Gate -> Jagadamba Centre -> Old Post Office (OHPO)
+
+14A-R | 14A | OHPO -> Arilova Colony
+Old Post Office (OHPO) -> Jagadamba Centre -> AU Out Gate -> Waltair -> MVP Colony -> Venkojipalem -> Arilova Colony
+
+48 | 48 | Madhavadhara -> MN Club
+Madhavadhara -> Muralinagar -> Kailasapuram -> Akkayapalem -> RTC Complex -> Jagadamba Centre
+
+48-R | 48 | MN Club -> Madhavadhara
+Jagadamba Centre -> RTC Complex -> Akkayapalem -> Kailasapuram -> Muralinagar -> Madhavadhara
+
+48A | 48A | Madhavadhara -> OHPO
+Madhavadhara -> Muralinagar -> Kailasapuram -> Akkayapalem -> RTC Complex -> Jagadamba Centre -> Old Post Office (OHPO)
+
+48A-R | 48A | OHPO -> Madhavadhara
+Old Post Office (OHPO) -> Jagadamba Centre -> RTC Complex -> Akkayapalem -> Kailasapuram -> Muralinagar -> Madhavadhara
+
+300C | 300C | RTC Complex -> Chodavaram
+RTC Complex -> NAD Junction -> Gopalapatnam -> Pendurthi -> Sabbavaram -> Chodavaram
+
+300C-R | 300C | Chodavaram -> RTC Complex
+Chodavaram -> Sabbavaram -> Pendurthi -> Gopalapatnam -> NAD Junction -> RTC Complex
+
+300M | 300M | RTC Complex -> Madugula
+RTC Complex -> NAD Junction -> Gopalapatnam -> Pendurthi -> Sabbavaram -> Chodavaram
+
+300M-R | 300M | Madugula -> RTC Complex
+Chodavaram -> Sabbavaram -> Pendurthi -> Gopalapatnam -> NAD Junction -> RTC Complex
+
+300N | 300N | Sabbavaram -> RK Beach
+Sabbavaram -> Narava -> Gopalapatnam -> NAD Junction -> Kancharapalem -> RTC Complex -> Jagadamba Centre -> RK Beach
+
+300N-R | 300N | RK Beach -> Sabbavaram
+RK Beach -> Jagadamba Centre -> RTC Complex -> Kancharapalem -> NAD Junction -> Gopalapatnam -> Narava -> Sabbavaram
+
+333 | 333 | Town Kotharoad -> Devarapalle
+Town Kotha Road -> Convent Junction -> NAD Junction -> Gopalapatnam -> Pendurthi -> Kothavalasa -> Devarapalli
+
+333-R | 333 | Devarapalle -> Town Kotharoad
+Devarapalli -> Kothavalasa -> Pendurthi -> Gopalapatnam -> NAD Junction -> Convent Junction -> Town Kotha Road
+
+333K | 333K | Town Kotharoad -> K.Kotapad
+Town Kotha Road -> Convent Junction -> Kancharapalem -> NAD Junction -> Gopalapatnam -> Pendurthi -> Kothavalasa
+
+333K-R | 333K | K.Kotapad -> Town Kotharoad
+Kothavalasa -> Pendurthi -> Gopalapatnam -> NAD Junction -> Kancharapalem -> Convent Junction -> Town Kotha Road
+
+328 | 328 | K.Kotapad -> RK Beach
+Kothavalasa -> Pendurthi -> Gopalapatnam -> NAD Junction -> RTC Complex -> Jagadamba Centre -> RK Beach
+
+328-R | 328 | RK Beach -> K.Kotapad
+RK Beach -> Jagadamba Centre -> RTC Complex -> NAD Junction -> Gopalapatnam -> Pendurthi -> Kothavalasa
+
+205 | 205 | Vizianagaram -> Anakapalli
+Vizianagaram -> Kothavalasa -> Pendurthi -> Sabbavaram -> Anakapalle
+
+205-R | 205 | Anakapalli -> Vizianagaram
+Anakapalle -> Sabbavaram -> Pendurthi -> Kothavalasa -> Vizianagaram
+
+201 | 201 | VS Kota -> Visakhapatnam
+Kothavalasa -> NAD Junction -> RTC Complex
+
+201-R | 201 | Visakhapatnam -> VS Kota
+RTC Complex -> NAD Junction -> Kothavalasa
+
+211 | 211 | Railway Station -> Vizianagaram
+Railway Station -> RTC Complex -> Maddilapalem -> Madhurawada -> Anandapuram -> Tagarapuvalasa -> Vizianagaram
+
+211-R | 211 | Vizianagaram -> Railway Station
+Vizianagaram -> Tagarapuvalasa -> Anandapuram -> Madhurawada -> Maddilapalem -> RTC Complex -> Railway Station
+
+888 | 888 | Anakapalle -> Tagarapuvalasa
+Anakapalle -> Pendurthi -> Sontyam -> Anandapuram -> Tagarapuvalasa
+
+888-R | 888 | Tagarapuvalasa -> Anakapalle
+Tagarapuvalasa -> Anandapuram -> Sontyam -> Pendurthi -> Anakapalle
+
+1T | 1T | VUDA Park -> Kapulatunglam
+VUDA Park -> RK Beach -> Jagadamba Centre -> Town Kotha Road -> Convent Junction -> Scindia -> Gajuwaka
+
+1T-R | 1T | Kapulatunglam -> VUDA Park
+Gajuwaka -> Scindia -> Convent Junction -> Town Kotha Road -> Jagadamba Centre -> RK Beach -> VUDA Park
+
+10A | 10A | Visakhapatnam Airport -> RK Beach
+Visakhapatnam Airport -> NAD Junction -> Gurudwara -> RTC Complex -> Jagadamba Centre -> RK Beach
+
+10A-R | 10A | RK Beach -> Visakhapatnam Airport
+RK Beach -> Jagadamba Centre -> RTC Complex -> Gurudwara -> NAD Junction -> Visakhapatnam Airport
+
+16 | 16 | Purna Market -> Yarada
+Purna Market -> Convent Junction -> Scindia -> Naval Base / Dockyard -> Yarada
+
+16-R | 16 | Yarada -> Purna Market
+Yarada -> Naval Base / Dockyard -> Scindia -> Convent Junction -> Purna Market
+
+20A | 20A | HB Colony -> OHPO
+HB Colony -> Sitammadhara -> Satyam Junction -> RTC Complex -> Jagadamba Centre -> Old Post Office (OHPO)
+
+20A-R | 20A | OHPO -> HB Colony
+Old Post Office (OHPO) -> Jagadamba Centre -> RTC Complex -> Satyam Junction -> Sitammadhara -> HB Colony
+
+36 | 36 | Collector Office -> Mindi
+Collector Office -> Town Kotha Road -> Convent Junction -> Scindia -> Gajuwaka -> BHPV -> Mindi
+
+36-R | 36 | Mindi -> Collector Office
+Mindi -> BHPV -> Gajuwaka -> Scindia -> Convent Junction -> Town Kotha Road -> Collector Office
+
+63 | 63 | RK Beach -> Dibbapalem
+RK Beach -> Town Kotha Road -> Convent Junction -> Scindia -> Gajuwaka -> Pedagantyada
+
+63-R | 63 | Dibbapalem -> RK Beach
+Pedagantyada -> Gajuwaka -> Scindia -> Convent Junction -> Town Kotha Road -> RK Beach
+
+64A | 64A | Collector Office -> Swayambuvaram
+Collector Office -> Jagadamba Centre -> Town Kotha Road -> Convent Junction -> Scindia -> Gajuwaka
+
+64A-R | 64A | Swayambuvaram -> Collector Office
+Gajuwaka -> Scindia -> Convent Junction -> Town Kotha Road -> Jagadamba Centre -> Collector Office
+
+65F | 65F | Fishing Harbour -> Gangavaram
+Fishing Harbour -> Collector Office -> Jagadamba Centre -> Town Kotha Road -> Convent Junction -> Scindia -> Gajuwaka -> Pedagantyada -> Gangavaram
+
+65F-R | 65F | Gangavaram -> Fishing Harbour
+Gangavaram -> Pedagantyada -> Gajuwaka -> Scindia -> Convent Junction -> Town Kotha Road -> Jagadamba Centre -> Collector Office -> Fishing Harbour
+
+69 | 69 | Arilova Colony -> Railway Station
+Arilova Colony -> HB Colony -> Sitammadhara -> Satyam Junction -> RTC Complex -> Railway Station
+
+69-R | 69 | Railway Station -> Arilova Colony
+Railway Station -> RTC Complex -> Satyam Junction -> Sitammadhara -> HB Colony -> Arilova Colony
+
+77 | 77 | Collector Office -> Thanam
+Collector Office -> Jagadamba Centre -> Town Kotha Road -> Convent Junction -> Scindia -> Gajuwaka
+
+77-R | 77 | Thanam -> Collector Office
+Gajuwaka -> Scindia -> Convent Junction -> Town Kotha Road -> Jagadamba Centre -> Collector Office
+
+77T | 77T | Collector Office -> Thadi
+Collector Office -> Jagadamba Centre -> Town Kotha Road -> Convent Junction -> Scindia -> Gajuwaka
+
+77T-R | 77T | Thadi -> Collector Office
+Gajuwaka -> Scindia -> Convent Junction -> Town Kotha Road -> Jagadamba Centre -> Collector Office
+
+111 | 111 | Kurmannapalem -> Tagarapuvalasa
+Kurmannapalem -> Gajuwaka -> NAD Junction -> Gurudwara -> RTC Complex -> Zoo Park -> Madhurawada -> Tagarapuvalasa
+
+111-R | 111 | Tagarapuvalasa -> Kurmannapalem
+Tagarapuvalasa -> Madhurawada -> Zoo Park -> RTC Complex -> Gurudwara -> NAD Junction -> Gajuwaka -> Kurmannapalem
+
+311 | 311 | Scindia -> Chodavaram
+Scindia -> Gajuwaka -> Kurmannapalem -> Duvvada Railway Station -> Sabbavaram -> Chodavaram
+
+311-R | 311 | Chodavaram -> Scindia
+Chodavaram -> Sabbavaram -> Duvvada Railway Station -> Kurmannapalem -> Gajuwaka -> Scindia
+
+400-C | 400-C | RTC Complex -> Rajeev Nagar
+RTC Complex -> Railway Station -> Scindia -> Rajeev Nagar
+
+400-C-R | 400-C | Rajeev Nagar -> RTC Complex
+Rajeev Nagar -> Scindia -> Railway Station -> RTC Complex
+
+505 | 505 | Simhachalam -> Scindia
+Simhachalam -> Gopalapatnam -> NAD Junction -> Kancharapalem -> Convent Junction -> Naval Base / Dockyard -> Scindia
+
+505-R | 505 | Scindia -> Simhachalam
+Scindia -> Naval Base / Dockyard -> Convent Junction -> Kancharapalem -> NAD Junction -> Gopalapatnam -> Simhachalam
+
+540 | 540 | MVP Complex -> Simhachalam
+MVP Complex -> Maddilapalem -> Gurudwara -> NAD Junction -> Gopalapatnam -> Simhachalam
+
+540-R | 540 | Simhachalam -> MVP Complex
+Simhachalam -> Gopalapatnam -> NAD Junction -> Gurudwara -> Maddilapalem -> MVP Complex
+
+540M | 540M | MVP Complex -> Gajuwaka
+MVP Complex -> Maddilapalem -> Gurudwara -> NAD Junction -> BHPV -> Gajuwaka
+
+540M-R | 540M | Gajuwaka -> MVP Complex
+Gajuwaka -> BHPV -> NAD Junction -> Gurudwara -> Maddilapalem -> MVP Complex
+
+555 | 555 | RTC Complex -> Chodavaram
+RTC Complex -> Gurudwara -> NAD Junction -> Gopalapatnam -> Pendurthi -> Sabbavaram -> Chodavaram
+
+555-R | 555 | Chodavaram -> RTC Complex
+Chodavaram -> Sabbavaram -> Pendurthi -> Gopalapatnam -> NAD Junction -> Gurudwara -> RTC Complex
+
+700 | 700 | Simhachalam -> Vizianagaram
+Simhachalam -> Adavivaram -> Sontyam -> Anandapuram -> Tagarapuvalasa -> Vizianagaram
+
+700-R | 700 | Vizianagaram -> Simhachalam
+Vizianagaram -> Tagarapuvalasa -> Anandapuram -> Sontyam -> Adavivaram -> Simhachalam
+
+744 | 744 | Collector Office -> Dosuru
+Collector Office -> Jagadamba Centre -> Town Kotha Road -> Convent Junction -> Scindia -> Gajuwaka -> Kurmannapalem -> Parawada
+
+744-R | 744 | Dosuru -> Collector Office
+Parawada -> Kurmannapalem -> Gajuwaka -> Scindia -> Convent Junction -> Town Kotha Road -> Jagadamba Centre -> Collector Office
+
+844 | 844 | Collector Office -> Kollivanipalem
+Collector Office -> Jagadamba Centre -> Town Kotha Road -> Convent Junction -> Scindia -> Gajuwaka -> Kurmannapalem -> Parawada
+
+844-R | 844 | Kollivanipalem -> Collector Office
+Parawada -> Kurmannapalem -> Gajuwaka -> Scindia -> Convent Junction -> Town Kotha Road -> Jagadamba Centre -> Collector Office
+

@@ -218,7 +218,7 @@ class _TopBar extends StatelessWidget {
                 child: _ModeCard(
                   icon: Icons.badge_outlined,
                   title: 'Staff Mode',
-                  subtitle: 'Enter code for conductor tracking',
+                  subtitle: 'Enter password for conductor tracking',
                   color: AppTheme.green,
                   onTap: () => showStaffModeAccessSheet(context),
                 ),

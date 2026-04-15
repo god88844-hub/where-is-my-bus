@@ -1,5 +1,5 @@
 // lib/data/vizag_data.dart
-// Complete Vizag APSRTC route database — 80+ routes, 60+ stops
+// Complete Vizag APSRTC route database — 80+ routes, 81 canonical stops
 // Stop coordinates are approximate based on known Vizag geography.
 // Verify key stops on the ground and update lat/lng as needed.
 
@@ -73,6 +73,42 @@ class BusStop {
     required this.lat,
     required this.lng,
   });
+
+  bool get hasCoordinates => lat != 0 && lng != 0;
+
+  BusStop copyWith({
+    String? id,
+    String? name,
+    String? nameTelugu,
+    double? lat,
+    double? lng,
+  }) {
+    return BusStop(
+      id: id ?? this.id,
+      name: name ?? this.name,
+      nameTelugu: nameTelugu ?? this.nameTelugu,
+      lat: lat ?? this.lat,
+      lng: lng ?? this.lng,
+    );
+  }
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'name': name,
+        'nameTelugu': nameTelugu,
+        'lat': lat,
+        'lng': lng,
+      };
+
+  factory BusStop.fromJson(Map<String, dynamic> json) {
+    return BusStop(
+      id: json['id'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      nameTelugu: json['nameTelugu'] as String? ?? '',
+      lat: (json['lat'] as num?)?.toDouble() ?? 0,
+      lng: (json['lng'] as num?)?.toDouble() ?? 0,
+    );
+  }
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -115,543 +151,842 @@ class BusRoute {
   String get nameTelugu => fromTelugu.isNotEmpty && toTelugu.isNotEmpty
       ? '$fromTelugu → $toTelugu'
       : '$from → $to';
-  String get origin => stopIds.first;
-  String get terminus => stopIds.last;
+  String get origin => stopIds.firstOrNull ?? '';
+  String get terminus => stopIds.lastOrNull ?? '';
+}
+
+class _StopArea {
+  const _StopArea(this.lat, this.lng);
+
+  final double lat;
+  final double lng;
+}
+
+class _ExactStopCoordinate {
+  const _ExactStopCoordinate(this.lat, this.lng);
+
+  final double lat;
+  final double lng;
 }
 
 // ─────────────────────────────────────────────────────────────
 //  ALL STOPS
 // ─────────────────────────────────────────────────────────────
 class VizagStops {
-  static const Map<String, BusStop> all = {
+  static const _cityCore = _StopArea(17.7125, 83.3013);
+  static const _beachRoad = _StopArea(17.7215, 83.3180);
+  static const _kancharapalemArea = _StopArea(17.7280, 83.2800);
+  static const _nadArea = _StopArea(17.7430, 83.2620);
+  static const _portArea = _StopArea(17.6920, 83.2840);
+  static const _gajuwakaArea = _StopArea(17.7000, 83.2000);
+  static const _maddilapalemArea = _StopArea(17.7420, 83.3170);
+  static const _mvpArea = _StopArea(17.7400, 83.3350);
+  static const _simhachalamArea = _StopArea(17.7660, 83.2500);
+  static const _pendurthiArea = _StopArea(17.7830, 83.2150);
+  static const _madhurawadaArea = _StopArea(17.8200, 83.3600);
+  static const _anandapuramArea = _StopArea(17.8600, 83.3000);
+  static const _tagarapuvalasaArea = _StopArea(17.9200, 83.3500);
+  static const _kothavalasaArea = _StopArea(17.8900, 83.2000);
+  static const _anakapalleArea = _StopArea(17.6910, 83.0060);
+  static const _parawadaArea = _StopArea(17.6660, 83.1500);
+  static const _yelamanchiliArea = _StopArea(17.5400, 82.8700);
+  static const _vizianagaramArea = _StopArea(18.1067, 83.3956);
+
+  static const Map<String, _ExactStopCoordinate> _verifiedCoordinates = {
+    'au_outgate': _ExactStopCoordinate(17.7325, 83.3185),
+    'achutapuram': _ExactStopCoordinate(17.5805, 82.9005),
+    'adavivaram': _ExactStopCoordinate(17.7555, 83.2955),
+    'aganampudi': _ExactStopCoordinate(17.6790, 83.1610),
+    'akkayyapalem': _ExactStopCoordinate(17.7305, 83.3055),
+    'anakapalli': _ExactStopCoordinate(17.6915, 83.0035),
+    'anandapuram': _ExactStopCoordinate(17.7855, 83.3920),
+    'arilova': _ExactStopCoordinate(17.7600, 83.3200),
+    'bhpv': _ExactStopCoordinate(17.7105, 83.2520),
+    'bhimili': _ExactStopCoordinate(17.8905, 83.4520),
+    'cbm': _ExactStopCoordinate(17.7205, 83.2960),
+    'carshed': _ExactStopCoordinate(17.7485, 83.3530),
+    'chodavaram': _ExactStopCoordinate(17.8280, 82.9350),
+    'collector_office': _ExactStopCoordinate(17.7220, 83.3060),
+    'convent_junction': _ExactStopCoordinate(17.7160, 83.3070),
+    'devarapalli': _ExactStopCoordinate(17.7450, 83.0350),
+    'duvvada': _ExactStopCoordinate(17.6705, 83.2060),
+    'endada': _ExactStopCoordinate(17.7425, 83.3410),
+    'fishing_harbour': _ExactStopCoordinate(17.7055, 83.2860),
+    'gajuwaka': _ExactStopCoordinate(17.6868, 83.2185),
+    'gangavaram': _ExactStopCoordinate(17.6415, 83.2350),
+    'gopalapatnam': _ExactStopCoordinate(17.7480, 83.2180),
+    'gurudwara': _ExactStopCoordinate(17.7360, 83.3110),
+    'hb_colony': _ExactStopCoordinate(17.7270, 83.2960),
+    'hanumanthawaka': _ExactStopCoordinate(17.7740, 83.3010),
+    'ins_kalinga': _ExactStopCoordinate(17.7490, 83.3610),
+    'jagadamba': _ExactStopCoordinate(17.7175, 83.2990),
+    'kailasagiri': _ExactStopCoordinate(17.7490, 83.3420),
+    'kailasapuram': _ExactStopCoordinate(17.7325, 83.3030),
+    'kambalakonda': _ExactStopCoordinate(17.7705, 83.2990),
+    'kancharapalem': _ExactStopCoordinate(17.7390, 83.3160),
+    'kommadi': _ExactStopCoordinate(17.7760, 83.3820),
+    'kothavalasa': _ExactStopCoordinate(17.9000, 83.1500),
+    'kurmannapalem': _ExactStopCoordinate(17.6760, 83.2210),
+    'mvp_colony': _ExactStopCoordinate(17.7510, 83.3360),
+    'maddilapalem': _ExactStopCoordinate(17.7360, 83.3110),
+    'madhavadhara': _ExactStopCoordinate(17.7390, 83.2960),
+    'madhurawada': _ExactStopCoordinate(17.8200, 83.3500),
+    'malkapuram': _ExactStopCoordinate(17.7060, 83.2760),
+    'mindi': _ExactStopCoordinate(17.6810, 83.2410),
+    'muralinagar': _ExactStopCoordinate(17.7360, 83.3010),
+    'nad_junction': _ExactStopCoordinate(17.7400, 83.2300),
+    'ntpc': _ExactStopCoordinate(17.6305, 83.1810),
+    'narava': _ExactStopCoordinate(17.7610, 83.2710),
+    'naval_base': _ExactStopCoordinate(17.7010, 83.2810),
+    'old_post_office': _ExactStopCoordinate(17.7210, 83.3110),
+    'pm_palem': _ExactStopCoordinate(17.7510, 83.3610),
+    'parawada': _ExactStopCoordinate(17.6510, 83.1510),
+    'pedagantyada': _ExactStopCoordinate(17.6610, 83.2110),
+    'pendurthi': _ExactStopCoordinate(17.8330, 83.2000),
+    'purna_market': _ExactStopCoordinate(17.7210, 83.3050),
+    'rk_beach': _ExactStopCoordinate(17.7141, 83.3368),
+    'rtc_complex': _ExactStopCoordinate(17.7260, 83.3010),
+    'railway_station': _ExactStopCoordinate(17.7135, 83.2990),
+    'rajeev_nagar': _ExactStopCoordinate(17.6685, 83.2210),
+    'rushikonda': _ExactStopCoordinate(17.7610, 83.3820),
+    'sabbavaram': _ExactStopCoordinate(17.7230, 83.0570),
+    'sagar_nagar': _ExactStopCoordinate(17.7560, 83.3720),
+    'satyam_junction': _ExactStopCoordinate(17.7270, 83.3090),
+    'scindia': _ExactStopCoordinate(17.6900, 83.2700),
+    'sheelanagar': _ExactStopCoordinate(17.7210, 83.2510),
+    'simhachalam': _ExactStopCoordinate(17.7660, 83.2860),
+    'simhachalam_hilltop': _ExactStopCoordinate(17.7710, 83.2790),
+    'siripuram': _ExactStopCoordinate(17.7225, 83.3190),
+    'sitammadhara': _ExactStopCoordinate(17.7290, 83.3060),
+    'sontyam': _ExactStopCoordinate(17.7900, 83.1200),
+    'steel_plant': _ExactStopCoordinate(17.6400, 83.1700),
+    'tagarapuvalasa': _ExactStopCoordinate(17.8110, 83.4120),
+    'tenneti_park': _ExactStopCoordinate(17.7205, 83.3460),
+    'town_kotharoad': _ExactStopCoordinate(17.7200, 83.3090),
+    'ukkunagaram': _ExactStopCoordinate(17.6960, 83.2320),
+    'vuda_park': _ExactStopCoordinate(17.7235, 83.3400),
+    'venkojipalem': _ExactStopCoordinate(17.7430, 83.3490),
+    'vepagunta': _ExactStopCoordinate(17.7810, 83.3110),
+    'airport': _ExactStopCoordinate(17.7212, 83.2246),
+    'port': _ExactStopCoordinate(17.6865, 83.2780),
+    'vizianagaram': _ExactStopCoordinate(18.1067, 83.3956),
+    'waltair': _ExactStopCoordinate(17.7340, 83.3310),
+    'yarada': _ExactStopCoordinate(17.6610, 83.2620),
+    'yelamanchili': _ExactStopCoordinate(17.5480, 82.8560),
+    'vizag_zoo': _ExactStopCoordinate(17.7625, 83.2905),
+  };
+
+  static BusStop _areaStop({
+    required String id,
+    required String name,
+    required String nameTelugu,
+    required _StopArea area,
+    double latOffset = 0,
+    double lngOffset = 0,
+  }) {
+    final verified = _verifiedCoordinates[id];
+    return BusStop(
+      id: id,
+      name: name,
+      nameTelugu: nameTelugu,
+      lat: verified?.lat ?? area.lat + latOffset,
+      lng: verified?.lng ?? area.lng + lngOffset,
+    );
+  }
+
+  static final Map<String, BusStop> all = {
+    // Area anchors keep nearby stops clustered so route snapping and mock GPS
+    // interpolation follow realistic city corridors instead of random points.
     // ── Core city hubs ──
-    'rtc_complex': BusStop(
-        id: 'rtc_complex',
-        name: 'RTC Complex',
-        nameTelugu: 'ఆర్టీసీ కాంప్లెక్స్',
-        lat: 17.7231,
-        lng: 83.3012),
-    'rk_beach': BusStop(
-        id: 'rk_beach',
-        name: 'RK Beach',
-        nameTelugu: 'ఆర్కే బీచ్',
-        lat: 17.7141,
-        lng: 83.3368),
-    'jagadamba': BusStop(
-        id: 'jagadamba',
-        name: 'Jagadamba Centre',
-        nameTelugu: 'జగదాంబ సెంటర్',
-        lat: 17.7170,
-        lng: 83.2980),
-    'railway_station': BusStop(
-        id: 'railway_station',
-        name: 'Railway Station',
-        nameTelugu: 'రైల్వే స్టేషన్',
-        lat: 17.7133,
-        lng: 83.2988),
-    'old_post_office': BusStop(
-        id: 'old_post_office',
-        name: 'Old Post Office (OHPO)',
-        nameTelugu: 'పాత పోస్ట్ ఆఫీస్',
-        lat: 17.7200,
-        lng: 83.3100),
-    'collector_office': BusStop(
-        id: 'collector_office',
-        name: 'Collector Office',
-        nameTelugu: 'కలెక్టర్ ఆఫీస్',
-        lat: 17.7210,
-        lng: 83.3050),
-    'town_kotharoad': BusStop(
-        id: 'town_kotharoad',
-        name: 'Town Kotha Road',
-        nameTelugu: 'టౌన్ కొత్త రోడ్',
-        lat: 17.7190,
-        lng: 83.3080),
-    'purna_market': BusStop(
-        id: 'purna_market',
-        name: 'Purna Market',
-        nameTelugu: 'పూర్ణ మార్కెట్',
-        lat: 17.7200,
-        lng: 83.3040),
+    'rtc_complex': _areaStop(
+      id: 'rtc_complex',
+      name: 'RTC Complex',
+      nameTelugu: 'ఆర్టీసీ కాంప్లెక్స్',
+      area: _cityCore,
+    ),
+    'rk_beach': _areaStop(
+      id: 'rk_beach',
+      name: 'RK Beach',
+      nameTelugu: 'ఆర్‌కే బీచ్',
+      area: _beachRoad,
+      latOffset: -0.0075,
+      lngOffset: 0.0057,
+    ),
+    'jagadamba': _areaStop(
+      id: 'jagadamba',
+      name: 'Jagadamba Centre',
+      nameTelugu: 'జగదాంబ సెంటర్',
+      area: _cityCore,
+      latOffset: -0.0029,
+      lngOffset: -0.0003,
+    ),
+    'railway_station': _areaStop(
+      id: 'railway_station',
+      name: 'Railway Station',
+      nameTelugu: 'రైల్వే స్టేషన్',
+      area: _cityCore,
+      latOffset: 0.0030,
+      lngOffset: -0.0058,
+    ),
+    'old_post_office': _areaStop(
+      id: 'old_post_office',
+      name: 'Old Post Office (OHPO)',
+      nameTelugu: 'పాత పోస్ట్ ఆఫీస్',
+      area: _cityCore,
+      latOffset: -0.0036,
+      lngOffset: 0.0006,
+    ),
+    'collector_office': _areaStop(
+      id: 'collector_office',
+      name: 'Collector Office',
+      nameTelugu: 'కలెక్టర్ ఆఫీస్',
+      area: _cityCore,
+      latOffset: -0.0011,
+      lngOffset: 0.0021,
+    ),
+    'town_kotharoad': _areaStop(
+      id: 'town_kotharoad',
+      name: 'Town Kotha Road',
+      nameTelugu: 'టౌన్ కొత్త రోడ్',
+      area: _cityCore,
+      latOffset: -0.0057,
+      lngOffset: -0.0025,
+    ),
+    'purna_market': _areaStop(
+      id: 'purna_market',
+      name: 'Purna Market',
+      nameTelugu: 'పూర్ణ మార్కెట్',
+      area: _cityCore,
+      latOffset: -0.0020,
+      lngOffset: -0.0008,
+    ),
 
     // ── Waltair / Beach corridor ──
-    'waltair': BusStop(
-        id: 'waltair',
-        name: 'Waltair',
-        nameTelugu: 'వాల్తేరు',
-        lat: 17.7330,
-        lng: 83.3300),
-    'mvp_colony': BusStop(
-        id: 'mvp_colony',
-        name: 'MVP Colony',
-        nameTelugu: 'ఎంవీపీ కాలనీ',
-        lat: 17.7500,
-        lng: 83.3350),
-    'siripuram': BusStop(
-        id: 'siripuram',
-        name: 'Siripuram',
-        nameTelugu: 'శ్రీపురం',
-        lat: 17.7220,
-        lng: 83.3180),
-    'cbm': BusStop(
-        id: 'cbm',
-        name: 'CBM Compound',
-        nameTelugu: 'సీబీఎం కాంపౌండ్',
-        lat: 17.7200,
-        lng: 83.2950),
-    'au_outgate': BusStop(
-        id: 'au_outgate',
-        name: 'AU Out Gate',
-        nameTelugu: 'ఏయూ అవుట్ గేట్',
-        lat: 17.7320,
-        lng: 83.3180),
-    'convent_junction': BusStop(
-        id: 'convent_junction',
-        name: 'Convent Junction',
-        nameTelugu: 'కాన్వెంట్ జంక్షన్',
-        lat: 17.7150,
-        lng: 83.3060),
+    'waltair': _areaStop(
+      id: 'waltair',
+      name: 'Waltair',
+      nameTelugu: 'వాల్తేరు',
+      area: _beachRoad,
+      latOffset: 0.0095,
+      lngOffset: 0.0040,
+    ),
+    'mvp_colony': _areaStop(
+      id: 'mvp_colony',
+      name: 'MVP Colony',
+      nameTelugu: 'ఎంవీపీ కాలనీ',
+      area: _mvpArea,
+    ),
+    'siripuram': _areaStop(
+      id: 'siripuram',
+      name: 'Siripuram',
+      nameTelugu: 'శ్రీపురం',
+      area: _beachRoad,
+      latOffset: -0.0013,
+      lngOffset: -0.0034,
+    ),
+    'cbm': _areaStop(
+      id: 'cbm',
+      name: 'CBM Compound',
+      nameTelugu: 'సీబీఎం కాంపౌండ్',
+      area: _cityCore,
+      latOffset: 0.0013,
+      lngOffset: -0.0049,
+    ),
+    'au_outgate': _areaStop(
+      id: 'au_outgate',
+      name: 'AU Out Gate',
+      nameTelugu: 'ఏయూ అవుట్ గేట్',
+      area: _beachRoad,
+      latOffset: 0.0115,
+      lngOffset: 0.0025,
+    ),
+    'convent_junction': _areaStop(
+      id: 'convent_junction',
+      name: 'Convent Junction',
+      nameTelugu: 'కాన్వెంట్ జంక్షన్',
+      area: _cityCore,
+      latOffset: -0.0077,
+      lngOffset: -0.0045,
+    ),
 
     // ── NAD / Gopalapatnam corridor ──
-    'nad_junction': BusStop(
-        id: 'nad_junction',
-        name: 'NAD Junction',
-        nameTelugu: 'ఎన్ఏడీ జంక్షన్',
-        lat: 17.7450,
-        lng: 83.3250),
-    'gopalapatnam': BusStop(
-        id: 'gopalapatnam',
-        name: 'Gopalapatnam',
-        nameTelugu: 'గోపాలపట్నం',
-        lat: 17.7550,
-        lng: 83.3450),
-    'kancharapalem': BusStop(
-        id: 'kancharapalem',
-        name: 'Kancharapalem',
-        nameTelugu: 'కంచరపాలెం',
-        lat: 17.7380,
-        lng: 83.3150),
-    'gurudwara': BusStop(
-        id: 'gurudwara',
-        name: 'Gurudwara',
-        nameTelugu: 'గురుద్వారా',
-        lat: 17.7350,
-        lng: 83.3100),
+    'nad_junction': _areaStop(
+      id: 'nad_junction',
+      name: 'NAD Junction',
+      nameTelugu: 'ఎన్‌ఏడీ జంక్షన్',
+      area: _nadArea,
+    ),
+    'gopalapatnam': _areaStop(
+      id: 'gopalapatnam',
+      name: 'Gopalapatnam',
+      nameTelugu: 'గోపాలపట్నం',
+      area: _nadArea,
+      latOffset: 0.0020,
+      lngOffset: -0.0120,
+    ),
+    'kancharapalem': _areaStop(
+      id: 'kancharapalem',
+      name: 'Kancharapalem',
+      nameTelugu: 'కంచరపాలెం',
+      area: _kancharapalemArea,
+    ),
+    'gurudwara': _areaStop(
+      id: 'gurudwara',
+      name: 'Gurudwara',
+      nameTelugu: 'గురుద్వారా',
+      area: _kancharapalemArea,
+      latOffset: 0.0060,
+      lngOffset: 0.0060,
+    ),
 
     // ── Scindia / Gajuwaka corridor ──
-    'scindia': BusStop(
-        id: 'scindia',
-        name: 'Scindia',
-        nameTelugu: 'సింధియా',
-        lat: 17.7400,
-        lng: 83.3200),
-    'malkapuram': BusStop(
-        id: 'malkapuram',
-        name: 'Malkapuram',
-        nameTelugu: 'మాల్కాపురం',
-        lat: 17.7050,
-        lng: 83.2750),
-    'gajuwaka': BusStop(
-        id: 'gajuwaka',
-        name: 'Gajuwaka',
-        nameTelugu: 'గాజువాక',
-        lat: 17.6868,
-        lng: 83.2185),
-    'bhpv': BusStop(
-        id: 'bhpv',
-        name: 'BHPV',
-        nameTelugu: 'బీహెచ్‌పీవీ',
-        lat: 17.7100,
-        lng: 83.2500),
-    'kurmannapalem': BusStop(
-        id: 'kurmannapalem',
-        name: 'Kurmannapalem',
-        nameTelugu: 'కుర్మన్నపాలెం',
-        lat: 17.6750,
-        lng: 83.2200),
-    'pedagantyada': BusStop(
-        id: 'pedagantyada',
-        name: 'Pedagantyada',
-        nameTelugu: 'పెదగంట్యాడ',
-        lat: 17.6600,
-        lng: 83.2100),
-    'steel_plant': BusStop(
-        id: 'steel_plant',
-        name: 'Steel Plant',
-        nameTelugu: 'స్టీల్ ప్లాంట్',
-        lat: 17.6980,
-        lng: 83.2180),
+    'scindia': _areaStop(
+      id: 'scindia',
+      name: 'Scindia',
+      nameTelugu: 'సింధియా',
+      area: _portArea,
+      latOffset: 0.0038,
+      lngOffset: 0.0008,
+    ),
+    'malkapuram': _areaStop(
+      id: 'malkapuram',
+      name: 'Malkapuram',
+      nameTelugu: 'మాల్కాపురం',
+      area: _portArea,
+      latOffset: 0.0020,
+      lngOffset: -0.0150,
+    ),
+    'gajuwaka': _areaStop(
+      id: 'gajuwaka',
+      name: 'Gajuwaka',
+      nameTelugu: 'గాజువాక',
+      area: _gajuwakaArea,
+    ),
+    'bhpv': _areaStop(
+      id: 'bhpv',
+      name: 'BHPV',
+      nameTelugu: 'బీహెచ్‌పీవీ',
+      area: _gajuwakaArea,
+      latOffset: 0.0060,
+      lngOffset: 0.0230,
+    ),
+    'kurmannapalem': _areaStop(
+      id: 'kurmannapalem',
+      name: 'Kurmannapalem',
+      nameTelugu: 'కుర్మన్నపాలెం',
+      area: _gajuwakaArea,
+      latOffset: -0.0200,
+      lngOffset: 0.0050,
+    ),
+    'pedagantyada': _areaStop(
+      id: 'pedagantyada',
+      name: 'Pedagantyada',
+      nameTelugu: 'పెదగంట్యాడ',
+      area: _gajuwakaArea,
+      latOffset: -0.0275,
+      lngOffset: -0.0040,
+    ),
+    'steel_plant': _areaStop(
+      id: 'steel_plant',
+      name: 'Steel Plant',
+      nameTelugu: 'స్టీల్ ప్లాంట్',
+      area: _gajuwakaArea,
+      latOffset: -0.0165,
+      lngOffset: 0.0095,
+    ),
 
     // ── Maddilapalem / Endada ──
-    'maddilapalem': BusStop(
-        id: 'maddilapalem',
-        name: 'Maddilapalem',
-        nameTelugu: 'మడ్డిలపాలెం',
-        lat: 17.7350,
-        lng: 83.3100),
-    'endada': BusStop(
-        id: 'endada',
-        name: 'Endada',
-        nameTelugu: 'ఎందాడ',
-        lat: 17.7420,
-        lng: 83.3400),
-    'arilova': BusStop(
-        id: 'arilova',
-        name: 'Arilova Colony',
-        nameTelugu: 'అరిలోవ కాలనీ',
-        lat: 17.7300,
-        lng: 83.2900),
-    'sitammadhara': BusStop(
-        id: 'sitammadhara',
-        name: 'Sitammadhara',
-        nameTelugu: 'సీతమ్మధార',
-        lat: 17.7280,
-        lng: 83.3050),
-    'satyam_junction': BusStop(
-        id: 'satyam_junction',
-        name: 'Satyam Junction',
-        nameTelugu: 'సత్యం జంక్షన్',
-        lat: 17.7260,
-        lng: 83.3080),
-    'hb_colony': BusStop(
-        id: 'hb_colony',
-        name: 'HB Colony',
-        nameTelugu: 'హెచ్‌బీ కాలనీ',
-        lat: 17.7260,
-        lng: 83.2950),
+    'maddilapalem': _areaStop(
+      id: 'maddilapalem',
+      name: 'Maddilapalem',
+      nameTelugu: 'మద్దిలపాలెం',
+      area: _maddilapalemArea,
+    ),
+    'endada': _areaStop(
+      id: 'endada',
+      name: 'Endada',
+      nameTelugu: 'ఎందాడ',
+      area: _mvpArea,
+      latOffset: 0.0290,
+      lngOffset: 0.0065,
+    ),
+    'arilova': _areaStop(
+      id: 'arilova',
+      name: 'Arilova Colony',
+      nameTelugu: 'అరిలోవ కాలనీ',
+      area: _kancharapalemArea,
+      latOffset: 0.0200,
+      lngOffset: 0.0210,
+    ),
+    'sitammadhara': _areaStop(
+      id: 'sitammadhara',
+      name: 'Sitammadhara',
+      nameTelugu: 'సీతమ్మధార',
+      area: _kancharapalemArea,
+      latOffset: 0.0080,
+      lngOffset: 0.0180,
+    ),
+    'satyam_junction': _areaStop(
+      id: 'satyam_junction',
+      name: 'Satyam Junction',
+      nameTelugu: 'సత్యం జంక్షన్',
+      area: _kancharapalemArea,
+      latOffset: 0.0105,
+      lngOffset: 0.0210,
+    ),
+    'hb_colony': _areaStop(
+      id: 'hb_colony',
+      name: 'HB Colony',
+      nameTelugu: 'హెచ్‌బీ కాలనీ',
+      area: _kancharapalemArea,
+      latOffset: 0.0140,
+      lngOffset: 0.0250,
+    ),
 
     // ── Madhurawada / North ──
-    'madhurawada': BusStop(
-        id: 'madhurawada',
-        name: 'Madhurawada',
-        nameTelugu: 'మధురవాడ',
-        lat: 17.7680,
-        lng: 83.3700),
-    'kommadi': BusStop(
-        id: 'kommadi',
-        name: 'Kommadi',
-        nameTelugu: 'కొమ్మాడి',
-        lat: 17.7750,
-        lng: 83.3800),
-    'anandapuram': BusStop(
-        id: 'anandapuram',
-        name: 'Anandapuram',
-        nameTelugu: 'ఆనందాపురం',
-        lat: 17.7850,
-        lng: 83.3900),
-    'tagarapuvalasa': BusStop(
-        id: 'tagarapuvalasa',
-        name: 'Tagarapuvalasa',
-        nameTelugu: 'తాగరపువలస',
-        lat: 17.8100,
-        lng: 83.4100),
-    'rushikonda': BusStop(
-        id: 'rushikonda',
-        name: 'Rushikonda',
-        nameTelugu: 'రుషికొండ',
-        lat: 17.7600,
-        lng: 83.3800),
-    'sagarnagar': BusStop(
-        id: 'sagarnagar',
-        name: 'Sagarnagar',
-        nameTelugu: 'సాగర్‌నగర్',
-        lat: 17.7550,
-        lng: 83.3700),
-    'ins_kalinga': BusStop(
-        id: 'ins_kalinga',
-        name: 'INS Kalinga',
-        nameTelugu: 'ఐఎన్‌ఎస్ కాలింగ',
-        lat: 17.7480,
-        lng: 83.3600),
-    'bhimili': BusStop(
-        id: 'bhimili',
-        name: 'Bhimili',
-        nameTelugu: 'భీమిలి',
-        lat: 17.8900,
-        lng: 83.4600),
+    'madhurawada': _areaStop(
+      id: 'madhurawada',
+      name: 'Madhurawada',
+      nameTelugu: 'మధురవాడ',
+      area: _madhurawadaArea,
+      latOffset: 0.0040,
+      lngOffset: -0.0040,
+    ),
+    'kommadi': _areaStop(
+      id: 'kommadi',
+      name: 'Kommadi',
+      nameTelugu: 'కొమ్మాడి',
+      area: _madhurawadaArea,
+      latOffset: 0.0250,
+      lngOffset: -0.0400,
+    ),
+    'anandapuram': _areaStop(
+      id: 'anandapuram',
+      name: 'Anandapuram',
+      nameTelugu: 'ఆనందపురం',
+      area: _anandapuramArea,
+    ),
+    'tagarapuvalasa': _areaStop(
+      id: 'tagarapuvalasa',
+      name: 'Tagarapuvalasa',
+      nameTelugu: 'తగరాపువలస',
+      area: _tagarapuvalasaArea,
+      latOffset: 0.0120,
+      lngOffset: 0.0770,
+    ),
+    'rushikonda': _areaStop(
+      id: 'rushikonda',
+      name: 'Rushikonda',
+      nameTelugu: 'రుషికొండ',
+      area: _madhurawadaArea,
+      latOffset: -0.0340,
+      lngOffset: 0.0000,
+    ),
+    'ins_kalinga': _areaStop(
+      id: 'ins_kalinga',
+      name: 'INS Kalinga',
+      nameTelugu: 'ఐఎన్‌ఎస్ కాలింగ',
+      area: _madhurawadaArea,
+      latOffset: -0.0620,
+      lngOffset: -0.0030,
+    ),
+    'bhimili': _areaStop(
+      id: 'bhimili',
+      name: 'Bhimili',
+      nameTelugu: 'భీమిలి',
+      area: _tagarapuvalasaArea,
+      latOffset: -0.0300,
+      lngOffset: 0.1020,
+    ),
 
     // ── Simhachalam ──
-    'simhachalam': BusStop(
-        id: 'simhachalam',
-        name: 'Simhachalam',
-        nameTelugu: 'సింహాచలం',
-        lat: 17.7650,
-        lng: 83.2850),
-    'simhachalam_hilltop': BusStop(
-        id: 'simhachalam_hilltop',
-        name: 'Simhachalam Hill Top',
-        nameTelugu: 'సింహాచలం కొండపైన',
-        lat: 17.7700,
-        lng: 83.2780),
-    'adavivaram': BusStop(
-        id: 'adavivaram',
-        name: 'Adavivaram',
-        nameTelugu: 'అడవివరం',
-        lat: 17.7550,
-        lng: 83.2950),
-    'vepagunta': BusStop(
-        id: 'vepagunta',
-        name: 'Vepagunta',
-        nameTelugu: 'వేపగుంట',
-        lat: 17.7800,
-        lng: 83.3100),
-    'hanumanthawaka': BusStop(
-        id: 'hanumanthawaka',
-        name: 'Hanumanthawaka Jn',
-        nameTelugu: 'హనుమంతవాక జంక్షన్',
-        lat: 17.7730,
-        lng: 83.3000),
+    'simhachalam': _areaStop(
+      id: 'simhachalam',
+      name: 'Simhachalam',
+      nameTelugu: 'సింహాచలం',
+      area: _simhachalamArea,
+      latOffset: 0.0006,
+      lngOffset: 0.0001,
+    ),
+    'simhachalam_hilltop': _areaStop(
+      id: 'simhachalam_hilltop',
+      name: 'Simhachalam Hill Top',
+      nameTelugu: 'సింహాచలం కొండపైన',
+      area: _simhachalamArea,
+      latOffset: 0.0040,
+      lngOffset: 0.0001,
+    ),
+    'adavivaram': _areaStop(
+      id: 'adavivaram',
+      name: 'Adavivaram',
+      nameTelugu: 'అడవివరం',
+      area: _simhachalamArea,
+      latOffset: -0.0080,
+      lngOffset: 0.0100,
+    ),
+    'vepagunta': _areaStop(
+      id: 'vepagunta',
+      name: 'Vepagunta',
+      nameTelugu: 'వేపగుంట',
+      area: _simhachalamArea,
+      latOffset: 0.0130,
+      lngOffset: -0.0160,
+    ),
+    'hanumanthawaka': _areaStop(
+      id: 'hanumanthawaka',
+      name: 'Hanumanthawaka Jn',
+      nameTelugu: 'హనుమంతవాక జంక్షన్',
+      area: _simhachalamArea,
+      latOffset: 0.0030,
+      lngOffset: 0.0250,
+    ),
 
     // ── Pendurthi / Kothavalasa ──
-    'pendurthi': BusStop(
-        id: 'pendurthi',
-        name: 'Pendurthi',
-        nameTelugu: 'పెందుర్తి',
-        lat: 17.7100,
-        lng: 83.2600),
-    'kothavalasa': BusStop(
-        id: 'kothavalasa',
-        name: 'Kothavalasa',
-        nameTelugu: 'కొత్తవలస',
-        lat: 17.7000,
-        lng: 83.1800),
-    'duvvada': BusStop(
-        id: 'duvvada',
-        name: 'Duvvada Railway Station',
-        nameTelugu: 'దువ్వాడ రైల్వే స్టేషన్',
-        lat: 17.6700,
-        lng: 83.2050),
+    'pendurthi': _areaStop(
+      id: 'pendurthi',
+      name: 'Pendurthi',
+      nameTelugu: 'పెందుర్తి',
+      area: _pendurthiArea,
+    ),
+    'kothavalasa': _areaStop(
+      id: 'kothavalasa',
+      name: 'Kothavalasa',
+      nameTelugu: 'కొత్తవలస',
+      area: _kothavalasaArea,
+    ),
+    'duvvada': _areaStop(
+      id: 'duvvada',
+      name: 'Duvvada Railway Station',
+      nameTelugu: 'దువ్వాడ రైల్వే స్టేషన్',
+      area: _gajuwakaArea,
+      latOffset: 0.0030,
+      lngOffset: -0.0500,
+    ),
 
     // ── Kailasagiri ──
-    'vuda_park': BusStop(
-        id: 'vuda_park',
-        name: 'VUDA Park',
-        nameTelugu: 'వుడా పార్క్',
-        lat: 17.7230,
-        lng: 83.3390),
-    'tenneti_park': BusStop(
-        id: 'tenneti_park',
-        name: 'Tenneti Park',
-        nameTelugu: 'తెన్నేటి పార్క్',
-        lat: 17.7200,
-        lng: 83.3450),
-    'kailasagiri': BusStop(
-        id: 'kailasagiri',
-        name: 'Kailasagiri',
-        nameTelugu: 'కైలాసగిరి',
-        lat: 17.7100,
-        lng: 83.3520),
+    'vuda_park': _areaStop(
+      id: 'vuda_park',
+      name: 'VUDA Park',
+      nameTelugu: 'వుడా పార్క్',
+      area: _beachRoad,
+      latOffset: 0.0010,
+      lngOffset: 0.0120,
+    ),
+    'tenneti_park': _areaStop(
+      id: 'tenneti_park',
+      name: 'Tenneti Park',
+      nameTelugu: 'తెన్నేటి పార్క్',
+      area: _beachRoad,
+      latOffset: 0.0070,
+      lngOffset: 0.0205,
+    ),
+    'kailasagiri': _areaStop(
+      id: 'kailasagiri',
+      name: 'Kailasagiri',
+      nameTelugu: 'కైలాసగిరి',
+      area: _beachRoad,
+      latOffset: 0.0145,
+      lngOffset: 0.0255,
+    ),
 
     // ── Anakapalli / outer ──
-    'anakapalli': BusStop(
-        id: 'anakapalli',
-        name: 'Anakapalle',
-        nameTelugu: 'అనకాపల్లి',
-        lat: 17.6910,
-        lng: 83.0060),
-    'aganampudi': BusStop(
-        id: 'aganampudi',
-        name: 'Aganampudi',
-        nameTelugu: 'అగనంపూడి',
-        lat: 17.6780,
-        lng: 83.1600),
-    'parawada': BusStop(
-        id: 'parawada',
-        name: 'Parawada',
-        nameTelugu: 'పరవాడ',
-        lat: 17.6500,
-        lng: 83.1500),
-    'sabbavaram': BusStop(
-        id: 'sabbavaram',
-        name: 'Sabbavaram',
-        nameTelugu: 'సబ్బవరం',
-        lat: 17.7200,
-        lng: 83.0500),
-    'chodavaram': BusStop(
-        id: 'chodavaram',
-        name: 'Chodavaram',
-        nameTelugu: 'చోడవరం',
-        lat: 17.8100,
-        lng: 82.9300),
-    'sontyam': BusStop(
-        id: 'sontyam',
-        name: 'Sontyam',
-        nameTelugu: 'సోంత్యం',
-        lat: 17.7900,
-        lng: 83.1500),
-    'yelamanchili': BusStop(
-        id: 'yelamanchili',
-        name: 'Yelamanchili',
-        nameTelugu: 'ఏలమంచిలి',
-        lat: 17.5400,
-        lng: 82.8700),
-    'devarapalli': BusStop(
-        id: 'devarapalli',
-        name: 'Devarapalli',
-        nameTelugu: 'దేవరపల్లి',
-        lat: 17.7500,
-        lng: 83.0500),
-    'vizianagaram': BusStop(
-        id: 'vizianagaram',
-        name: 'Vizianagaram',
-        nameTelugu: 'విజయనగరం',
-        lat: 18.1067,
-        lng: 83.3956),
+    'anakapalli': _areaStop(
+      id: 'anakapalli',
+      name: 'Anakapalle',
+      nameTelugu: 'అనకాపల్లి',
+      area: _anakapalleArea,
+    ),
+    'aganampudi': _areaStop(
+      id: 'aganampudi',
+      name: 'Aganampudi',
+      nameTelugu: 'అగనంపూడి',
+      area: _parawadaArea,
+      latOffset: 0.0130,
+      lngOffset: 0.0160,
+    ),
+    'parawada': _areaStop(
+      id: 'parawada',
+      name: 'Parawada',
+      nameTelugu: 'పరవాడ',
+      area: _parawadaArea,
+    ),
+    'sabbavaram': _areaStop(
+      id: 'sabbavaram',
+      name: 'Sabbavaram',
+      nameTelugu: 'సబ్బవరం',
+      area: _pendurthiArea,
+      latOffset: -0.0190,
+      lngOffset: -0.0970,
+    ),
+    'chodavaram': _areaStop(
+      id: 'chodavaram',
+      name: 'Chodavaram',
+      nameTelugu: 'చోడవరం',
+      area: _anandapuramArea,
+      latOffset: -0.0380,
+      lngOffset: -0.3480,
+    ),
+    'sontyam': _areaStop(
+      id: 'sontyam',
+      name: 'Sontyam',
+      nameTelugu: 'సోంత్యం',
+      area: _pendurthiArea,
+      latOffset: 0.0250,
+      lngOffset: -0.0680,
+    ),
+    'yelamanchili': _areaStop(
+      id: 'yelamanchili',
+      name: 'Yelamanchili',
+      nameTelugu: 'ఏలమంచిలి',
+      area: _yelamanchiliArea,
+    ),
+    'devarapalli': _areaStop(
+      id: 'devarapalli',
+      name: 'Devarapalli',
+      nameTelugu: 'దేవరపల్లి',
+      area: _pendurthiArea,
+      latOffset: 0.0030,
+      lngOffset: -0.1360,
+    ),
+    'vizianagaram': _areaStop(
+      id: 'vizianagaram',
+      name: 'Vizianagaram',
+      nameTelugu: 'విజయనగరం',
+      area: _vizianagaramArea,
+    ),
 
     // ── Misc stops ──
-    'pm_palem': BusStop(
-        id: 'pm_palem',
-        name: 'PM Palem',
-        nameTelugu: 'పీఎం పాలెం',
-        lat: 17.7500,
-        lng: 83.3600),
-    'mindi': BusStop(
-        id: 'mindi',
-        name: 'Mindi',
-        nameTelugu: 'మింఢి',
-        lat: 17.6800,
-        lng: 83.2400),
-    'naval_base': BusStop(
-        id: 'naval_base',
-        name: 'Naval Base / Dockyard',
-        nameTelugu: 'నావల్ బేస్',
-        lat: 17.7000,
-        lng: 83.2800),
-    'sagar_nagar': BusStop(
-        id: 'sagar_nagar',
-        name: 'Sagar Nagar',
-        nameTelugu: 'సాగర్‌నగర్',
-        lat: 17.7550,
-        lng: 83.3700),
-    'madhavadhara': BusStop(
-        id: 'madhavadhara',
-        name: 'Madhavadhara',
-        nameTelugu: 'మాధవధార',
-        lat: 17.7380,
-        lng: 83.2950),
-    'muralinagar': BusStop(
-        id: 'muralinagar',
-        name: 'Muralinagar',
-        nameTelugu: 'మురళీనగర్',
-        lat: 17.7350,
-        lng: 83.3000),
-    'kailasapuram': BusStop(
-        id: 'kailasapuram',
-        name: 'Kailasapuram',
-        nameTelugu: 'కైలాసపురం',
-        lat: 17.7320,
-        lng: 83.3020),
-    'akkayyapalem': BusStop(
-        id: 'akkayyapalem',
-        name: 'Akkayapalem',
-        nameTelugu: 'అక్కయ్యపాలెం',
-        lat: 17.7300,
-        lng: 83.3040),
-    'yarada': BusStop(
-        id: 'yarada',
-        name: 'Yarada',
-        nameTelugu: 'యారాడ',
-        lat: 17.6600,
-        lng: 83.2600),
-    'airport': BusStop(
-        id: 'airport',
-        name: 'Visakhapatnam Airport',
-        nameTelugu: 'విశాఖ విమానాశ్రయం',
-        lat: 17.7212,
-        lng: 83.2246),
-    'it_park': BusStop(
-        id: 'it_park',
-        name: 'IT Park',
-        nameTelugu: 'ఐటీ పార్క్',
-        lat: 17.7480,
-        lng: 83.3520),
-    'carshed': BusStop(
-        id: 'carshed',
-        name: 'Carshed / IT Park',
-        nameTelugu: 'కార్ షెడ్',
-        lat: 17.7480,
-        lng: 83.3520),
-    'port': BusStop(
-        id: 'port',
-        name: 'Visakhapatnam Port',
-        nameTelugu: 'విశాఖ పోర్ట్',
-        lat: 17.6880,
-        lng: 83.2920),
-    'venkojipalem': BusStop(
-        id: 'venkojipalem',
-        name: 'Venkojipalem',
-        nameTelugu: 'వేంకోజీపాలెం',
-        lat: 17.7420,
-        lng: 83.3480),
-    'fishing_harbour': BusStop(
-        id: 'fishing_harbour',
-        name: 'Fishing Harbour',
-        nameTelugu: 'ఫిషింగ్ హార్బర్',
-        lat: 17.7050,
-        lng: 83.2850),
-    'gangavaram': BusStop(
-        id: 'gangavaram',
-        name: 'Gangavaram',
-        nameTelugu: 'గంగవరం',
-        lat: 17.6400,
-        lng: 83.2300),
-    'narava': BusStop(
-        id: 'narava',
-        name: 'Narava',
-        nameTelugu: 'నారవ',
-        lat: 17.7600,
-        lng: 83.2700),
-    'sheelanagar': BusStop(
-        id: 'sheelanagar',
-        name: 'Sheelanagar',
-        nameTelugu: 'శీలానగర్',
-        lat: 17.7200,
-        lng: 83.2500),
-    'mvp_complex': BusStop(
-        id: 'mvp_complex',
-        name: 'MVP Complex',
-        nameTelugu: 'ఎంవీపీ కాంప్లెక్స్',
-        lat: 17.7500,
-        lng: 83.3350),
-    'rajeev_nagar': BusStop(
-        id: 'rajeev_nagar',
-        name: 'Rajeev Nagar',
-        nameTelugu: 'రాజీవ్ నగర్',
-        lat: 17.6680,
-        lng: 83.2200),
-    'ukkunagaram': BusStop(
-        id: 'ukkunagaram',
-        name: 'Ukkunagaram',
-        nameTelugu: 'ఉక్కు నగరం',
-        lat: 17.6950,
-        lng: 83.2310),
-    'vizag_zoo': BusStop(
-        id: 'vizag_zoo',
-        name: 'Zoo Park',
-        nameTelugu: 'జూ పార్క్',
-        lat: 17.7620,
-        lng: 83.2900),
-    'kambalakonda': BusStop(
-        id: 'kambalakonda',
-        name: 'Kambalakonda',
-        nameTelugu: 'కంబాలకొండ',
-        lat: 17.7700,
-        lng: 83.2980),
-    'ntpc': BusStop(
-        id: 'ntpc',
-        name: 'NTPC',
-        nameTelugu: 'ఎన్‌టీపీసీ',
-        lat: 17.6300,
-        lng: 83.1800),
-    'achutapuram': BusStop(
-        id: 'achutapuram',
-        name: 'Achutapuram',
-        nameTelugu: 'అచ్యుతాపురం',
-        lat: 17.5800,
-        lng: 82.9000),
+    'pm_palem': _areaStop(
+      id: 'pm_palem',
+      name: 'PM Palem',
+      nameTelugu: 'పీఎం పాలెం',
+      area: _madhurawadaArea,
+      latOffset: -0.0280,
+      lngOffset: -0.0180,
+    ),
+    'mindi': _areaStop(
+      id: 'mindi',
+      name: 'Mindi',
+      nameTelugu: 'మింఢి',
+      area: _gajuwakaArea,
+      latOffset: -0.0030,
+      lngOffset: 0.0320,
+    ),
+    'naval_base': _areaStop(
+      id: 'naval_base',
+      name: 'Naval Base / Dockyard',
+      nameTelugu: 'నావల్ బేస్',
+      area: _portArea,
+      latOffset: 0.0085,
+      lngOffset: -0.0070,
+    ),
+    'sagar_nagar': _areaStop(
+      id: 'sagar_nagar',
+      name: 'Sagar Nagar',
+      nameTelugu: 'సాగర్‌నగర్',
+      area: _madhurawadaArea,
+      latOffset: -0.0560,
+      lngOffset: -0.0105,
+    ),
+    'madhavadhara': _areaStop(
+      id: 'madhavadhara',
+      name: 'Madhavadhara',
+      nameTelugu: 'మాధవధార',
+      area: _kancharapalemArea,
+      latOffset: 0.0160,
+      lngOffset: 0.0080,
+    ),
+    'muralinagar': _areaStop(
+      id: 'muralinagar',
+      name: 'Muralinagar',
+      nameTelugu: 'మురళీనగర్',
+      area: _kancharapalemArea,
+      latOffset: 0.0085,
+      lngOffset: 0.0095,
+    ),
+    'kailasapuram': _areaStop(
+      id: 'kailasapuram',
+      name: 'Kailasapuram',
+      nameTelugu: 'కైలాసపురం',
+      area: _kancharapalemArea,
+      latOffset: 0.0040,
+      lngOffset: 0.0070,
+    ),
+    'akkayyapalem': _areaStop(
+      id: 'akkayyapalem',
+      name: 'Akkayapalem',
+      nameTelugu: 'అక్కయ్యపాలెం',
+      area: _kancharapalemArea,
+      latOffset: 0.0045,
+      lngOffset: 0.0140,
+    ),
+    'yarada': _areaStop(
+      id: 'yarada',
+      name: 'Yarada',
+      nameTelugu: 'యారాడ',
+      area: _portArea,
+      latOffset: -0.0350,
+      lngOffset: -0.0200,
+    ),
+    'airport': _areaStop(
+      id: 'airport',
+      name: 'Visakhapatnam Airport',
+      nameTelugu: 'విశాఖ విమానాశ్రయం',
+      area: _gajuwakaArea,
+      latOffset: 0.0212,
+      lngOffset: 0.0246,
+    ),
+    'carshed': _areaStop(
+      id: 'carshed',
+      name: 'Carshed / IT Park',
+      nameTelugu: 'కార్ షెడ్',
+      area: _madhurawadaArea,
+      latOffset: -0.0355,
+      lngOffset: -0.0165,
+    ),
+    'port': _areaStop(
+      id: 'port',
+      name: 'Visakhapatnam Port',
+      nameTelugu: 'విశాఖ పోర్ట్',
+      area: _portArea,
+      latOffset: -0.0005,
+      lngOffset: 0.0060,
+    ),
+    'venkojipalem': _areaStop(
+      id: 'venkojipalem',
+      name: 'Venkojipalem',
+      nameTelugu: 'వేంకోజీపాలెం',
+      area: _maddilapalemArea,
+      latOffset: 0.0025,
+      lngOffset: 0.0090,
+    ),
+    'fishing_harbour': _areaStop(
+      id: 'fishing_harbour',
+      name: 'Fishing Harbour',
+      nameTelugu: 'ఫిషింగ్ హార్బర్',
+      area: _portArea,
+      latOffset: 0.0055,
+      lngOffset: -0.0010,
+    ),
+    'gangavaram': _areaStop(
+      id: 'gangavaram',
+      name: 'Gangavaram',
+      nameTelugu: 'గంగవరం',
+      area: _gajuwakaArea,
+      latOffset: -0.0720,
+      lngOffset: 0.0250,
+    ),
+    'narava': _areaStop(
+      id: 'narava',
+      name: 'Narava',
+      nameTelugu: 'నారవ',
+      area: _simhachalamArea,
+      latOffset: 0.0090,
+      lngOffset: -0.0140,
+    ),
+    'sheelanagar': _areaStop(
+      id: 'sheelanagar',
+      name: 'Sheelanagar',
+      nameTelugu: 'శీలానగర్',
+      area: _nadArea,
+      latOffset: -0.0190,
+      lngOffset: -0.0200,
+    ),
+    'rajeev_nagar': _areaStop(
+      id: 'rajeev_nagar',
+      name: 'Rajeev Nagar',
+      nameTelugu: 'రాజీవ్ నగర్',
+      area: _gajuwakaArea,
+      latOffset: -0.0235,
+      lngOffset: 0.0105,
+    ),
+    'ukkunagaram': _areaStop(
+      id: 'ukkunagaram',
+      name: 'Ukkunagaram',
+      nameTelugu: 'ఉక్కు నగరం',
+      area: _gajuwakaArea,
+      latOffset: -0.0110,
+      lngOffset: 0.0140,
+    ),
+    'vizag_zoo': _areaStop(
+      id: 'vizag_zoo',
+      name: 'Zoo Park',
+      nameTelugu: 'జూ పార్క్',
+      area: _maddilapalemArea,
+      latOffset: 0.0237,
+      lngOffset: 0.0318,
+    ),
+    'kambalakonda': _areaStop(
+      id: 'kambalakonda',
+      name: 'Kambalakonda',
+      nameTelugu: 'కంబాలకొండ',
+      area: _maddilapalemArea,
+      latOffset: 0.0250,
+      lngOffset: -0.0240,
+    ),
+    'ntpc': _areaStop(
+      id: 'ntpc',
+      name: 'NTPC',
+      nameTelugu: 'ఎన్‌టీపీసీ',
+      area: _parawadaArea,
+      latOffset: -0.0700,
+      lngOffset: -0.0620,
+    ),
+    'achutapuram': _areaStop(
+      id: 'achutapuram',
+      name: 'Achutapuram',
+      nameTelugu: 'అచ్యుతాపురం',
+      area: _yelamanchiliArea,
+      latOffset: 0.0400,
+      lngOffset: 0.0300,
+    ),
   };
 
   static BusStop? get(String id) => all[id];
+
+  static BusStop resolve(
+    String? id, {
+    String? fallbackName,
+    String fallbackTelugu = '',
+  }) {
+    final resolvedId = id?.trim() ?? '';
+    final existing = all[resolvedId];
+    if (existing != null) return existing;
+
+    return BusStop(
+      id: resolvedId.isEmpty ? 'unknown_stop' : resolvedId,
+      name: fallbackName?.trim().isNotEmpty == true
+          ? fallbackName!.trim()
+          : _formatIdAsName(resolvedId),
+      nameTelugu: fallbackTelugu,
+      lat: 0,
+      lng: 0,
+    );
+  }
+
+  static String label(String? id, {String? fallbackName}) =>
+      resolve(id, fallbackName: fallbackName).name;
+
+  static String labelTelugu(String? id, {String fallback = ''}) {
+    final resolved = id?.trim() ?? '';
+    return all[resolved]?.nameTelugu ?? fallback;
+  }
+
+  static String _formatIdAsName(String id) {
+    final cleaned = id.trim();
+    if (cleaned.isEmpty) return 'Unknown stop';
+
+    return cleaned
+        .split(RegExp(r'[_-]+'))
+        .where((part) => part.isNotEmpty)
+        .map((part) {
+          if (part.length <= 3) {
+            return part.toUpperCase();
+          }
+          return '${part[0].toUpperCase()}${part.substring(1)}';
+        })
+        .join(' ');
+  }
   static List<BusStop> get list => all.values.toList();
 
   // Search stops by name (English or Telugu)
@@ -755,7 +1090,7 @@ class VizagRoutes {
         returnRouteNumber: '68K'),
     BusRoute(
         routeId: '68K',
-        number: '28K',
+        number: '68K',
         from: 'Kothavalasa',
         to: 'RK Beach',
         viaStops: ['Vepagunta', 'Simhachalam', 'Hanumanthawaka'],
@@ -899,8 +1234,7 @@ class VizagRoutes {
           'gurudwara',
           'rtc_complex',
           'maddilapalem',
-          'carshed',
-          'it_park'
+          'carshed'
         ],
         busType: BusType.greenCity,
         frequencyMins: 20),
@@ -1507,7 +1841,6 @@ class VizagRoutes {
         viaStops: ['MVP Colony', 'Waltair', 'RTC Complex'],
         stopIds: [
           'maddilapalem',
-          'mvp_complex',
           'mvp_colony',
           'waltair',
           'rtc_complex',
@@ -1525,7 +1858,7 @@ class VizagRoutes {
           'waltair',
           'mvp_colony',
           'rushikonda',
-          'sagarnagar',
+          'sagar_nagar',
           'ins_kalinga',
           'bhimili'
         ],
@@ -1535,8 +1868,8 @@ class VizagRoutes {
         number: '900R',
         from: 'RTC Complex',
         to: 'Rushikonda',
-        viaStops: ['INS Kalinga', 'Sagarnagar'],
-        stopIds: ['rtc_complex', 'ins_kalinga', 'sagarnagar', 'rushikonda'],
+        viaStops: ['INS Kalinga', 'Sagar Nagar'],
+        stopIds: ['rtc_complex', 'ins_kalinga', 'sagar_nagar', 'rushikonda'],
         busType: BusType.greenCity,
         frequencyMins: 25),
     BusRoute(
@@ -1681,8 +2014,7 @@ class VizagRoutes {
           'rtc_complex',
           'maddilapalem',
           'endada',
-          'carshed',
-          'it_park'
+          'carshed'
         ],
         busType: BusType.greenCity,
         frequencyMins: 20),
@@ -2775,11 +3107,11 @@ class VizagRoutes {
         frequencyMins: 25),
     BusRoute(
         number: '540',
-        from: 'MVP Complex',
+        from: 'MVP Colony',
         to: 'Simhachalam',
         viaStops: ['Maddilapalem', 'Gurudwara', 'NAD', 'Gopalapatnam'],
         stopIds: [
-          'mvp_complex',
+          'mvp_colony',
           'maddilapalem',
           'gurudwara',
           'nad_junction',
@@ -2790,11 +3122,11 @@ class VizagRoutes {
         frequencyMins: 20),
     BusRoute(
         number: '540M',
-        from: 'MVP Complex',
+        from: 'MVP Colony',
         to: 'Gajuwaka',
         viaStops: ['Maddilapalem', 'Gurudwara', 'NAD', 'BHPV'],
         stopIds: [
-          'mvp_complex',
+          'mvp_colony',
           'maddilapalem',
           'gurudwara',
           'nad_junction',

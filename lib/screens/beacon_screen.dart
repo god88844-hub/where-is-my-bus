@@ -36,8 +36,8 @@ class _BeaconScreenState extends State<BeaconScreen> {
           onPressed: () => Navigator.pop(context),
         ),
         title: const Text('Passenger Help Mode'),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.5),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(0.5),
           child: Divider(height: 0.5, color: AppTheme.divider),
         ),
       ),
@@ -54,7 +54,7 @@ class _BeaconScreenState extends State<BeaconScreen> {
                     borderRadius: BorderRadius.circular(14),
                     border: Border.all(
                       color: active
-                          ? AppTheme.green.withOpacity(0.4)
+                          ? AppTheme.green.withValues(alpha: 0.4)
                           : AppTheme.border,
                       width: active ? 1 : 0.5,
                     ),
@@ -154,7 +154,7 @@ class _BeaconScreenState extends State<BeaconScreen> {
                         padding: const EdgeInsets.all(12),
                         decoration: BoxDecoration(
                           color: selected
-                              ? color.withOpacity(0.08)
+                              ? color.withValues(alpha: 0.08)
                               : AppTheme.card,
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(
@@ -205,11 +205,12 @@ class _BeaconScreenState extends State<BeaconScreen> {
                 16, 16, 16, MediaQuery.of(context).padding.bottom + 16),
             decoration: BoxDecoration(
               color: AppTheme.surface,
-              border:
-                  Border(top: BorderSide(color: AppTheme.border, width: 0.5)),
+              border: const Border(
+                top: BorderSide(color: AppTheme.border, width: 0.5),
+              ),
               boxShadow: [
                 BoxShadow(
-                  color: Colors.black.withOpacity(0.05),
+                  color: Colors.black.withValues(alpha: 0.05),
                   offset: const Offset(0, -4),
                   blurRadius: 10,
                 )
@@ -233,7 +234,7 @@ class _BeaconScreenState extends State<BeaconScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.green,
                         disabledBackgroundColor:
-                            AppTheme.green.withOpacity(0.3),
+                            AppTheme.green.withValues(alpha: 0.3),
                         foregroundColor: Colors.white,
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(

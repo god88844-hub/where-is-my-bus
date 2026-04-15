@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math' as math;
 
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
@@ -8,9 +9,9 @@ import 'package:permission_handler/permission_handler.dart'
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../dev/mock_coordinate_scenarios.dart';
-import '../data/bus_plate_registry.dart';
 import '../data/vizag_data.dart';
 import '../models/bus.dart';
+import 'location_service.dart';
 import 'firestore_service.dart';
 import 'route_progress_service.dart';
 
@@ -22,7 +23,7 @@ class ConductorTrackingService extends ChangeNotifier {
   static const prefsKeyTracking = 'conductor_tracking';
   static const prefsKeyRoute = 'conductor_route';
   static const prefsKeyStopId = 'conductor_stop_id';
-  static const prefsKeyPlate = 'conductor_plate';
+  static const prefsKeyBusType = 'conductor_bus_type';
   static const prefsKeyCrowd = 'conductor_crowd';
   static const prefsKeyBusId = 'conductor_bus_id';
   static const prefsKeyStatus = 'conductor_status';
@@ -47,7 +48,7 @@ class ConductorTrackingService extends ChangeNotifier {
   bool autoStopEnabled = true;
   String? selectedRoute;
   String? selectedStopId;
-  String plateNumber = '';
+  BusType? selectedBusType;
   BusCrowd crowd = BusCrowd.moderate;
   String? busId;
   String? statusMessage;
@@ -63,13 +64,13 @@ class ConductorTrackingService extends ChangeNotifier {
   double? _snappedLat;
   double? _snappedLng;
   double? _effectiveSpeedKmh;
+  bool _lastCloudSyncSucceeded = true;
+  String? _lastCloudSyncError;
 
   BusRoute? get activeRoute {
     if (selectedRoute == null) return null;
     return VizagRoutes.byRouteId(selectedRoute!);
   }
-
-  String get normalizedPlate => plateNumber.toUpperCase().trim();
 
   int get currentStopIndex {
     final route = activeRoute;
@@ -94,14 +95,11 @@ class ConductorTrackingService extends ChangeNotifier {
   double? get snappedLng => _snappedLng;
   double? get effectiveSpeedKmh => _effectiveSpeedKmh;
   bool get debugSimulationActive => _debugSimulationActive;
+  bool get lastCloudSyncSucceeded => _lastCloudSyncSucceeded;
+  String? get lastCloudSyncError => _lastCloudSyncError;
 
   BusType get resolvedBusType {
-    return BusPlateRegistry.resolveType(
-          plateNumber: normalizedPlate,
-          routeNumber: selectedRoute,
-        ) ??
-        activeRoute?.busType ??
-        BusType.redOrdinary;
+    return selectedBusType ?? activeRoute?.busType ?? BusType.redOrdinary;
   }
 
   Future<void> init() async {
@@ -124,8 +122,8 @@ class ConductorTrackingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> setDraftPlate(String plate) async {
-    plateNumber = plate;
+  Future<void> setDraftBusType(BusType value) async {
+    selectedBusType = value;
     await _persistSession();
     notifyListeners();
   }
@@ -146,6 +144,11 @@ class ConductorTrackingService extends ChangeNotifier {
     autoStopEnabled = value;
     statusMessage =
         value ? 'Auto stop detection is on' : 'Auto stop detection is off';
+    if (!value) {
+      _ensureManualStopSelected();
+    } else if (lastLat != null && lastLng != null) {
+      _advanceStopFromLocation(lat: lastLat!, lng: lastLng!);
+    }
     await _persistSession();
     notifyListeners();
   }
@@ -154,7 +157,7 @@ class ConductorTrackingService extends ChangeNotifier {
     if (_starting) return tracking;
     _starting = true;
     try {
-      if (activeRoute == null || normalizedPlate.isEmpty) {
+      if (activeRoute == null) {
         statusMessage = 'Missing trip details';
         await _persistSession();
         notifyListeners();
@@ -170,8 +173,11 @@ class ConductorTrackingService extends ChangeNotifier {
         return false;
       }
 
-      busId ??= _buildBusId(normalizedPlate);
+      selectedBusType ??= activeRoute!.busType;
+      busId ??= _buildBusId(activeRoute!.routeId);
       tracking = true;
+      _lastCloudSyncSucceeded = true;
+      _lastCloudSyncError = null;
       statusMessage = 'Starting live tracking...';
       await _resolveCurrentStopFromLocation();
       await _persistSession();
@@ -206,17 +212,24 @@ class ConductorTrackingService extends ChangeNotifier {
     double speed = 0;
 
     try {
+      final sampleTime = DateTime.now();
       final pos = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
       lat = pos.latitude;
       lng = pos.longitude;
-      speed = (pos.speed * 3.6).clamp(0.0, 120.0);
+      speed = _normalizedSpeedKmh(
+        rawSpeedKmh: pos.speed * 3.6,
+        lat: lat,
+        lng: lng,
+        sampleTime: sampleTime,
+      );
       _advanceStopFromLocation(lat: lat, lng: lng);
     } catch (_) {
       // Keep fallback stop coordinates when the live fix fails.
     }
 
+    _ensureManualStopSelected();
     await _pushUpdate(lat: lat, lng: lng, speed: speed);
   }
 
@@ -264,6 +277,60 @@ class ConductorTrackingService extends ChangeNotifier {
     statusMessage =
         'Direction changed: ${returnRoute.from} to ${returnRoute.to}';
 
+    await _persistSession();
+    notifyListeners();
+
+    if (tracking) {
+      await syncNow();
+    }
+  }
+
+  bool get canMoveToPreviousStop => currentStopIndex > 0;
+
+  bool get canAdvanceToNextStop {
+    final route = activeRoute;
+    return route != null && currentStopIndex >= 0 &&
+        currentStopIndex < route.stopIds.length - 1;
+  }
+
+  Future<void> moveToPreviousStop() async {
+    final route = activeRoute;
+    if (route == null) return;
+
+    if (selectedStopId == null) {
+      selectedStopId = route.stopIds.first;
+    } else {
+      final index = route.stopIds.indexOf(selectedStopId!);
+      if (index > 0) {
+        selectedStopId = route.stopIds[index - 1];
+      }
+    }
+
+    _resetManualProgressForSelectedStop();
+    statusMessage = 'Manual stop set to ${VizagStops.get(selectedStopId!)?.name ?? selectedStopId!}';
+    await _persistSession();
+    notifyListeners();
+
+    if (tracking) {
+      await syncNow();
+    }
+  }
+
+  Future<void> advanceToNextStop() async {
+    final route = activeRoute;
+    if (route == null) return;
+
+    if (selectedStopId == null) {
+      selectedStopId = route.stopIds.first;
+    } else {
+      final index = route.stopIds.indexOf(selectedStopId!);
+      if (index >= 0 && index < route.stopIds.length - 1) {
+        selectedStopId = route.stopIds[index + 1];
+      }
+    }
+
+    _resetManualProgressForSelectedStop();
+    statusMessage = 'Manual stop set to ${VizagStops.get(selectedStopId!)?.name ?? selectedStopId!}';
     await _persistSession();
     notifyListeners();
 
@@ -362,10 +429,17 @@ class ConductorTrackingService extends ChangeNotifier {
           return;
         }
 
+        final sampleTime = DateTime.now();
         final lat = position.latitude;
         final lng = position.longitude;
-        final speed = (position.speed * 3.6).clamp(0.0, 120.0);
+        final speed = _normalizedSpeedKmh(
+          rawSpeedKmh: position.speed * 3.6,
+          lat: lat,
+          lng: lng,
+          sampleTime: sampleTime,
+        );
         _advanceStopFromLocation(lat: lat, lng: lng);
+        _ensureManualStopSelected();
 
         if (selectedStopId == null) {
           statusMessage =
@@ -430,15 +504,17 @@ class ConductorTrackingService extends ChangeNotifier {
           );
 
     var cloudSyncFailed = false;
+    String? cloudSyncError;
+    final displaySpeed = (_effectiveSpeedKmh ?? speed).clamp(0.0, 120.0);
     try {
       await _fs.pushConductorLocation(
         busId: busId!,
         routeKey: activeRoute!.routeId,
         routeNumber: activeRoute!.number,
-        busPlateNumber: normalizedPlate,
+        busPlateNumber: '',
         lat: lat,
         lng: lng,
-        speedKmh: speed,
+        speedKmh: displaySpeed,
         crowd: crowd,
         currentStopId: selectedStopId!,
         nextStopId: nextStopId,
@@ -453,15 +529,18 @@ class ConductorTrackingService extends ChangeNotifier {
         etaToNextStopMins: nextStopEtaMins,
         busType: resolvedBusType,
       );
-    } catch (_) {
+    } catch (e) {
       cloudSyncFailed = true;
+      cloudSyncError = e.toString();
     }
 
     final updateTime = DateTime.now();
     lastLat = lat;
     lastLng = lng;
-    lastSpeed = speed;
+    lastSpeed = displaySpeed;
     lastUpdate = updateTime;
+    _lastCloudSyncSucceeded = !cloudSyncFailed;
+    _lastCloudSyncError = cloudSyncError;
     final progressMessage = _progressStatusMessage(updateTime);
     statusMessage = cloudSyncFailed
         ? '$progressMessage · cloud sync failed'
@@ -631,6 +710,7 @@ class ConductorTrackingService extends ChangeNotifier {
     double? lng = lastLng;
 
     try {
+      final sampleTime = DateTime.now();
       final pos = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
       );
@@ -638,7 +718,12 @@ class ConductorTrackingService extends ChangeNotifier {
       lng = pos.longitude;
       lastLat = lat;
       lastLng = lng;
-      lastSpeed = (pos.speed * 3.6).clamp(0.0, 120.0);
+      lastSpeed = _normalizedSpeedKmh(
+        rawSpeedKmh: pos.speed * 3.6,
+        lat: lat,
+        lng: lng,
+        sampleTime: sampleTime,
+      );
     } catch (e) {
       debugPrint(
           'ConductorTrackingService: failed to resolve current stop: $e');
@@ -678,8 +763,6 @@ class ConductorTrackingService extends ChangeNotifier {
     required double lat,
     required double lng,
   }) {
-    if (!autoStopEnabled) return;
-
     final route = activeRoute;
     if (route == null) return;
 
@@ -690,6 +773,11 @@ class ConductorTrackingService extends ChangeNotifier {
       hintCurrentStopId: selectedStopId,
     );
     if (snapshot != null) {
+      if (!autoStopEnabled) {
+        _applyManualProgressSnapshot(snapshot);
+        return;
+      }
+
       final previousStopId = selectedStopId;
       _applyProgressSnapshot(snapshot);
 
@@ -698,6 +786,67 @@ class ConductorTrackingService extends ChangeNotifier {
             'Auto-detected stop: ${VizagStops.get(selectedStopId!)?.name ?? selectedStopId!}';
       }
     }
+  }
+
+  void _applyManualProgressSnapshot(RouteProgressSnapshot snapshot) {
+    final route = activeRoute;
+    if (route == null) return;
+
+    if (selectedStopId == null) {
+      _applyProgressSnapshot(snapshot);
+      return;
+    }
+
+    final currentIndex = route.stopIds.indexOf(selectedStopId!);
+    if (currentIndex < 0) {
+      _applyProgressSnapshot(snapshot);
+      return;
+    }
+
+    if (currentIndex >= route.stopIds.length - 1) {
+      _segmentStartStopId = selectedStopId;
+      _segmentEndStopId = null;
+      _segmentProgress = 1;
+      _distanceToNextStopKm = 0;
+      _remainingRouteKm = 0;
+      _snappedLat = snapshot.snappedLat;
+      _snappedLng = snapshot.snappedLng;
+      return;
+    }
+
+    _segmentStartStopId = selectedStopId;
+    _segmentEndStopId = route.stopIds[currentIndex + 1];
+    _snappedLat = snapshot.snappedLat;
+    _snappedLng = snapshot.snappedLng;
+
+    if (snapshot.currentStopIndex < currentIndex) {
+      _segmentProgress = 0;
+      _distanceToNextStopKm =
+          RouteProgressService.segmentDistanceKmForRoute(route, currentIndex);
+      _remainingRouteKm = _remainingDistanceFromSegment(
+        route,
+        currentIndex,
+        _distanceToNextStopKm!,
+      );
+      return;
+    }
+
+    if (snapshot.currentStopIndex == currentIndex) {
+      _segmentProgress = snapshot.segmentProgress;
+      _distanceToNextStopKm = snapshot.distanceToNextStopKm;
+      _remainingRouteKm = _remainingDistanceFromSegment(
+        route,
+        currentIndex,
+        snapshot.distanceToNextStopKm,
+      );
+      return;
+    }
+
+    _segmentProgress = 1;
+    _distanceToNextStopKm = 0;
+    _remainingRouteKm = _remainingDistanceFromSegment(route, currentIndex + 1, 0);
+    final nextStopName = VizagStops.get(_segmentEndStopId!)?.name ?? _segmentEndStopId!;
+    statusMessage = 'Reached $nextStopName · tap Next stop in manual mode';
   }
 
   void _applyProgressSnapshot(RouteProgressSnapshot snapshot) {
@@ -745,6 +894,63 @@ class ConductorTrackingService extends ChangeNotifier {
     return 'Passed $currentName · $progressPct% to $nextName$distanceLabel · updated ${_timeAgo(updateTime)}';
   }
 
+  void _ensureManualStopSelected() {
+    final route = activeRoute;
+    if (route == null || selectedStopId != null) return;
+
+    if (autoStopEnabled) return;
+
+    selectedStopId = route.stopIds.firstOrNull;
+    if (selectedStopId != null) {
+      _resetManualProgressForSelectedStop();
+    }
+  }
+
+  void _resetManualProgressForSelectedStop() {
+    final route = activeRoute;
+    if (route == null || selectedStopId == null) return;
+
+    final index = route.stopIds.indexOf(selectedStopId!);
+    if (index < 0) return;
+
+    _segmentStartStopId = selectedStopId;
+    _segmentEndStopId =
+        index < route.stopIds.length - 1 ? route.stopIds[index + 1] : null;
+    _segmentProgress = _segmentEndStopId == null ? 1 : 0;
+    _distanceToNextStopKm = _segmentEndStopId == null
+        ? 0
+        : RouteProgressService.segmentDistanceKmForRoute(route, index);
+    _remainingRouteKm = _segmentEndStopId == null
+        ? 0
+        : _remainingDistanceFromSegment(route, index, _distanceToNextStopKm!);
+  }
+
+  double _normalizedSpeedKmh({
+    required double rawSpeedKmh,
+    required double lat,
+    required double lng,
+    required DateTime sampleTime,
+  }) {
+    var speedKmh = rawSpeedKmh.clamp(0.0, 120.0);
+
+    if (lastLat != null && lastLng != null && lastUpdate != null) {
+      final elapsedSeconds =
+          sampleTime.difference(lastUpdate!).inMilliseconds / 1000;
+      if (elapsedSeconds >= 2) {
+        final movedKm = LocationService.distanceKm(lastLat!, lastLng!, lat, lng);
+        final movementSpeedKmh = (movedKm / elapsedSeconds) * 3600;
+
+        if (movedKm < 0.015 && elapsedSeconds >= 4) {
+          return 0;
+        }
+
+        speedKmh = math.min(speedKmh, movementSpeedKmh);
+      }
+    }
+
+    return speedKmh < 2.5 ? 0 : speedKmh;
+  }
+
   Future<bool> _ensurePermission() async {
     if (kIsWeb || !Platform.isAndroid) {
       var permission = await Geolocator.checkPermission();
@@ -786,15 +992,20 @@ class ConductorTrackingService extends ChangeNotifier {
         finalPermission == LocationPermission.always;
   }
 
-  String _buildBusId(String plate) =>
-      'bus_${BusPlateRegistry.normalize(plate)}';
+  String _buildBusId(String routeId) =>
+      'bus_${routeId.toLowerCase()}_${DateTime.now().millisecondsSinceEpoch}';
 
   Future<void> _restoreSession() async {
     final prefs = await SharedPreferences.getInstance();
     tracking = prefs.getBool(prefsKeyTracking) ?? false;
     selectedRoute = prefs.getString(prefsKeyRoute);
     selectedStopId = prefs.getString(prefsKeyStopId);
-    plateNumber = prefs.getString(prefsKeyPlate) ?? '';
+    final storedBusType = prefs.getString(prefsKeyBusType);
+    if (storedBusType != null) {
+      selectedBusType = BusType.values
+          .where((type) => type.name == storedBusType)
+          .firstOrNull;
+    }
 
     final crowdIndex = prefs.getInt(prefsKeyCrowd);
     if (crowdIndex != null &&
@@ -823,9 +1034,7 @@ class ConductorTrackingService extends ChangeNotifier {
     _snappedLng = null;
     _effectiveSpeedKmh = null;
 
-    if (activeRoute == null ||
-        selectedStopId == null ||
-        normalizedPlate.isEmpty) {
+    if (activeRoute == null || busId == null) {
       tracking = false;
     }
 
@@ -870,10 +1079,10 @@ class ConductorTrackingService extends ChangeNotifier {
       await prefs.remove(prefsKeyStopId);
     }
 
-    if (normalizedPlate.isNotEmpty) {
-      await prefs.setString(prefsKeyPlate, normalizedPlate);
+    if (selectedBusType != null) {
+      await prefs.setString(prefsKeyBusType, selectedBusType!.name);
     } else {
-      await prefs.remove(prefsKeyPlate);
+      await prefs.remove(prefsKeyBusType);
     }
 
     await prefs.setInt(prefsKeyCrowd, crowd.index);
@@ -921,7 +1130,7 @@ class ConductorTrackingService extends ChangeNotifier {
     await prefs.remove(prefsKeyTracking);
     await prefs.remove(prefsKeyRoute);
     await prefs.remove(prefsKeyStopId);
-    await prefs.remove(prefsKeyPlate);
+    await prefs.remove(prefsKeyBusType);
     await prefs.remove(prefsKeyCrowd);
     await prefs.remove(prefsKeyBusId);
     await prefs.remove(prefsKeyStatus);

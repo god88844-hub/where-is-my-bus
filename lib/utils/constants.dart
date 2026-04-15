@@ -2,8 +2,8 @@
 // ✏️  Replace TODO values before production build
 
 class AppConstants {
-  // ── Google Maps (not used for map tiles, only Distance Matrix ETA) ──
-  // TODO: Add key from console.cloud.google.com → Distance Matrix API
+  // ── Google Maps ──
+  // TODO: Replace with your Android Maps API key before enabling the map UI.
   static const String googleMapsApiKey = 'YOUR_GOOGLE_MAPS_API_KEY';
 
   // ── Firebase Realtime Database ──
@@ -17,13 +17,17 @@ class AppConstants {
 
   // ── Nearby radius (km) for "buses near me" ──
   static const double nearbyRadiusKm = 2.0;
+  static const int stopReachRadiusMeters = 80;
+  static const double stopReachRadiusKm = stopReachRadiusMeters / 1000;
 
   // ── Staleness / service hours ──
   /// Buses not updated within this many minutes are hidden from passengers.
-  static const int maxBusAgeMins = 30;
+  static const int maxBusAgeMins = 5;
   /// Vizag city bus service window (24-hour values).
   static const int serviceStartHour = 5;   // 5 AM
   static const int serviceEndHour   = 23;  // 11 PM
+  static const double defaultEtaSpeedKmh = 22;
+  static const int stopDwellTimeSeconds = 20;
 
   // ── Beacon ──
   static const int beaconIntervalSec   = 10;

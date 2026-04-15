@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 
 import '../data/vizag_data.dart';
+import '../utils/constants.dart';
 import 'location_service.dart';
 
 class RouteProgressSnapshot {
@@ -34,10 +35,11 @@ class RouteProgressSnapshot {
 
 class RouteProgressService {
   static const int _localWindowBackSegments = 1;
-  static const int _localWindowAheadSegments = 4;
+  static const int _localWindowAheadSegments = 6;
+  static const double _localWindowToleranceKm = 0.18;
   static const double _backtrackToleranceKm = 0.08;
-  static const double _stopArrivalDistanceKm = 0.03;
-  static const double _stopArrivalProgress = 0.98;
+  static const double _stopArrivalDistanceKm = AppConstants.stopReachRadiusKm;
+  static const double _stopArrivalProgress = 0.95;
 
   static RouteProgressSnapshot? snapToRoute({
     required BusRoute route,
@@ -89,10 +91,16 @@ class RouteProgressService {
         endIndex: localEnd,
       );
 
-      // Prefer the globally nearest segment so emulator jumps can advance the
-      // bus quickly, but avoid minor backward snaps when two segments are
-      // almost equally close.
+      // Prefer the local forward window when it is nearly as good as the
+      // global best. The route data is intentionally coarse, so the globally
+      // nearest straight-line segment can lag behind the real bus position.
       if (best != null &&
+          localBest != null &&
+          localBest.segmentIndex >= (hintIndex - _localWindowBackSegments) &&
+          localBest.distanceFromRouteKm <=
+              best.distanceFromRouteKm + _localWindowToleranceKm) {
+        best = localBest;
+      } else if (best != null &&
           localBest != null &&
           best.segmentIndex < hintIndex &&
           localBest.distanceFromRouteKm <=
@@ -191,35 +199,21 @@ class RouteProgressService {
     required double rawSpeedKmh,
     double? previousEffectiveSpeedKmh,
   }) {
-    final fallback = defaultRouteSpeedKmh(route);
     final boundedRaw = rawSpeedKmh.clamp(0.0, 60.0);
-    if (boundedRaw < 3) {
-      return previousEffectiveSpeedKmh == null
-          ? fallback
-          : ((previousEffectiveSpeedKmh * 0.85) + (fallback * 0.15))
-              .clamp(8.0, 40.0);
+    if (boundedRaw < 2.5) {
+      return 0;
     }
 
     if (previousEffectiveSpeedKmh == null) {
-      return boundedRaw.clamp(8.0, 40.0);
+      return boundedRaw.clamp(0.0, 40.0);
     }
 
-    return ((previousEffectiveSpeedKmh * 0.65) + (boundedRaw * 0.35))
-        .clamp(8.0, 40.0);
+    return ((previousEffectiveSpeedKmh * 0.45) + (boundedRaw * 0.55))
+        .clamp(0.0, 40.0);
   }
 
   static double defaultRouteSpeedKmh(BusRoute route) {
-    if (route.stopIds.length < 2) return 16;
-
-    var totalDistanceKm = 0.0;
-    for (var i = 0; i < route.stopIds.length - 1; i++) {
-      totalDistanceKm += segmentDistanceKmForRoute(route, i);
-    }
-
-    final averageSegmentKm = totalDistanceKm / (route.stopIds.length - 1);
-    // Preserve the previous "about 6 minutes per stop" behavior, but shape it
-    // from route geometry instead of a fixed constant.
-    return (averageSegmentKm * 10).clamp(12.0, 28.0);
+    return AppConstants.defaultEtaSpeedKmh;
   }
 
   static double segmentDistanceKmForRoute(BusRoute route, int startIndex) {

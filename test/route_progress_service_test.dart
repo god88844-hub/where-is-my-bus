@@ -72,4 +72,27 @@ void main() {
       expect(toThird!, greaterThan(toNext!));
     });
   });
+
+  group('Route data sanity', () {
+    test('68K return route keeps its public route number', () {
+      final route = VizagRoutes.byRouteId('68K');
+
+      expect(route, isNotNull);
+      expect(route!.number, '68K');
+    });
+  });
+
+  group('RouteProgressService.effectiveSpeedKmh', () {
+    final route = VizagRoutes.byRouteId('10K')!;
+
+    test('returns zero for a stopped bus', () {
+      final speed = RouteProgressService.effectiveSpeedKmh(
+        route: route,
+        rawSpeedKmh: 0,
+        previousEffectiveSpeedKmh: 18,
+      );
+
+      expect(speed, 0);
+    });
+  });
 }

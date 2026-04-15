@@ -35,8 +35,8 @@ class StopDetailScreen extends StatelessWidget {
               style: const TextStyle(
                   fontSize: 11, color: AppTheme.textSecondary)),
         ]),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.5),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(0.5),
           child: Divider(height: 0.5, color: AppTheme.divider),
         ),
       ),

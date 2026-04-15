@@ -89,6 +89,17 @@ class FirestoreService {
     return StaffAccessStatus(uid: uid, role: role);
   }
 
+  Future<StaffAccessStatus> requireConductorAccess() async {
+    final status = await getStaffAccessStatus();
+    if (!status.isConductor) {
+      throw StateError(
+        'This Firebase user is not approved for live conductor writes. '
+        'Set users/${status.uid}.role to conductor or admin in Firestore.',
+      );
+    }
+    return status;
+  }
+
   Future<void> upsertLiveBus({
     required String busId,
     required String routeKey,
@@ -204,40 +215,58 @@ class FirestoreService {
         .collection('live_buses')
         .where('active', isEqualTo: true)
         .snapshots()
-        .map((snap) => snap.docs.map((doc) {
-              final d = doc.data();
-              final ts = d['ts'] as Timestamp?;
-              final rawRoute = d['route'] as String? ?? '?';
-              final routeKey = d['route_key'] as String? ?? rawRoute;
-              final route = VizagRoutes.byRouteId(routeKey) ??
-                  VizagRoutes.byNumber(rawRoute);
-              return LiveBus(
-                id: doc.id,
-                routeKey: routeKey,
-                routeNumber: route?.number ?? rawRoute,
-                busType: _busTypeFromValue(d['bus_type']),
-                busPlateNumber: d['bus_plate'] as String? ?? '',
-                currentStopId: d['current_stop'] as String? ?? '',
-                lat: (d['lat'] as num?)?.toDouble() ?? 0,
-                lng: (d['lng'] as num?)?.toDouble() ?? 0,
-                speedKmh: (d['speed'] as num?)?.toDouble() ?? 0,
-                etaToNextStopMins: (d['eta'] as num?)?.toInt() ?? 0,
-                nextStopId: d['next_stop'] as String? ?? '',
-                segmentStartStopId: d['segment_start_stop'] as String?,
-                segmentEndStopId: d['segment_end_stop'] as String?,
-                segmentProgress: (d['segment_progress'] as num?)?.toDouble(),
-                distanceToNextStopKm:
-                    (d['distance_to_next_stop_km'] as num?)?.toDouble(),
-                remainingRouteKm: (d['remaining_route_km'] as num?)?.toDouble(),
-                snappedLat: (d['snapped_lat'] as num?)?.toDouble(),
-                snappedLng: (d['snapped_lng'] as num?)?.toDouble(),
-                effectiveSpeedKmh:
-                    (d['effective_speed_kmh'] as num?)?.toDouble(),
-                crowd: _crowdFromValue(d['crowd']),
-                source: _sourceFromValue(d['source']),
-                lastUpdated: ts?.toDate() ?? DateTime.now(),
-              );
-            }).toList());
+        .map((snap) {
+      final buses = <LiveBus>[];
+
+      for (final doc in snap.docs) {
+        try {
+          final d = doc.data();
+          final rawRoute = _stringValue(d['route'], fallback: '?');
+          final routeKey = _stringValue(
+            d['route_key'],
+            fallback: rawRoute,
+          );
+          final route =
+              VizagRoutes.byRouteId(routeKey) ?? VizagRoutes.byNumber(rawRoute);
+
+          buses.add(
+            LiveBus(
+              id: doc.id,
+              routeKey: routeKey,
+              routeNumber: route?.number ?? rawRoute,
+              busType: _busTypeFromValue(d['bus_type']),
+              busPlateNumber: _stringValue(d['bus_plate']),
+              currentStopId: _stringValue(d['current_stop']),
+              lat: _doubleValue(d['lat']),
+              lng: _doubleValue(d['lng']),
+              speedKmh: _doubleValue(d['speed']),
+              etaToNextStopMins: _intValue(d['eta']),
+              nextStopId: _stringValue(d['next_stop']),
+              segmentStartStopId: _nullableStringValue(d['segment_start_stop']),
+              segmentEndStopId: _nullableStringValue(d['segment_end_stop']),
+              segmentProgress: _nullableDoubleValue(d['segment_progress']),
+              distanceToNextStopKm:
+                  _nullableDoubleValue(d['distance_to_next_stop_km']),
+              remainingRouteKm:
+                  _nullableDoubleValue(d['remaining_route_km']),
+              snappedLat: _nullableDoubleValue(d['snapped_lat']),
+              snappedLng: _nullableDoubleValue(d['snapped_lng']),
+              effectiveSpeedKmh:
+                  _nullableDoubleValue(d['effective_speed_kmh']),
+              crowd: _crowdFromValue(d['crowd']),
+              source: _sourceFromValue(d['source']),
+              lastUpdated: _dateTimeValue(d['ts']),
+            ),
+          );
+        } catch (e) {
+          debugPrint(
+            'FirestoreService.liveBusStream skipped malformed doc ${doc.id}: $e',
+          );
+        }
+      }
+
+      return buses;
+    });
   }
 
   BusType? _busTypeFromValue(dynamic value) {
@@ -249,14 +278,79 @@ class FirestoreService {
   }
 
   BusCrowd _crowdFromValue(dynamic value) {
+    if (value is String) {
+      for (final crowd in BusCrowd.values) {
+        if (crowd.name == value) return crowd;
+      }
+      final parsed = int.tryParse(value);
+      if (parsed != null) {
+        return BusCrowd.values[parsed.clamp(0, BusCrowd.values.length - 1)];
+      }
+    }
     final index = (value as num?)?.toInt() ?? BusCrowd.moderate.index;
     return BusCrowd.values[index.clamp(0, BusCrowd.values.length - 1)];
   }
 
   BusDataSource _sourceFromValue(dynamic value) {
+    if (value is String) {
+      for (final source in BusDataSource.values) {
+        if (source.name == value) return source;
+      }
+      final parsed = int.tryParse(value);
+      if (parsed != null) {
+        return BusDataSource
+            .values[parsed.clamp(0, BusDataSource.values.length - 1)];
+      }
+    }
     final index = (value as num?)?.toInt() ?? BusDataSource.beacon.index;
     return BusDataSource
         .values[index.clamp(0, BusDataSource.values.length - 1)];
+  }
+
+  String _stringValue(dynamic value, {String fallback = ''}) {
+    if (value == null) return fallback;
+    if (value is String) return value;
+    return value.toString();
+  }
+
+  String? _nullableStringValue(dynamic value) {
+    final resolved = _stringValue(value);
+    return resolved.isEmpty ? null : resolved;
+  }
+
+  double _doubleValue(dynamic value, {double fallback = 0}) {
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value) ?? fallback;
+    return fallback;
+  }
+
+  double? _nullableDoubleValue(dynamic value) {
+    if (value == null) return null;
+    if (value is num) return value.toDouble();
+    if (value is String) return double.tryParse(value);
+    return null;
+  }
+
+  int _intValue(dynamic value, {int fallback = 0}) {
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value) ?? fallback;
+    return fallback;
+  }
+
+  DateTime _dateTimeValue(dynamic value) {
+    if (value is Timestamp) return value.toDate();
+    if (value is DateTime) return value;
+    if (value is num) {
+      return DateTime.fromMillisecondsSinceEpoch(value.toInt());
+    }
+    if (value is String) {
+      final parsedEpoch = int.tryParse(value);
+      if (parsedEpoch != null) {
+        return DateTime.fromMillisecondsSinceEpoch(parsedEpoch);
+      }
+      return DateTime.tryParse(value) ?? DateTime.now();
+    }
+    return DateTime.now();
   }
 
   Future<String> startPassengerSession({

@@ -231,9 +231,22 @@ class LiveBus {
     return distanceKm;
   }
 
+  bool isApproachingStop(String stopId) {
+    final route = routeRef;
+    if (route == null) return false;
+
+    final busIndex = route.stopIds.indexOf(segmentStartIdResolved);
+    final stopIndex = route.stopIds.indexOf(stopId);
+    if (busIndex < 0 || stopIndex < 0) {
+      return false;
+    }
+
+    return busIndex <= stopIndex;
+  }
+
   String get busTypeLabel => routeBusType.label;
   String get displayBusIdentity =>
-      busPlateNumber.isEmpty ? routeNumber : '$routeNumber • $busPlateNumber';
+      busPlateNumber.trim().isEmpty ? routeNumber : '$routeNumber • $busPlateNumber';
 
   String get crowdLabel {
     switch (crowd) {

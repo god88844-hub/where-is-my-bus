@@ -7,7 +7,7 @@ import '../models/bus.dart';
 import '../data/vizag_data.dart';
 import '../utils/app_theme.dart';
 import '../widgets/shared_widgets.dart';
-import 'stop_detail_screen.dart';
+import 'bus_journey_screen.dart';
 
 class RouteResultsScreen extends StatelessWidget {
   final BusStop from;
@@ -38,16 +38,19 @@ class RouteResultsScreen extends StatelessWidget {
               style:
                   const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
         ]),
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(0.5),
+        bottom: const PreferredSize(
+          preferredSize: Size.fromHeight(0.5),
           child: Divider(height: 0.5, color: AppTheme.divider),
         ),
       ),
       body: results.isEmpty
           ? const Center(
-              child: EmptyState('No direct routes found',
-                  sub: 'Try selecting different stops',
-                  icon: Icons.route_outlined))
+              child: EmptyState(
+                'No live buses found',
+                sub: 'Only current conductor-tracked buses are shown for this trip',
+                icon: Icons.route_outlined,
+              ),
+            )
           : ListView.builder(
               padding: const EdgeInsets.all(16),
               itemCount: results.length,
@@ -114,8 +117,8 @@ class _RouteResultCard extends StatelessWidget {
                     borderRadius: BorderRadius.circular(8),
                     border: Border.all(
                       color: result.nextBusEtaMins <= 5
-                          ? AppTheme.green.withOpacity(0.4)
-                          : AppTheme.amber.withOpacity(0.4),
+                          ? AppTheme.green.withValues(alpha: 0.4)
+                          : AppTheme.amber.withValues(alpha: 0.4),
                       width: 0.5,
                     ),
                   ),
@@ -143,10 +146,14 @@ class _RouteResultCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(14, 0, 14, 8),
             child: _MiniTimeline(
-                route: route, fromStop: from, toStop: to, color: routeColor),
+              route: route,
+              fromStop: from,
+              toStop: to,
+              color: routeColor,
+            ),
           ),
 
-          Divider(color: AppTheme.divider, height: 1),
+          const Divider(color: AppTheme.divider, height: 1),
 
           // ── Live buses on this route ──
           if (liveBuses.isEmpty)
@@ -164,12 +171,18 @@ class _RouteResultCard extends StatelessWidget {
             Column(
               children: liveBuses
                   .map((bus) => _LiveBusRow(
-                      bus: bus,
-                      fromStop: from,
-                      onTap: () => Navigator.push(
+                        bus: bus,
+                        fromStop: from,
+                        onTap: () => Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (_) => StopDetailScreen(stop: from)))))
+                            builder: (_) => BusJourneyScreen(
+                              bus: bus,
+                              stop: from,
+                            ),
+                          ),
+                        ),
+                      ))
                   .toList(),
             ),
         ],
@@ -194,11 +207,10 @@ class _MiniTimeline extends StatelessWidget {
   Widget build(BuildContext context) {
     final fi = route.stopIds.indexOf(fromStop.id);
     final ti = route.stopIds.indexOf(toStop.id);
-    final stops = route.stopIds
-        .sublist(fi, ti + 1)
-        .map((id) => VizagStops.get(id))
-        .whereType<BusStop>()
-        .toList();
+    final segmentStopIds = fi >= 0 && ti >= fi
+        ? route.stopIds.sublist(fi, ti + 1)
+        : <String>[fromStop.id, toStop.id];
+    final stops = segmentStopIds.map(VizagStops.resolve).toList();
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -215,14 +227,14 @@ class _MiniTimeline extends StatelessWidget {
                   height: isF || isL ? 10 : 7,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: isF || isL ? color : color.withOpacity(0.4),
+                    color: isF || isL ? color : color.withValues(alpha: 0.4),
                   ),
                 ),
                 if (!isL)
                   Expanded(
                       child: Container(
                     height: 1.5,
-                    color: color.withOpacity(0.35),
+                    color: color.withValues(alpha: 0.35),
                   )),
               ]),
             );
@@ -273,34 +285,75 @@ class _LiveBusRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final currentStop = VizagStops.get(bus.segmentStartIdResolved);
+    final provider = context.watch<AppProvider>();
+    final currentStop = VizagStops.resolve(bus.segmentStartIdResolved);
+    final etaMins = provider.etaToStopMins(bus, fromStop.id);
+    final isAtBoardingStop =
+        bus.segmentStartIdResolved == fromStop.id && !bus.isBetweenStops;
+    final isApproachingBoardingStop = bus.segmentEndIdResolved == fromStop.id;
+    final statusLabel = isAtBoardingStop
+        ? 'At ${fromStop.name}'
+        : isApproachingBoardingStop
+            ? 'Approaching ${fromStop.name}'
+            : 'Passed ${currentStop.name}';
+    final etaLabel = isAtBoardingStop || etaMins <= 0 ? 'Now' : '$etaMins min';
+
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-        decoration: BoxDecoration(
-            border:
-                Border(top: BorderSide(color: AppTheme.divider, width: 0.5))),
-        child: Row(children: [
-          Icon(Icons.directions_bus_rounded,
-              size: 14, color: AppTheme.routeColor(bus.routeNumber)),
-          const SizedBox(width: 8),
-          Expanded(
-            child: Text(
-                currentStop != null
-                    ? bus.isBetweenStops
-                        ? 'Passed ${currentStop.name}'
-                        : 'At ${currentStop.name}'
-                    : 'En route',
-                style: const TextStyle(
-                    fontSize: 12, color: AppTheme.textSecondary)),
+        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        decoration: const BoxDecoration(
+          border: Border(
+            top: BorderSide(color: AppTheme.divider, width: 0.5),
           ),
-          BusTypePill(bus.routeBusType),
-          const SizedBox(width: 10),
-          CrowdBar(bus.crowd),
-          const SizedBox(width: 10),
-          SourcePill(bus.source),
-        ]),
+        ),
+        child: Row(
+          children: [
+            Icon(Icons.directions_bus_rounded,
+                size: 15, color: AppTheme.routeColor(bus.routeNumber)),
+            const SizedBox(width: 10),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    statusLabel,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: AppTheme.textPrimary,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: [
+                      BusTypePill(bus.routeBusType),
+                      SourcePill(bus.source),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                Text(
+                  etaLabel,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w800,
+                    color: etaMins <= 3 ? AppTheme.green : AppTheme.amber,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                CrowdBar(bus.crowd),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

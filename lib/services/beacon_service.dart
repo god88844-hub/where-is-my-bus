@@ -34,7 +34,7 @@ class BeaconService {
     _active = true;
     await _push();
     _timer = Timer.periodic(
-      Duration(seconds: AppConstants.beaconIntervalSec),
+      const Duration(seconds: AppConstants.beaconIntervalSec),
       (_) => _push(),
     );
   }

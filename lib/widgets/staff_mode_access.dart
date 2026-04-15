@@ -1,18 +1,14 @@
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 
 import '../screens/conductor_screen.dart';
-import '../services/firestore_service.dart';
 import '../utils/app_theme.dart';
 
-const String staffAccessCode = 'vizag2026';
-const bool devStaffModeBypass =
-    bool.fromEnvironment('DEV_STAFF_BYPASS', defaultValue: false);
+const String staffAccessPassword = 'vizag2026';
 
 Future<void> showStaffModeAccessSheet(
   BuildContext context, {
   String title = 'Staff Mode',
-  String subtitle = 'Enter the staff access code to open conductor tracking.',
+  String subtitle = 'Enter the staff password to open conductor tracking.',
   String buttonLabel = 'Open Staff Mode',
 }) async {
   final shouldOpenConductor = await showModalBottomSheet<bool>(
@@ -65,8 +61,8 @@ class _StaffModeAccessSheetState extends State<_StaffModeAccessSheet> {
 
   Future<void> _submit() async {
     final value = _controller.text.trim();
-    if (value != staffAccessCode) {
-      setState(() => _error = 'Invalid access code');
+    if (value != staffAccessPassword) {
+      setState(() => _error = 'Invalid password');
       return;
     }
 
@@ -75,70 +71,6 @@ class _StaffModeAccessSheetState extends State<_StaffModeAccessSheet> {
       _submitting = true;
       _error = null;
     });
-
-    if (kDebugMode || devStaffModeBypass) {
-      Navigator.pop(context, true);
-      return;
-    }
-
-    final status = await FirestoreService().getStaffAccessStatus();
-    if (!mounted) return;
-
-    if (!status.isConductor) {
-      setState(() {
-        _submitting = false;
-        _error = 'This account is not approved for conductor mode yet';
-      });
-
-      await showDialog<void>(
-        context: context,
-        builder: (context) => AlertDialog(
-          backgroundColor: AppTheme.surface,
-          title: const Text(
-            'Approve This Device',
-            style: TextStyle(color: AppTheme.textPrimary),
-          ),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text(
-                'Add this UID in Firestore under users/{uid} with role = conductor or admin, then try again.',
-                style: TextStyle(
-                  color: AppTheme.textSecondary,
-                  fontSize: 13,
-                  height: 1.4,
-                ),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'Current UID',
-                style: TextStyle(
-                  color: AppTheme.textMuted,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-              const SizedBox(height: 6),
-              SelectableText(
-                status.uid,
-                style: const TextStyle(
-                  color: AppTheme.textPrimary,
-                  fontSize: 12,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Close'),
-            ),
-          ],
-        ),
-      );
-      return;
-    }
 
     Navigator.pop(context, true);
   }
@@ -183,7 +115,7 @@ class _StaffModeAccessSheetState extends State<_StaffModeAccessSheet> {
                 textInputAction: TextInputAction.done,
                 style: const TextStyle(color: AppTheme.textPrimary),
                 decoration: InputDecoration(
-                  hintText: 'Access code',
+                  hintText: 'Staff password',
                   hintStyle: const TextStyle(color: AppTheme.textMuted),
                   filled: true,
                   fillColor: AppTheme.card,

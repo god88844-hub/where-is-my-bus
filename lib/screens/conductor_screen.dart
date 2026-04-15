@@ -2,7 +2,6 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import '../data/bus_plate_registry.dart';
 import '../data/vizag_data.dart';
 import '../models/bus.dart';
 import '../services/conductor_tracking_service.dart';
@@ -19,7 +18,6 @@ class _ConductorScreenState extends State<ConductorScreen> {
   final ConductorTrackingService _trackingService =
       ConductorTrackingService.instance;
   final TextEditingController _searchCtrl = TextEditingController();
-  final TextEditingController _plateCtrl = TextEditingController();
   final FocusNode _routeSearchFocus = FocusNode();
 
   bool _tracking = false;
@@ -27,6 +25,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
   String? _selectedRoute;
   String? _selectedStopId;
   String? _segmentEndStopId;
+  BusType _busType = BusType.redOrdinary;
   BusCrowd _crowd = BusCrowd.moderate;
   String? _statusMessage;
   double? _lastLat;
@@ -61,7 +60,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
   Future<void> _primeDebugDraft() async {
     if (_trackingService.tracking ||
         _trackingService.selectedRoute != null ||
-        _trackingService.normalizedPlate.isNotEmpty) {
+        _trackingService.selectedBusType != null) {
       return;
     }
 
@@ -69,7 +68,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
     if (debugRoute == null) return;
 
     await _trackingService.setDraftRoute(debugRoute);
-    await _trackingService.setDraftPlate('AP31TE5929');
+    await _trackingService.setDraftBusType(debugRoute.busType);
     if (!mounted) return;
     _syncFromService();
   }
@@ -79,16 +78,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
     return VizagRoutes.byRouteId(_selectedRoute!);
   }
 
-  BusType get _resolvedBusType {
-    return BusPlateRegistry.resolveType(
-          plateNumber: _plateCtrl.text,
-          routeNumber: _selectedRoute,
-        ) ??
-        _activeRoute?.busType ??
-        BusType.redOrdinary;
-  }
-
-  String get _normalizedPlate => _plateCtrl.text.toUpperCase().trim();
+  BusType get _resolvedBusType => _busType;
 
   int get _currentStopIndex {
     final route = _activeRoute;
@@ -139,6 +129,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
       _showDropdown = false;
       if (!_tracking) {
         _selectedStopId = null;
+        _busType = route.busType;
       }
     });
     FocusScope.of(context).unfocus();
@@ -156,6 +147,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
         }
       } else {
         await _trackingService.setDraftRoute(route);
+        await _trackingService.setDraftBusType(_busType);
       }
     } catch (e) {
       if (!mounted) return;
@@ -176,10 +168,6 @@ class _ConductorScreenState extends State<ConductorScreen> {
       _show('Please select a route first');
       return;
     }
-    if (_normalizedPlate.isEmpty) {
-      _show('Please enter the bus plate number');
-      return;
-    }
 
     setState(() => _loading = true);
 
@@ -187,7 +175,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
       if (_activeRoute != null) {
         await _trackingService.setDraftRoute(_activeRoute!);
       }
-      await _trackingService.setDraftPlate(_plateCtrl.text);
+      await _trackingService.setDraftBusType(_resolvedBusType);
       await _trackingService.setDraftCrowd(_crowd);
       final started = await _trackingService.startTracking();
 
@@ -211,7 +199,17 @@ class _ConductorScreenState extends State<ConductorScreen> {
     setState(() => _loading = true);
     try {
       await _trackingService.syncNow();
-      _show('Bus update sent to Firebase');
+      if (_trackingService.lastCloudSyncSucceeded) {
+        _show('Bus update sent to Firebase');
+      } else {
+        final error = _trackingService.lastCloudSyncError;
+        setState(() {
+          _statusMessage = error == null
+              ? 'Firebase write failed'
+              : 'Firebase write failed: $error';
+        });
+        _show('Could not write live location to Firebase');
+      }
     } catch (e) {
       setState(() {
         _statusMessage = 'Firebase write failed: $e';
@@ -268,7 +266,6 @@ class _ConductorScreenState extends State<ConductorScreen> {
     final serviceRoute = _trackingService.selectedRoute;
     final route =
         serviceRoute == null ? null : VizagRoutes.byRouteId(serviceRoute);
-    final normalizedPlate = _trackingService.normalizedPlate;
     final routeLabel =
         route == null ? '' : '${route.number}: ${route.from} -> ${route.to}';
 
@@ -276,6 +273,8 @@ class _ConductorScreenState extends State<ConductorScreen> {
       _tracking = _trackingService.tracking;
       _selectedRoute = serviceRoute;
       _selectedStopId = _trackingService.selectedStopId;
+      _busType =
+          _trackingService.selectedBusType ?? route?.busType ?? _resolvedBusType;
       _crowd = _trackingService.crowd;
       _statusMessage = _trackingService.statusMessage;
       _lastLat = _trackingService.lastLat;
@@ -289,13 +288,6 @@ class _ConductorScreenState extends State<ConductorScreen> {
       _debugSimulationActive = _trackingService.debugSimulationActive;
       _autoStopEnabled = _trackingService.autoStopEnabled;
     });
-
-    if (_plateCtrl.text != normalizedPlate) {
-      _plateCtrl.value = _plateCtrl.value.copyWith(
-        text: normalizedPlate,
-        selection: TextSelection.collapsed(offset: normalizedPlate.length),
-      );
-    }
 
     if (!_routeSearchFocus.hasFocus && _searchCtrl.text != routeLabel) {
       _searchCtrl.value = _searchCtrl.value.copyWith(
@@ -329,7 +321,6 @@ class _ConductorScreenState extends State<ConductorScreen> {
   void dispose() {
     _trackingService.removeListener(_syncFromService);
     _searchCtrl.dispose();
-    _plateCtrl.dispose();
     _routeSearchFocus.dispose();
     super.dispose();
   }
@@ -362,7 +353,6 @@ class _ConductorScreenState extends State<ConductorScreen> {
               _StatusCard(
                 tracking: _tracking,
                 routeNumber: _activeRoute?.number,
-                plateNumber: _normalizedPlate.isEmpty ? null : _normalizedPlate,
                 busTypeLabel:
                     _activeRoute == null ? null : _resolvedBusType.label,
                 stopName: _selectedStopId == null
@@ -404,11 +394,11 @@ class _ConductorScreenState extends State<ConductorScreen> {
                       const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                   decoration: BoxDecoration(
                     color: Color(_activeRoute!.busType.colorValue)
-                        .withOpacity(0.1),
+                        .withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(10),
                     border: Border.all(
                       color: Color(_activeRoute!.busType.colorValue)
-                          .withOpacity(0.3),
+                          .withValues(alpha: 0.3),
                     ),
                   ),
                   child: Row(
@@ -435,7 +425,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
               ],
               const SizedBox(height: 20),
               const Text(
-                'Bus Plate Number',
+                'Bus Type',
                 style: TextStyle(
                   color: AppTheme.textMuted,
                   fontSize: 13,
@@ -443,66 +433,79 @@ class _ConductorScreenState extends State<ConductorScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              TextField(
-                controller: _plateCtrl,
-                enabled: !_loading && !_tracking,
-                textCapitalization: TextCapitalization.characters,
-                style: const TextStyle(color: AppTheme.textPrimary),
-                decoration: InputDecoration(
-                  hintText: 'Example: AP31TE5929',
-                  hintStyle: const TextStyle(color: AppTheme.textMuted),
-                  filled: true,
-                  fillColor: AppTheme.surface,
-                  contentPadding:
-                      const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: AppTheme.divider),
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: AppTheme.divider),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: Color(0xFF185FA5)),
-                  ),
-                ),
-                onChanged: (_) {
-                  setState(() {});
-                  unawaited(_trackingService.setDraftPlate(_plateCtrl.text));
-                },
+              Wrap(
+                spacing: 8,
+                runSpacing: 8,
+                children: BusType.values.map((type) {
+                  final selected = _resolvedBusType == type;
+                  final color = Color(type.colorValue);
+                  return GestureDetector(
+                    onTap: _loading || _tracking
+                        ? null
+                        : () async {
+                            setState(() => _busType = type);
+                            await _trackingService.setDraftBusType(type);
+                          },
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 180),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 10,
+                      ),
+                      decoration: BoxDecoration(
+                        color: selected
+                            ? color.withValues(alpha: 0.16)
+                            : AppTheme.surface,
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                          color: selected ? color : AppTheme.divider,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.directions_bus_filled_outlined,
+                            size: 16,
+                            color: selected ? color : AppTheme.textMuted,
+                          ),
+                          const SizedBox(width: 8),
+                          Text(
+                            type.label,
+                            style: TextStyle(
+                              color: selected ? color : AppTheme.textSecondary,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
               ),
               const SizedBox(height: 10),
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
-                  color: Color(_resolvedBusType.colorValue).withOpacity(0.1),
+                  color: Color(_resolvedBusType.colorValue)
+                      .withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
-                    color: Color(_resolvedBusType.colorValue).withOpacity(0.3),
+                    color: Color(_resolvedBusType.colorValue)
+                        .withValues(alpha: 0.3),
                   ),
                 ),
-                child: Row(
-                  children: [
-                    Icon(
-                      Icons.directions_bus_filled_outlined,
-                      size: 16,
-                      color: Color(_resolvedBusType.colorValue),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Text(
-                        'Bus type auto-filled: ${_resolvedBusType.label}',
-                        style: TextStyle(
-                          color: Color(_resolvedBusType.colorValue),
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                  ],
+                child: Text(
+                  _activeRoute == null
+                      ? 'Choose the bus type before starting tracking.'
+                      : 'Default route type is ${_activeRoute!.busType.label}. You can override it here if needed.',
+                  style: TextStyle(
+                    color: Color(_resolvedBusType.colorValue),
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
               const SizedBox(height: 20),
@@ -652,7 +655,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                         });
                         await _trackingService.setAutoStopEnabled(value);
                       },
-                activeColor: const Color(0xFF1D9E75),
+                activeThumbColor: const Color(0xFF1D9E75),
                 contentPadding: EdgeInsets.zero,
                 title: const Text(
                   'Auto-detect stops from GPS',
@@ -669,6 +672,90 @@ class _ConductorScreenState extends State<ConductorScreen> {
                   ),
                 ),
               ),
+              if (!_autoStopEnabled && _tracking) ...[
+                const SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: AppTheme.surface,
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: AppTheme.divider),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'Manual Stop Control',
+                        style: TextStyle(
+                          color: AppTheme.textPrimary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Live GPS will continue updating. Use these buttons when the bus passes a stop.',
+                        style: TextStyle(
+                          color: AppTheme.textMuted,
+                          fontSize: 12,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: OutlinedButton.icon(
+                              onPressed: _loading ||
+                                      !_trackingService.canMoveToPreviousStop
+                                  ? null
+                                  : () async {
+                                      setState(() => _loading = true);
+                                      try {
+                                        await _trackingService
+                                            .moveToPreviousStop();
+                                      } finally {
+                                        if (mounted) {
+                                          setState(() => _loading = false);
+                                          _syncFromService();
+                                        }
+                                      }
+                                    },
+                              icon: const Icon(Icons.chevron_left, size: 18),
+                              label: const Text('Previous Stop'),
+                            ),
+                          ),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: ElevatedButton.icon(
+                              onPressed: _loading ||
+                                      !_trackingService.canAdvanceToNextStop
+                                  ? null
+                                  : () async {
+                                      setState(() => _loading = true);
+                                      try {
+                                        await _trackingService
+                                            .advanceToNextStop();
+                                      } finally {
+                                        if (mounted) {
+                                          setState(() => _loading = false);
+                                          _syncFromService();
+                                        }
+                                      }
+                                    },
+                              icon: const Icon(Icons.chevron_right, size: 18),
+                              label: const Text('Next Stop'),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: const Color(0xFF185FA5),
+                                foregroundColor: Colors.white,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ],
               const SizedBox(height: 8),
               if (!_tracking) ...[
                 SizedBox(
@@ -793,7 +880,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                       ? _debugSimulationActive
                           ? 'Debug simulation is driving the bus forward using the same route-snapping logic as live GPS.'
                           : 'Live tracking is active. Selecting another route above switches the same bus to the new route.'
-                      : 'Select a route, enter the bus plate, and start tracking once',
+                      : 'Select a route, choose the bus type, and start tracking once',
                   style: const TextStyle(
                     color: AppTheme.textMuted,
                     fontSize: 13,
@@ -812,7 +899,6 @@ class _ConductorScreenState extends State<ConductorScreen> {
 class _StatusCard extends StatelessWidget {
   final bool tracking;
   final String? routeNumber;
-  final String? plateNumber;
   final String? busTypeLabel;
   final String? stopName;
   final String? nextStopName;
@@ -828,7 +914,6 @@ class _StatusCard extends StatelessWidget {
   const _StatusCard({
     required this.tracking,
     this.routeNumber,
-    this.plateNumber,
     this.busTypeLabel,
     this.stopName,
     this.nextStopName,
@@ -886,7 +971,7 @@ class _StatusCard extends StatelessWidget {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF185FA5).withOpacity(0.15),
+                    color: const Color(0xFF185FA5).withValues(alpha: 0.15),
                     borderRadius: BorderRadius.circular(6),
                   ),
                   child: Text(
@@ -926,17 +1011,12 @@ class _StatusCard extends StatelessWidget {
               ),
             ),
           ],
-          if (plateNumber != null || busTypeLabel != null) ...[
+          if (busTypeLabel != null) ...[
             const SizedBox(height: 8),
             Wrap(
               spacing: 8,
               runSpacing: 8,
               children: [
-                if (plateNumber != null)
-                  _InfoChip(
-                    icon: Icons.badge_outlined,
-                    label: plateNumber!,
-                  ),
                 if (busTypeLabel != null)
                   _InfoChip(
                     icon: Icons.directions_bus_filled_outlined,
@@ -1123,7 +1203,8 @@ class _RouteSearchField extends StatelessWidget {
                       vertical: 3,
                     ),
                     decoration: BoxDecoration(
-                      color: Color(route.busType.colorValue).withOpacity(0.15),
+                      color: Color(route.busType.colorValue)
+                          .withValues(alpha: 0.15),
                       borderRadius: BorderRadius.circular(5),
                     ),
                     child: Text(

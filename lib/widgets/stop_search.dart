@@ -67,20 +67,24 @@ class _StopSearchFieldState extends State<StopSearchField> {
           decoration: BoxDecoration(
             color: AppTheme.card,
             borderRadius: BorderRadius.circular(10),
-            border: Border.all(
-              color: _focus.hasFocus
-                  ? AppTheme.green.withOpacity(0.5)
-                  : AppTheme.border,
-              width: 0.5,
+              border: Border.all(
+                color: _focus.hasFocus
+                    ? AppTheme.green.withValues(alpha: 0.5)
+                    : AppTheme.border,
+                width: 0.5,
+              ),
             ),
-          ),
-          child: Row(
-            children: [
-              const SizedBox(width: 12),
-              Icon(Icons.search, size: 16, color: AppTheme.textSecondary),
-              const SizedBox(width: 8),
-              Expanded(
-                child: TextField(
+            child: Row(
+              children: [
+                const SizedBox(width: 12),
+                const Icon(
+                  Icons.search,
+                  size: 16,
+                  color: AppTheme.textSecondary,
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: TextField(
                   controller: _ctrl,
                   focusNode: _focus,
                   style: const TextStyle(
@@ -136,14 +140,22 @@ class _StopSearchFieldState extends State<StopSearchField> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 14, vertical: 11),
                     decoration: BoxDecoration(
-                      border: last ? null : Border(
-                          bottom: BorderSide(
-                              color: AppTheme.border, width: 0.5)),
+                      border: last
+                          ? null
+                          : const Border(
+                              bottom: BorderSide(
+                                color: AppTheme.border,
+                                width: 0.5,
+                              ),
+                            ),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.place_outlined,
-                            size: 14, color: AppTheme.textMuted),
+                        const Icon(
+                          Icons.place_outlined,
+                          size: 14,
+                          color: AppTheme.textMuted,
+                        ),
                         const SizedBox(width: 8),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,

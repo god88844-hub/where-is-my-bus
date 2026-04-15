@@ -89,10 +89,13 @@ service cloud.firestore {
 
     match /live_buses/{busId} {
       allow read: if true;
-      allow create: if isConductor()
+      // Temporary password-gated conductor mode:
+      // the Flutter app controls access with a local password, so backend writes
+      // are limited to any signed-in user writing only their own bus record.
+      allow create: if isSignedIn()
           && request.resource.data.bus_id == busId
           && validLiveBusWrite();
-      allow update: if isConductor()
+      allow update: if isSignedIn()
           && resource.data.writer_uid == request.auth.uid
           && request.resource.data.bus_id == busId
           && validLiveBusWrite();
