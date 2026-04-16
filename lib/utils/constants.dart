@@ -12,11 +12,11 @@ class AppConstants {
       'https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com';
 
   // ── Vizag centre coordinates ──
-  static const double vizagLat = 17.6868;
-  static const double vizagLng  = 83.2185;
+  static const double vizagLat = 17.724044586973633;
+  static const double vizagLng = 83.30707513638193;
 
   // ── Nearby radius (km) for "buses near me" ──
-  static const double nearbyRadiusKm = 2.0;
+  static const double nearbyRadiusKm = 1.0;
   // Treat a bus as having reached a stop once it is within 1 km of the
   // configured stop/junction coordinate.
   static const int stopReachRadiusMeters = 1000;
@@ -24,7 +24,7 @@ class AppConstants {
 
   // ── Staleness / service hours ──
   /// Buses not updated within this many minutes are hidden from passengers.
-  static const int maxBusAgeMins = 5;
+  static const int maxBusAgeMins = 10;
   /// Vizag city bus service window (24-hour values).
   static const int serviceStartHour = 5;   // 5 AM
   static const int serviceEndHour   = 23;  // 11 PM

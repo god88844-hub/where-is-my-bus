@@ -43,7 +43,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
   @override
   void initState() {
     super.initState();
-    _filtered = _sortedRoutes(VizagRoutes.all);
+    _filtered = _sortedRoutes(_routeSelectionRoutes);
     _searchCtrl.addListener(_onSearch);
     _routeSearchFocus.addListener(() {
       if (!_routeSearchFocus.hasFocus && _showDropdown) {
@@ -78,6 +78,15 @@ class _ConductorScreenState extends State<ConductorScreen> {
     return VizagRoutes.byRouteId(_selectedRoute!);
   }
 
+  List<BusRoute> get _routeSelectionRoutes => VizagRoutes.primaryRoutes;
+
+  BusRoute? get _returnRoute {
+    final route = _activeRoute;
+    final returnRouteId = route?.returnRouteNumber;
+    if (returnRouteId == null) return null;
+    return VizagRoutes.byRouteId(returnRouteId);
+  }
+
   BusType get _resolvedBusType => _busType;
 
   int get _currentStopIndex {
@@ -104,22 +113,53 @@ class _ConductorScreenState extends State<ConductorScreen> {
 
   void _onSearch() {
     final q = _searchCtrl.text.toLowerCase().trim();
+    final routes = _routeSelectionRoutes;
     setState(() {
       _filtered = q.isEmpty
-          ? _sortedRoutes(VizagRoutes.all)
-          : _sortedRoutes(VizagRoutes.all.where((r) {
-              return r.number.toLowerCase().contains(q) ||
-                  r.from.toLowerCase().contains(q) ||
-                  r.to.toLowerCase().contains(q);
-            }).toList());
+          ? _sortedRoutes(routes)
+          : _sortedRoutes(
+              routes.where((r) {
+                return r.number.toLowerCase().contains(q) ||
+                    r.from.toLowerCase().contains(q) ||
+                    r.to.toLowerCase().contains(q);
+              }).toList(),
+              query: q);
       _showDropdown = _routeSearchFocus.hasFocus && q.isNotEmpty;
     });
   }
 
-  List<BusRoute> _sortedRoutes(List<BusRoute> routes) {
+  List<BusRoute> _sortedRoutes(List<BusRoute> routes, {String? query}) {
+    final normalizedQuery = query?.trim().toLowerCase() ?? '';
     final sorted = [...routes];
-    sorted.sort((a, b) => a.number.compareTo(b.number));
+    sorted.sort((a, b) {
+      final rankCompare = _routeSearchRank(a, normalizedQuery)
+          .compareTo(_routeSearchRank(b, normalizedQuery));
+      if (rankCompare != 0) return rankCompare;
+
+      final numberCompare = a.number.compareTo(b.number);
+      if (numberCompare != 0) return numberCompare;
+
+      final fromCompare = a.from.compareTo(b.from);
+      if (fromCompare != 0) return fromCompare;
+
+      return a.to.compareTo(b.to);
+    });
     return sorted;
+  }
+
+  int _routeSearchRank(BusRoute route, String query) {
+    if (query.isEmpty) return 0;
+
+    final number = route.number.toLowerCase();
+    final from = route.from.toLowerCase();
+    final to = route.to.toLowerCase();
+
+    if (number == query) return 0;
+    if (number.startsWith(query)) return 1;
+    if (number.contains(query)) return 2;
+    if (from.startsWith(query) || to.startsWith(query)) return 3;
+    if (from.contains(query) || to.contains(query)) return 4;
+    return 5;
   }
 
   Future<void> _selectRoute(BusRoute route) async {
@@ -273,8 +313,9 @@ class _ConductorScreenState extends State<ConductorScreen> {
       _tracking = _trackingService.tracking;
       _selectedRoute = serviceRoute;
       _selectedStopId = _trackingService.selectedStopId;
-      _busType =
-          _trackingService.selectedBusType ?? route?.busType ?? _resolvedBusType;
+      _busType = _trackingService.selectedBusType ??
+          route?.busType ??
+          _resolvedBusType;
       _crowd = _trackingService.crowd;
       _statusMessage = _trackingService.statusMessage;
       _lastLat = _trackingService.lastLat;
@@ -314,6 +355,24 @@ class _ConductorScreenState extends State<ConductorScreen> {
         setState(() => _loading = false);
         _syncFromService();
       }
+    }
+  }
+
+  Future<void> _clearRouteSelection() async {
+    if (_tracking || _loading) return;
+
+    FocusScope.of(context).unfocus();
+    _searchCtrl.clear();
+    setState(() {
+      _selectedRoute = null;
+      _selectedStopId = null;
+      _filtered = _sortedRoutes(_routeSelectionRoutes);
+      _showDropdown = false;
+    });
+
+    await _trackingService.clearDraftRoute();
+    if (mounted) {
+      _syncFromService();
     }
   }
 
@@ -385,44 +444,9 @@ class _ConductorScreenState extends State<ConductorScreen> {
                 enabled: !_loading,
                 showDropdown: _showDropdown,
                 filtered: _filtered,
+                onClear: !_tracking && !_loading ? _clearRouteSelection : null,
                 onSelect: _selectRoute,
               ),
-              if (_activeRoute != null) ...[
-                const SizedBox(height: 10),
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: Color(_activeRoute!.busType.colorValue)
-                        .withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(10),
-                    border: Border.all(
-                      color: Color(_activeRoute!.busType.colorValue)
-                          .withValues(alpha: 0.3),
-                    ),
-                  ),
-                  child: Row(
-                    children: [
-                      Icon(
-                        Icons.directions_bus_filled_outlined,
-                        size: 16,
-                        color: Color(_activeRoute!.busType.colorValue),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          'Bus type will be set automatically: ${_activeRoute!.busType.label}',
-                          style: TextStyle(
-                            color: Color(_activeRoute!.busType.colorValue),
-                            fontSize: 12,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ],
               const SizedBox(height: 20),
               const Text(
                 'Bus Type',
@@ -489,8 +513,8 @@ class _ConductorScreenState extends State<ConductorScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
                 decoration: BoxDecoration(
-                  color: Color(_resolvedBusType.colorValue)
-                      .withValues(alpha: 0.1),
+                  color:
+                      Color(_resolvedBusType.colorValue).withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(10),
                   border: Border.all(
                     color: Color(_resolvedBusType.colorValue)
@@ -499,8 +523,8 @@ class _ConductorScreenState extends State<ConductorScreen> {
                 ),
                 child: Text(
                   _activeRoute == null
-                      ? 'Choose the bus type before starting tracking.'
-                      : 'Default route type is ${_activeRoute!.busType.label}. You can override it here if needed.',
+                      ? 'Select a route first.'
+                      : 'Default: ${_activeRoute!.busType.label}',
                   style: TextStyle(
                     color: Color(_resolvedBusType.colorValue),
                     fontSize: 12,
@@ -553,7 +577,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                     const SizedBox(height: 6),
                     Text(
                       _nextStopName == null
-                          ? 'The app will detect the current stop automatically when tracking starts.'
+                          ? 'GPS will detect the current stop.'
                           : (_segmentProgress ?? 0) > 0.02 &&
                                   (_segmentProgress ?? 0) < 0.98
                               ? 'Between stops · ${(100 * (_segmentProgress ?? 0)).round()}% to $_nextStopName'
@@ -563,7 +587,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                         fontSize: 12,
                       ),
                     ),
-                    if (_activeRoute?.returnRouteNumber != null) ...[
+                    if (_returnRoute != null) ...[
                       const SizedBox(height: 12),
                       SizedBox(
                         width: double.infinity,
@@ -571,7 +595,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                           onPressed: _loading ? null : _reverseDirection,
                           icon: const Icon(Icons.swap_horiz, size: 18),
                           label: Text(
-                            'Reverse To ${_activeRoute!.to} -> ${_activeRoute!.from}',
+                            'Switch to ${_returnRoute!.number}: ${_returnRoute!.from} -> ${_returnRoute!.to}',
                           ),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: const Color(0xFF185FA5),
@@ -665,7 +689,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                   ),
                 ),
                 subtitle: const Text(
-                  'The app will move to the next stop when the bus gets close to it.',
+                  'Moves forward inside the 1 km stop radius.',
                   style: TextStyle(
                     color: AppTheme.textMuted,
                     fontSize: 12,
@@ -694,7 +718,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                       ),
                       const SizedBox(height: 4),
                       const Text(
-                        'Live GPS will continue updating. Use these buttons when the bus passes a stop.',
+                        'Use only if GPS misses a stop.',
                         style: TextStyle(
                           color: AppTheme.textMuted,
                           fontSize: 12,
@@ -1133,6 +1157,7 @@ class _RouteSearchField extends StatelessWidget {
   final bool enabled;
   final bool showDropdown;
   final List<BusRoute> filtered;
+  final VoidCallback? onClear;
   final Future<void> Function(BusRoute) onSelect;
 
   const _RouteSearchField({
@@ -1141,6 +1166,7 @@ class _RouteSearchField extends StatelessWidget {
     required this.enabled,
     required this.showDropdown,
     required this.filtered,
+    this.onClear,
     required this.onSelect,
   });
 
@@ -1154,7 +1180,7 @@ class _RouteSearchField extends StatelessWidget {
           enabled: enabled,
           style: const TextStyle(color: AppTheme.textPrimary),
           decoration: InputDecoration(
-            hintText: 'Search route (e.g. 38Y, Gajuwaka)',
+            hintText: 'Search bus number (e.g. 28K, 38Y)',
             hintStyle: const TextStyle(color: AppTheme.textMuted),
             filled: true,
             fillColor: AppTheme.surface,
@@ -1177,6 +1203,17 @@ class _RouteSearchField extends StatelessWidget {
               color: AppTheme.textMuted,
               size: 20,
             ),
+            suffixIcon: controller.text.trim().isEmpty || onClear == null
+                ? null
+                : IconButton(
+                    onPressed: onClear,
+                    tooltip: 'Clear route',
+                    icon: const Icon(
+                      Icons.close,
+                      color: AppTheme.textMuted,
+                      size: 20,
+                    ),
+                  ),
           ),
         ),
         if (showDropdown && filtered.isNotEmpty)

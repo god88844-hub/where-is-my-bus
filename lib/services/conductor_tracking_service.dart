@@ -122,6 +122,16 @@ class ConductorTrackingService extends ChangeNotifier {
     notifyListeners();
   }
 
+  Future<void> clearDraftRoute() async {
+    if (tracking) return;
+    selectedRoute = null;
+    selectedStopId = null;
+    _clearProgressState();
+    statusMessage = 'Route selection cleared';
+    await _persistSession();
+    notifyListeners();
+  }
+
   Future<void> setDraftBusType(BusType value) async {
     selectedBusType = value;
     await _persistSession();
@@ -237,13 +247,7 @@ class ConductorTrackingService extends ChangeNotifier {
     await stopDebugSimulation(resumeGps: false);
     selectedRoute = route.routeId;
     selectedStopId = null;
-    _segmentStartStopId = null;
-    _segmentEndStopId = null;
-    _segmentProgress = null;
-    _distanceToNextStopKm = null;
-    _remainingRouteKm = null;
-    _snappedLat = null;
-    _snappedLng = null;
+    _clearProgressState();
     statusMessage =
         'Changing route to ${route.number} ${route.from} to ${route.to}...';
     await _resolveCurrentStopFromLocation();
@@ -270,10 +274,32 @@ class ConductorTrackingService extends ChangeNotifier {
     await stopDebugSimulation(resumeGps: false);
     final currentStop = selectedStopId;
     selectedRoute = returnRoute.routeId;
+    _clearProgressState();
     selectedStopId = currentStop != null &&
             returnRoute.stopIds.contains(currentStop)
         ? currentStop
         : (returnRoute.stopIds.isNotEmpty ? returnRoute.stopIds.first : null);
+
+    if (lastLat != null && lastLng != null) {
+      final snapshot = RouteProgressService.snapToRoute(
+        route: returnRoute,
+        lat: lastLat!,
+        lng: lastLng!,
+        hintCurrentStopId: selectedStopId,
+      );
+      if (snapshot != null) {
+        if (autoStopEnabled) {
+          _applyProgressSnapshot(snapshot);
+        } else {
+          _applyManualProgressSnapshot(snapshot);
+        }
+      } else if (selectedStopId != null) {
+        _resetManualProgressForSelectedStop();
+      }
+    } else if (selectedStopId != null) {
+      _resetManualProgressForSelectedStop();
+    }
+
     statusMessage =
         'Direction changed: ${returnRoute.from} to ${returnRoute.to}';
 
@@ -289,7 +315,8 @@ class ConductorTrackingService extends ChangeNotifier {
 
   bool get canAdvanceToNextStop {
     final route = activeRoute;
-    return route != null && currentStopIndex >= 0 &&
+    return route != null &&
+        currentStopIndex >= 0 &&
         currentStopIndex < route.stopIds.length - 1;
   }
 
@@ -307,7 +334,8 @@ class ConductorTrackingService extends ChangeNotifier {
     }
 
     _resetManualProgressForSelectedStop();
-    statusMessage = 'Manual stop set to ${VizagStops.get(selectedStopId!)?.name ?? selectedStopId!}';
+    statusMessage =
+        'Manual stop set to ${VizagStops.get(selectedStopId!)?.name ?? selectedStopId!}';
     await _persistSession();
     notifyListeners();
 
@@ -330,7 +358,8 @@ class ConductorTrackingService extends ChangeNotifier {
     }
 
     _resetManualProgressForSelectedStop();
-    statusMessage = 'Manual stop set to ${VizagStops.get(selectedStopId!)?.name ?? selectedStopId!}';
+    statusMessage =
+        'Manual stop set to ${VizagStops.get(selectedStopId!)?.name ?? selectedStopId!}';
     await _persistSession();
     notifyListeners();
 
@@ -844,8 +873,10 @@ class ConductorTrackingService extends ChangeNotifier {
 
     _segmentProgress = 1;
     _distanceToNextStopKm = 0;
-    _remainingRouteKm = _remainingDistanceFromSegment(route, currentIndex + 1, 0);
-    final nextStopName = VizagStops.get(_segmentEndStopId!)?.name ?? _segmentEndStopId!;
+    _remainingRouteKm =
+        _remainingDistanceFromSegment(route, currentIndex + 1, 0);
+    final nextStopName =
+        VizagStops.get(_segmentEndStopId!)?.name ?? _segmentEndStopId!;
     statusMessage = 'Reached $nextStopName · tap Next stop in manual mode';
   }
 
@@ -859,6 +890,16 @@ class ConductorTrackingService extends ChangeNotifier {
     _remainingRouteKm = snapshot.remainingRouteKm;
     _snappedLat = snapshot.snappedLat;
     _snappedLng = snapshot.snappedLng;
+  }
+
+  void _clearProgressState() {
+    _segmentStartStopId = null;
+    _segmentEndStopId = null;
+    _segmentProgress = null;
+    _distanceToNextStopKm = null;
+    _remainingRouteKm = null;
+    _snappedLat = null;
+    _snappedLng = null;
   }
 
   double _remainingDistanceFromSegment(
@@ -937,7 +978,8 @@ class ConductorTrackingService extends ChangeNotifier {
       final elapsedSeconds =
           sampleTime.difference(lastUpdate!).inMilliseconds / 1000;
       if (elapsedSeconds >= 2) {
-        final movedKm = LocationService.distanceKm(lastLat!, lastLng!, lat, lng);
+        final movedKm =
+            LocationService.distanceKm(lastLat!, lastLng!, lat, lng);
         final movementSpeedKmh = (movedKm / elapsedSeconds) * 3600;
 
         if (movedKm < 0.015 && elapsedSeconds >= 4) {

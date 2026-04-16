@@ -125,8 +125,9 @@ class BusRoute {
   final List<String> stopIds; // ordered stop IDs
   final BusType busType;
   final int frequencyMins;
-  // Some routes share the same physical bus but different numbers
-  // e.g. 28K outbound / 68K return. Set returnRoute to link them.
+  // Directional route id to switch to when the conductor starts the return trip.
+  // If omitted, the app auto-generates a reverse trip using the same public
+  // route number.
   final String? returnRouteNumber;
 
   const BusRoute({
@@ -1032,11 +1033,29 @@ class VizagRoutes {
   static List<BusRoute> _generateAllRoutes() {
     final routes = <BusRoute>[];
     for (final base in _baseRoutes) {
-      routes.add(base);
-      // Auto-generate a return route if one isn't explicitly linked
-      if (base.returnRouteNumber == null && !base.number.endsWith('-R')) {
+      // Standard routes can always be reversed by the conductor. When a route
+      // does not define an explicit return route id, generate one and link the
+      // forward and reverse trips to each other.
+      if (base.returnRouteNumber == null &&
+          !base.routeId.endsWith('-R') &&
+          !base.number.endsWith('-R')) {
+        final reverseRouteId = '${base.routeId}-R';
+        final forwardRoute = BusRoute(
+          routeId: base.routeId,
+          number: base.number,
+          from: base.from,
+          to: base.to,
+          fromTelugu: base.fromTelugu,
+          toTelugu: base.toTelugu,
+          viaStops: base.viaStops,
+          stopIds: base.stopIds,
+          busType: base.busType,
+          frequencyMins: base.frequencyMins,
+          returnRouteNumber: reverseRouteId,
+        );
+        routes.add(forwardRoute);
         routes.add(BusRoute(
-          routeId: '${base.routeId}-R',
+          routeId: reverseRouteId,
           number: base.number,
           from: base.to,
           to: base.from,
@@ -1046,9 +1065,12 @@ class VizagRoutes {
           stopIds: base.stopIds.reversed.toList(),
           busType: base.busType,
           frequencyMins: base.frequencyMins,
-          returnRouteNumber: base.number,
+          returnRouteNumber: forwardRoute.routeId,
         ));
+        continue;
       }
+
+      routes.add(base);
     }
     return routes;
   }
@@ -1107,8 +1129,7 @@ class VizagRoutes {
           'kothavalasa'
         ],
         busType: BusType.redOrdinary,
-        frequencyMins: 20,
-        returnRouteNumber: '68K'),
+        frequencyMins: 20),
     BusRoute(
         routeId: '68K',
         number: '68K',
@@ -1126,8 +1147,7 @@ class VizagRoutes {
           'rk_beach'
         ],
         busType: BusType.redOrdinary,
-        frequencyMins: 20,
-        returnRouteNumber: '28K'),
+        frequencyMins: 20),
 
     // ── 38 family ─────────────────────────────────────────────
     BusRoute(
@@ -3237,6 +3257,9 @@ class VizagRoutes {
 
   static BusRoute? byNumber(String n) =>
       all.where((r) => r.number == n).firstOrNull;
+
+  static List<BusRoute> get primaryRoutes =>
+      all.where((route) => !route.routeId.endsWith('-R')).toList();
 
   static List<BusRoute> get passengerRoutes {
     final seen = <String>{};

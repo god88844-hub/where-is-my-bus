@@ -5,16 +5,38 @@ import 'package:vizag_bus_live/models/bus.dart';
 import 'package:vizag_bus_live/widgets/shared_widgets.dart';
 
 void main() {
-  test('28K and 68K keep their own public numbers by direction', () {
+  test('28K and 68K stay separate and each gets its own reverse trip', () {
     final outbound = VizagRoutes.byRouteId('28K');
+    final outboundReverse = VizagRoutes.byRouteId('28K-R');
     final inbound = VizagRoutes.byRouteId('68K');
+    final inboundReverse = VizagRoutes.byRouteId('68K-R');
 
     expect(outbound, isNotNull);
+    expect(outboundReverse, isNotNull);
     expect(inbound, isNotNull);
+    expect(inboundReverse, isNotNull);
     expect(outbound!.number, '28K');
     expect(inbound!.number, '68K');
-    expect(outbound.returnRouteNumber, '68K');
-    expect(inbound.returnRouteNumber, '28K');
+    expect(outbound.returnRouteNumber, '28K-R');
+    expect(outboundReverse!.returnRouteNumber, '28K');
+    expect(inbound.returnRouteNumber, '68K-R');
+    expect(inboundReverse!.returnRouteNumber, '68K');
+    expect(outboundReverse.from, 'Kothavalasa');
+    expect(outboundReverse.to, 'RK Beach');
+    expect(inboundReverse.from, 'RK Beach');
+    expect(inboundReverse.to, 'Kothavalasa');
+  });
+
+  test(
+      'primary route list keeps conductor choices free of auto-generated returns',
+      () {
+    final primaryRouteIds =
+        VizagRoutes.primaryRoutes.map((route) => route.routeId);
+
+    expect(primaryRouteIds, contains('28K'));
+    expect(primaryRouteIds, contains('68K'));
+    expect(primaryRouteIds, isNot(contains('28K-R')));
+    expect(primaryRouteIds, isNot(contains('68K-R')));
   });
 
   test('live bus resolves the route shape by route key', () {
@@ -50,7 +72,9 @@ void main() {
     expect(bus.displayBusIdentity, '28K • AP31Z1234');
   });
 
-  test('approaching helper excludes buses that already passed the boarding stop', () {
+  test(
+      'approaching helper excludes buses that already passed the boarding stop',
+      () {
     final bus = LiveBus(
       id: 'demo',
       routeKey: '28K',

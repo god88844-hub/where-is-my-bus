@@ -38,8 +38,8 @@ class RouteProgressService {
   static const int _localWindowAheadSegments = 6;
   static const double _localWindowToleranceKm = 0.18;
   static const double _backtrackToleranceKm = 0.08;
+  static const double _maxRouteSnapDistanceKm = AppConstants.stopReachRadiusKm;
   static const double _stopArrivalDistanceKm = AppConstants.stopReachRadiusKm;
-  static const double _stopArrivalProgress = 0.95;
 
   static RouteProgressSnapshot? snapToRoute({
     required BusRoute route,
@@ -113,6 +113,31 @@ class RouteProgressService {
 
     final currentStopId = route.stopIds[best.segmentIndex];
     final nextStopId = route.stopIds[best.segmentIndex + 1];
+    final currentStop = VizagStops.get(currentStopId);
+    final nextStop = VizagStops.get(nextStopId);
+    final distanceToCurrentStopCoordinateKm = currentStop == null
+        ? double.infinity
+        : LocationService.distanceKm(
+            lat,
+            lng,
+            currentStop.lat,
+            currentStop.lng,
+          );
+    final distanceToNextStopCoordinateKm = nextStop == null
+        ? double.infinity
+        : LocationService.distanceKm(
+            lat,
+            lng,
+            nextStop.lat,
+            nextStop.lng,
+          );
+
+    if (best.distanceFromRouteKm > _maxRouteSnapDistanceKm &&
+        distanceToCurrentStopCoordinateKm > _stopArrivalDistanceKm &&
+        distanceToNextStopCoordinateKm > _stopArrivalDistanceKm) {
+      return null;
+    }
+
     final distanceToNextStopKm = best.segmentLengthKm * (1 - best.progress);
 
     var remainingRouteKm = distanceToNextStopKm;
@@ -121,12 +146,11 @@ class RouteProgressService {
     }
 
     final arrivedAtNextStop =
-        best.progress >= _stopArrivalProgress ||
-        distanceToNextStopKm <= _stopArrivalDistanceKm;
+        distanceToNextStopCoordinateKm <= _stopArrivalDistanceKm &&
+            distanceToNextStopCoordinateKm <= distanceToCurrentStopCoordinateKm;
 
     if (arrivedAtNextStop) {
-      final arrivedStop = VizagStops.get(nextStopId);
-      if (arrivedStop != null) {
+      if (nextStop != null) {
         final arrivedIndex = best.segmentIndex + 1;
         if (arrivedIndex >= route.stopIds.length - 1) {
           return RouteProgressSnapshot(
@@ -137,10 +161,9 @@ class RouteProgressService {
             segmentProgress: 1,
             distanceToNextStopKm: 0,
             remainingRouteKm: 0,
-            snappedLat: arrivedStop.lat,
-            snappedLng: arrivedStop.lng,
-            distanceFromRouteKm: LocationService.distanceKm(
-                lat, lng, arrivedStop.lat, arrivedStop.lng),
+            snappedLat: nextStop.lat,
+            snappedLng: nextStop.lng,
+            distanceFromRouteKm: distanceToNextStopCoordinateKm,
           );
         }
 
@@ -160,10 +183,9 @@ class RouteProgressService {
           segmentProgress: 0,
           distanceToNextStopKm: nextLegDistanceKm,
           remainingRouteKm: remainingAfterArrivalKm,
-          snappedLat: arrivedStop.lat,
-          snappedLng: arrivedStop.lng,
-          distanceFromRouteKm: LocationService.distanceKm(
-              lat, lng, arrivedStop.lat, arrivedStop.lng),
+          snappedLat: nextStop.lat,
+          snappedLng: nextStop.lng,
+          distanceFromRouteKm: distanceToNextStopCoordinateKm,
         );
       }
     }
