@@ -182,7 +182,7 @@ class VizagStops {
   static const _maddilapalemArea = _StopArea(17.7420, 83.3170);
   static const _mvpArea = _StopArea(17.7400, 83.3350);
   static const _simhachalamArea = _StopArea(17.7660, 83.2500);
-  static const _pendurthiArea = _StopArea(17.7830, 83.2150);
+  static const _pendurthiArea = _StopArea(17.822211272584937, 83.2050411674474);
   static const _madhurawadaArea = _StopArea(17.8200, 83.3600);
   static const _anandapuramArea = _StopArea(17.8600, 83.3000);
   static const _tagarapuvalasaArea = _StopArea(17.9200, 83.3500);
@@ -193,43 +193,48 @@ class VizagStops {
   static const _vizianagaramArea = _StopArea(18.1067, 83.3956);
 
   static const Map<String, _ExactStopCoordinate> _verifiedCoordinates = {
-    'au_outgate': _ExactStopCoordinate(17.7325, 83.3185),
-    'achutapuram': _ExactStopCoordinate(17.5805, 82.9005),
-    'adavivaram': _ExactStopCoordinate(17.7555, 83.2955),
-    'aganampudi': _ExactStopCoordinate(17.6790, 83.1610),
-    'akkayyapalem': _ExactStopCoordinate(17.7305, 83.3055),
-    'anakapalli': _ExactStopCoordinate(17.6915, 83.0035),
-    'anandapuram': _ExactStopCoordinate(17.7855, 83.3920),
-    'arilova': _ExactStopCoordinate(17.7600, 83.3200),
-    'bhpv': _ExactStopCoordinate(17.7105, 83.2520),
-    'bhimili': _ExactStopCoordinate(17.8905, 83.4520),
-    'cbm': _ExactStopCoordinate(17.7205, 83.2960),
-    'carshed': _ExactStopCoordinate(17.7485, 83.3530),
-    'chodavaram': _ExactStopCoordinate(17.8280, 82.9350),
-    'collector_office': _ExactStopCoordinate(17.7220, 83.3060),
-    'convent_junction': _ExactStopCoordinate(17.7160, 83.3070),
-    'devarapalli': _ExactStopCoordinate(17.7450, 83.0350),
-    'duvvada': _ExactStopCoordinate(17.6705, 83.2060),
-    'endada': _ExactStopCoordinate(17.7425, 83.3410),
-    'fishing_harbour': _ExactStopCoordinate(17.7055, 83.2860),
-    'gajuwaka': _ExactStopCoordinate(17.6868, 83.2185),
-    'gangavaram': _ExactStopCoordinate(17.6415, 83.2350),
-    'gopalapatnam': _ExactStopCoordinate(17.7480, 83.2180),
-    'gurudwara': _ExactStopCoordinate(17.7360, 83.3110),
-    'hb_colony': _ExactStopCoordinate(17.7270, 83.2960),
-    'hanumanthawaka': _ExactStopCoordinate(17.7740, 83.3010),
-    'ins_kalinga': _ExactStopCoordinate(17.7490, 83.3610),
-    'jagadamba': _ExactStopCoordinate(17.7175, 83.2990),
-    'kailasagiri': _ExactStopCoordinate(17.7490, 83.3420),
-    'kailasapuram': _ExactStopCoordinate(17.7325, 83.3030),
-    'kambalakonda': _ExactStopCoordinate(17.7705, 83.2990),
-    'kancharapalem': _ExactStopCoordinate(17.7390, 83.3160),
-    'kommadi': _ExactStopCoordinate(17.7760, 83.3820),
-    'kothavalasa': _ExactStopCoordinate(17.9000, 83.1500),
-    'kurmannapalem': _ExactStopCoordinate(17.6760, 83.2210),
-    'mvp_colony': _ExactStopCoordinate(17.7510, 83.3360),
-    'maddilapalem': _ExactStopCoordinate(17.7360, 83.3110),
-    'madhavadhara': _ExactStopCoordinate(17.7390, 83.2960),
+    'au_outgate': _ExactStopCoordinate(17.722201402907455, 83.32734693840492),
+    'achutapuram': _ExactStopCoordinate(17.563775665980852, 82.97908605785608),
+    'adavivaram': _ExactStopCoordinate(17.780415421644747, 83.25265653441035),
+    'aganampudi': _ExactStopCoordinate(17.688308791621164, 83.12517773491024),
+    'akkayyapalem': _ExactStopCoordinate(17.73524302600154, 83.29995446301888),
+    'anakapalli': _ExactStopCoordinate(17.689651085658205, 83.0023607303745),
+    'anandapuram': _ExactStopCoordinate(17.894901577346417, 83.37762676648626),
+    'arilova': _ExactStopCoordinate(17.75971389220103, 83.32105142204054),
+    'bhpv': _ExactStopCoordinate(17.702152156880658, 83.20561102228203),
+    'bhimili': _ExactStopCoordinate(17.892554182561323, 83.453218638804),
+    'cbm': _ExactStopCoordinate(17.724599083333377, 83.30864710597724),
+    'carshed': _ExactStopCoordinate(17.8035495291326, 83.3531076324752),
+    'chodavaram': _ExactStopCoordinate(17.82744494216951, 82.9352841698859),
+    'collector_office':
+        _ExactStopCoordinate(17.708743005671018, 83.30702866022884),
+    'convent_junction':
+        _ExactStopCoordinate(17.717146175809056, 83.2898968133065),
+    'devarapalli': _ExactStopCoordinate(17.99055168753284, 82.9807434173196),
+    'duvvada': _ExactStopCoordinate(17.70403637708094, 83.15151410285544),
+    'endada': _ExactStopCoordinate(17.782165460333573, 83.3583397356011),
+    'fishing_harbour':
+        _ExactStopCoordinate(17.697491334083118, 83.29910527788323),
+    'gajuwaka': _ExactStopCoordinate(17.690008733886543, 83.22348803257371),
+    'gangavaram': _ExactStopCoordinate(17.643407630087204, 83.2292091616115),
+    'gopalapatnam': _ExactStopCoordinate(17.75183293706425, 83.21784190654942),
+    'gurudwara': _ExactStopCoordinate(17.7365862288982, 83.3075160467041),
+    'hb_colony': _ExactStopCoordinate(17.745956316232608, 83.32309677945763),
+    'hanumanthawaka':
+        _ExactStopCoordinate(17.755138799198114, 83.33186522858041),
+    'ins_kalinga': _ExactStopCoordinate(17.855434559762365, 83.41625821512292),
+    'jagadamba': _ExactStopCoordinate(17.71206765708635, 83.30249739782423),
+    'kailasagiri': _ExactStopCoordinate(17.747415331681864, 83.34628558404164),
+    'kailasapuram': _ExactStopCoordinate(17.740651368024675, 83.28879401053344),
+    'kambalakonda': _ExactStopCoordinate(17.76801566042918, 83.3429641790169),
+    'kancharapalem': _ExactStopCoordinate(17.73239409467747, 83.27799289458622),
+    'kommadi': _ExactStopCoordinate(17.824417121280245, 83.3565806008761),
+    'kothavalasa': _ExactStopCoordinate(17.896970472566025, 83.18532471449139),
+    'kurmannapalem':
+        _ExactStopCoordinate(17.685289956188655, 83.16764523824004),
+    'mvp_colony': _ExactStopCoordinate(17.742888294530275, 83.3279246927025),
+    'maddilapalem': _ExactStopCoordinate(17.735976634718714, 83.32088655628978),
+    'madhavadhara': _ExactStopCoordinate(17.74977901942765, 83.24891570575984),
     'madhurawada': _ExactStopCoordinate(17.8200, 83.3500),
     'malkapuram': _ExactStopCoordinate(17.7060, 83.2760),
     'mindi': _ExactStopCoordinate(17.6810, 83.2410),
@@ -238,24 +243,24 @@ class VizagStops {
     'ntpc': _ExactStopCoordinate(17.6305, 83.1810),
     'narava': _ExactStopCoordinate(17.7610, 83.2710),
     'naval_base': _ExactStopCoordinate(17.7010, 83.2810),
-    'old_post_office': _ExactStopCoordinate(17.7210, 83.3110),
+    'old_post_office': _ExactStopCoordinate(17.6936318, 83.2923058),
     'pm_palem': _ExactStopCoordinate(17.7510, 83.3610),
     'parawada': _ExactStopCoordinate(17.6510, 83.1510),
     'pedagantyada': _ExactStopCoordinate(17.6610, 83.2110),
-    'pendurthi': _ExactStopCoordinate(17.8330, 83.2000),
+    'pendurthi': _ExactStopCoordinate(17.822163955417253, 83.20503083491597),
     'purna_market': _ExactStopCoordinate(17.7210, 83.3050),
-    'rk_beach': _ExactStopCoordinate(17.7141, 83.3368),
-    'rtc_complex': _ExactStopCoordinate(17.7260, 83.3010),
+    'rk_beach': _ExactStopCoordinate(17.7113909, 83.3182041),
+    'rtc_complex': _ExactStopCoordinate(17.7238524, 83.3069688),
     'railway_station': _ExactStopCoordinate(17.7135, 83.2990),
     'rajeev_nagar': _ExactStopCoordinate(17.6685, 83.2210),
     'rushikonda': _ExactStopCoordinate(17.7610, 83.3820),
-    'sabbavaram': _ExactStopCoordinate(17.7230, 83.0570),
+    'sabbavaram': _ExactStopCoordinate(17.79095201905506, 83.12411936404783),
     'sagar_nagar': _ExactStopCoordinate(17.7560, 83.3720),
     'satyam_junction': _ExactStopCoordinate(17.7270, 83.3090),
     'scindia': _ExactStopCoordinate(17.6900, 83.2700),
     'sheelanagar': _ExactStopCoordinate(17.7210, 83.2510),
-    'simhachalam': _ExactStopCoordinate(17.7660, 83.2860),
-    'simhachalam_hilltop': _ExactStopCoordinate(17.7710, 83.2790),
+    'simhachalam': _ExactStopCoordinate(17.7715576, 83.2435933),
+    'simhachalam_hilltop': _ExactStopCoordinate(17.7669294, 83.2484553),
     'siripuram': _ExactStopCoordinate(17.7225, 83.3190),
     'sitammadhara': _ExactStopCoordinate(17.7290, 83.3060),
     'sontyam': _ExactStopCoordinate(17.7900, 83.1200),
@@ -715,8 +720,8 @@ class VizagStops {
       name: 'Sabbavaram',
       nameTelugu: 'సబ్బవరం',
       area: _pendurthiArea,
-      latOffset: -0.0190,
-      lngOffset: -0.0970,
+      latOffset: -0.031259253529877,
+      lngOffset: -0.08092180339957,
     ),
     'chodavaram': _areaStop(
       id: 'chodavaram',
@@ -980,13 +985,13 @@ class VizagStops {
         .split(RegExp(r'[_-]+'))
         .where((part) => part.isNotEmpty)
         .map((part) {
-          if (part.length <= 3) {
-            return part.toUpperCase();
-          }
-          return '${part[0].toUpperCase()}${part.substring(1)}';
-        })
-        .join(' ');
+      if (part.length <= 3) {
+        return part.toUpperCase();
+      }
+      return '${part[0].toUpperCase()}${part.substring(1)}';
+    }).join(' ');
   }
+
   static List<BusStop> get list => all.values.toList();
 
   // Search stops by name (English or Telugu)
@@ -1075,8 +1080,8 @@ class VizagRoutes {
         viaStops: ['Jagadamba', 'RTC Complex', 'NAD', 'Gopalapatnam'],
         stopIds: [
           'rk_beach',
-          'jagadamba',
           'collector_office',
+          'jagadamba',
           'rtc_complex',
           'railway_station',
           'kancharapalem',
@@ -1098,11 +1103,8 @@ class VizagRoutes {
           'kothavalasa',
           'pendurthi',
           'vepagunta',
-          'hanumanthawaka',
           'simhachalam',
-          'nad_junction',
-          'kancharapalem',
-          'railway_station',
+          'hanumanthawaka',
           'rtc_complex',
           'jagadamba',
           'rk_beach'
@@ -1155,12 +1157,7 @@ class VizagRoutes {
         from: 'RTC Complex',
         to: 'Bhanojithota',
         viaStops: ['Gurudwara', 'NAD', 'Sheelanagar'],
-        stopIds: [
-          'rtc_complex',
-          'gurudwara',
-          'nad_junction',
-          'sheelanagar'
-        ],
+        stopIds: ['rtc_complex', 'gurudwara', 'nad_junction', 'sheelanagar'],
         busType: BusType.redOrdinary,
         frequencyMins: 20),
     BusRoute(
@@ -2010,12 +2007,7 @@ class VizagRoutes {
         from: 'RTC Complex',
         to: 'IT Park',
         viaStops: ['Maddilapalem', 'Endada', 'Carshed'],
-        stopIds: [
-          'rtc_complex',
-          'maddilapalem',
-          'endada',
-          'carshed'
-        ],
+        stopIds: ['rtc_complex', 'maddilapalem', 'endada', 'carshed'],
         busType: BusType.greenCity,
         frequencyMins: 20),
     BusRoute(

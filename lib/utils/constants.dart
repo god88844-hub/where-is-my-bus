@@ -17,7 +17,9 @@ class AppConstants {
 
   // ── Nearby radius (km) for "buses near me" ──
   static const double nearbyRadiusKm = 2.0;
-  static const int stopReachRadiusMeters = 80;
+  // Treat a bus as having reached a stop once it is within 1 km of the
+  // configured stop/junction coordinate.
+  static const int stopReachRadiusMeters = 1000;
   static const double stopReachRadiusKm = stopReachRadiusMeters / 1000;
 
   // ── Staleness / service hours ──
