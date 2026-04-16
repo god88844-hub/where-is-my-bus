@@ -173,24 +173,34 @@ class _ExactStopCoordinate {
 //  ALL STOPS
 // ─────────────────────────────────────────────────────────────
 class VizagStops {
-  static const _cityCore = _StopArea(17.7125, 83.3013);
-  static const _beachRoad = _StopArea(17.7215, 83.3180);
-  static const _kancharapalemArea = _StopArea(17.7280, 83.2800);
-  static const _nadArea = _StopArea(17.7430, 83.2620);
-  static const _portArea = _StopArea(17.6920, 83.2840);
-  static const _gajuwakaArea = _StopArea(17.7000, 83.2000);
-  static const _maddilapalemArea = _StopArea(17.7420, 83.3170);
-  static const _mvpArea = _StopArea(17.7400, 83.3350);
-  static const _simhachalamArea = _StopArea(17.7660, 83.2500);
+  static const _cityCore = _StopArea(17.724044586973633, 83.30707513638193);
+  static const _beachRoad = _StopArea(17.711497390294234, 83.31811820871287);
+  static const _kancharapalemArea =
+      _StopArea(17.73239409467747, 83.27799289458622);
+  static const _nadArea = _StopArea(17.74279634488214, 83.23550511882578);
+  static const _portArea = _StopArea(17.68811827821838, 83.24960432025021);
+  static const _gajuwakaArea = _StopArea(17.690008733886543, 83.22348803257371);
+  static const _maddilapalemArea =
+      _StopArea(17.735976634718714, 83.32088655628978);
+  static const _mvpArea = _StopArea(17.742888294530275, 83.3279246927025);
+  static const _simhachalamArea =
+      _StopArea(17.77232576103274, 83.24339618949288);
   static const _pendurthiArea = _StopArea(17.822211272584937, 83.2050411674474);
-  static const _madhurawadaArea = _StopArea(17.8200, 83.3600);
-  static const _anandapuramArea = _StopArea(17.8600, 83.3000);
-  static const _tagarapuvalasaArea = _StopArea(17.9200, 83.3500);
-  static const _kothavalasaArea = _StopArea(17.8900, 83.2000);
-  static const _anakapalleArea = _StopArea(17.6910, 83.0060);
-  static const _parawadaArea = _StopArea(17.6660, 83.1500);
-  static const _yelamanchiliArea = _StopArea(17.5400, 82.8700);
-  static const _vizianagaramArea = _StopArea(18.1067, 83.3956);
+  static const _madhurawadaArea =
+      _StopArea(17.81647302589971, 83.35674215777088);
+  static const _anandapuramArea =
+      _StopArea(17.894901577346417, 83.37762676648626);
+  static const _tagarapuvalasaArea =
+      _StopArea(17.932587899019126, 83.42676591136784);
+  static const _kothavalasaArea =
+      _StopArea(17.896970472566025, 83.18532471449139);
+  static const _anakapalleArea =
+      _StopArea(17.689651085658205, 83.0023607303745);
+  static const _parawadaArea = _StopArea(17.62445568461084, 83.08582889911706);
+  static const _yelamanchiliArea =
+      _StopArea(17.54774790354826, 82.85402221798682);
+  static const _vizianagaramArea =
+      _StopArea(18.106625706188016, 83.39558591934815);
 
   static const Map<String, _ExactStopCoordinate> _verifiedCoordinates = {
     'au_outgate': _ExactStopCoordinate(17.722201402907455, 83.32734693840492),
@@ -235,50 +245,56 @@ class VizagStops {
     'mvp_colony': _ExactStopCoordinate(17.742888294530275, 83.3279246927025),
     'maddilapalem': _ExactStopCoordinate(17.735976634718714, 83.32088655628978),
     'madhavadhara': _ExactStopCoordinate(17.74977901942765, 83.24891570575984),
-    'madhurawada': _ExactStopCoordinate(17.8200, 83.3500),
-    'malkapuram': _ExactStopCoordinate(17.7060, 83.2760),
-    'mindi': _ExactStopCoordinate(17.6810, 83.2410),
-    'muralinagar': _ExactStopCoordinate(17.7360, 83.3010),
-    'nad_junction': _ExactStopCoordinate(17.7400, 83.2300),
-    'ntpc': _ExactStopCoordinate(17.6305, 83.1810),
-    'narava': _ExactStopCoordinate(17.7610, 83.2710),
-    'naval_base': _ExactStopCoordinate(17.7010, 83.2810),
-    'old_post_office': _ExactStopCoordinate(17.6936318, 83.2923058),
-    'pm_palem': _ExactStopCoordinate(17.7510, 83.3610),
-    'parawada': _ExactStopCoordinate(17.6510, 83.1510),
-    'pedagantyada': _ExactStopCoordinate(17.6610, 83.2110),
+    'madhurawada': _ExactStopCoordinate(17.81647302589971, 83.35674215777088),
+    'malkapuram': _ExactStopCoordinate(17.68863872588815, 83.24581148364551),
+    'mindi': _ExactStopCoordinate(17.70199953424382, 83.21542163379708),
+    'muralinagar': _ExactStopCoordinate(17.747113832411678, 83.26325627984068),
+    'nad_junction': _ExactStopCoordinate(17.74279634488214, 83.23550511882578),
+    'ntpc': _ExactStopCoordinate(17.571668967078267, 83.08823248250994),
+    'narava': _ExactStopCoordinate(17.74410580408655, 83.18223789542121),
+    'naval_base': _ExactStopCoordinate(17.692370509767372, 83.26818092693208),
+    'old_post_office':
+        _ExactStopCoordinate(17.6936347360638, 83.29213510745258),
+    'pm_palem': _ExactStopCoordinate(17.8043162195604, 83.34442192802376),
+    'parawada': _ExactStopCoordinate(17.62445568461084, 83.08582889911706),
+    'pedagantyada': _ExactStopCoordinate(17.66687589603718, 83.20616506455174),
     'pendurthi': _ExactStopCoordinate(17.822163955417253, 83.20503083491597),
-    'purna_market': _ExactStopCoordinate(17.7210, 83.3050),
-    'rk_beach': _ExactStopCoordinate(17.7113909, 83.3182041),
-    'rtc_complex': _ExactStopCoordinate(17.7238524, 83.3069688),
-    'railway_station': _ExactStopCoordinate(17.7135, 83.2990),
-    'rajeev_nagar': _ExactStopCoordinate(17.6685, 83.2210),
-    'rushikonda': _ExactStopCoordinate(17.7610, 83.3820),
+    'purna_market': _ExactStopCoordinate(17.706518406139903, 83.29849101266711),
+    'rk_beach': _ExactStopCoordinate(17.711497390294234, 83.31811820871287),
+    'rtc_complex': _ExactStopCoordinate(17.724044586973633, 83.30707513638193),
+    'railway_station':
+        _ExactStopCoordinate(17.722383918239547, 83.29090823893287),
+    'rajeev_nagar': _ExactStopCoordinate(17.674444520598975, 83.19204975816568),
+    'rushikonda': _ExactStopCoordinate(17.792696018364524, 83.38411417747774),
     'sabbavaram': _ExactStopCoordinate(17.79095201905506, 83.12411936404783),
-    'sagar_nagar': _ExactStopCoordinate(17.7560, 83.3720),
-    'satyam_junction': _ExactStopCoordinate(17.7270, 83.3090),
-    'scindia': _ExactStopCoordinate(17.6900, 83.2700),
-    'sheelanagar': _ExactStopCoordinate(17.7210, 83.2510),
-    'simhachalam': _ExactStopCoordinate(17.7715576, 83.2435933),
-    'simhachalam_hilltop': _ExactStopCoordinate(17.7669294, 83.2484553),
-    'siripuram': _ExactStopCoordinate(17.7225, 83.3190),
-    'sitammadhara': _ExactStopCoordinate(17.7290, 83.3060),
-    'sontyam': _ExactStopCoordinate(17.7900, 83.1200),
-    'steel_plant': _ExactStopCoordinate(17.6400, 83.1700),
-    'tagarapuvalasa': _ExactStopCoordinate(17.8110, 83.4120),
-    'tenneti_park': _ExactStopCoordinate(17.7205, 83.3460),
-    'town_kotharoad': _ExactStopCoordinate(17.7200, 83.3090),
-    'ukkunagaram': _ExactStopCoordinate(17.6960, 83.2320),
-    'vuda_park': _ExactStopCoordinate(17.7235, 83.3400),
-    'venkojipalem': _ExactStopCoordinate(17.7430, 83.3490),
-    'vepagunta': _ExactStopCoordinate(17.7810, 83.3110),
-    'airport': _ExactStopCoordinate(17.7212, 83.2246),
-    'port': _ExactStopCoordinate(17.6865, 83.2780),
-    'vizianagaram': _ExactStopCoordinate(18.1067, 83.3956),
-    'waltair': _ExactStopCoordinate(17.7340, 83.3310),
-    'yarada': _ExactStopCoordinate(17.6610, 83.2620),
-    'yelamanchili': _ExactStopCoordinate(17.5480, 82.8560),
-    'vizag_zoo': _ExactStopCoordinate(17.7625, 83.2905),
+    'sagar_nagar': _ExactStopCoordinate(17.766214011571947, 83.3587514725315),
+    'satyam_junction':
+        _ExactStopCoordinate(17.734376910398886, 83.31290553487592),
+    'scindia': _ExactStopCoordinate(17.687797833164364, 83.26444801811117),
+    'sheelanagar': _ExactStopCoordinate(17.718989685422486, 83.2032147928549),
+    'simhachalam': _ExactStopCoordinate(17.77232576103274, 83.24339618949288),
+    'simhachalam_hilltop':
+        _ExactStopCoordinate(17.767548764556327, 83.24833933232567),
+    'siripuram': _ExactStopCoordinate(17.72300011952982, 83.31776117785729),
+    'sitammadhara': _ExactStopCoordinate(17.7429392912984, 83.3143017276225),
+    'sontyam': _ExactStopCoordinate(17.872300133367357, 83.29536248410979),
+    'steel_plant': _ExactStopCoordinate(17.685019182479433, 83.16530112827884),
+    'tagarapuvalasa':
+        _ExactStopCoordinate(17.932587899019126, 83.42676591136784),
+    'tenneti_park': _ExactStopCoordinate(17.747826148648866, 83.34938853634995),
+    'town_kotharoad':
+        _ExactStopCoordinate(17.702068187780064, 83.29638707158956),
+    'ukkunagaram': _ExactStopCoordinate(17.652654270282426, 83.15958329108672),
+    'vuda_park': _ExactStopCoordinate(17.725304232693844, 83.338887732702),
+    'venkojipalem': _ExactStopCoordinate(17.746535561674218, 83.32864749132816),
+    'vepagunta': _ExactStopCoordinate(17.77602269891302, 83.2164654068468),
+    'airport': _ExactStopCoordinate(17.732238188306773, 83.22351472124394),
+    'port': _ExactStopCoordinate(17.68811827821838, 83.24960432025021),
+    'vizianagaram': _ExactStopCoordinate(18.106625706188016, 83.39558591934815),
+    'waltair': _ExactStopCoordinate(17.731811395973004, 83.34270646688502),
+    'yarada': _ExactStopCoordinate(17.66473114881509, 83.27828361410154),
+    'yelamanchili': _ExactStopCoordinate(17.54774790354826, 82.85402221798682),
+    'vizag_zoo': _ExactStopCoordinate(17.769297064004434, 83.34400148979927),
   };
 
   static BusStop _areaStop({
