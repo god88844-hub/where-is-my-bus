@@ -24,7 +24,7 @@ class BusJourneyScreen extends StatefulWidget {
 
 class _BusJourneyScreenState extends State<BusJourneyScreen>
     with SingleTickerProviderStateMixin {
-  static const double _rowExtent = 102;
+  static const double _rowExtent = 116;
 
   final ScrollController _scrollController = ScrollController();
   late final AnimationController _pulseController = AnimationController(
