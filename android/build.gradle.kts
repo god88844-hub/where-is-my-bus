@@ -5,10 +5,14 @@ allprojects {
     }
 }
 
+// Keep Gradle outputs out of OneDrive on Windows so generated files stay regular files.
+val buildDirPath =
+    System.getenv("LOCALAPPDATA")?.let { "$it\\vizag_bus_v2\\build" }
+        ?: "../../build"
+
 val newBuildDir: Directory =
-    rootProject.layout.buildDirectory
-        .dir("../../build")
-        .get()
+    rootProject.layout.projectDirectory
+        .dir(buildDirPath)
 rootProject.layout.buildDirectory.value(newBuildDir)
 
 subprojects {

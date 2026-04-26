@@ -46,8 +46,8 @@ class RouteResultsScreen extends StatelessWidget {
       body: results.isEmpty
           ? const Center(
               child: EmptyState(
-                'No live buses found',
-                sub: 'Only current conductor-tracked buses are shown for this trip',
+                'No direct routes found',
+                sub: 'Try a nearby boarding or destination stop',
                 icon: Icons.route_outlined,
               ),
             )
@@ -205,12 +205,16 @@ class _MiniTimeline extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final fi = route.stopIds.indexOf(fromStop.id);
-    final ti = route.stopIds.indexOf(toStop.id);
-    final segmentStopIds = fi >= 0 && ti >= fi
-        ? route.stopIds.sublist(fi, ti + 1)
-        : <String>[fromStop.id, toStop.id];
+    final fullSegmentStopIds = route.stopIdsBetween(fromStop.id, toStop.id);
+    final visibleSegmentStopIds =
+        route.visibleStopIdsBetween(fromStop.id, toStop.id);
+    final segmentStopIds = visibleSegmentStopIds.isEmpty
+        ? <String>[fromStop.id, toStop.id]
+        : visibleSegmentStopIds;
     final stops = segmentStopIds.map(VizagStops.resolve).toList();
+    final hiddenStopCount = fullSegmentStopIds.isEmpty
+        ? 0
+        : fullSegmentStopIds.length - stops.length;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -270,6 +274,17 @@ class _MiniTimeline extends StatelessWidget {
             ),
           ],
         ),
+        if (hiddenStopCount > 0) ...[
+          const SizedBox(height: 6),
+          Text(
+            '$hiddenStopCount sub-stop${hiddenStopCount == 1 ? '' : 's'} hidden',
+            style: const TextStyle(
+              fontSize: 10,
+              color: AppTheme.textMuted,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
       ],
     );
   }
@@ -291,12 +306,26 @@ class _LiveBusRow extends StatelessWidget {
     final isAtBoardingStop =
         bus.segmentStartIdResolved == fromStop.id && !bus.isBetweenStops;
     final isApproachingBoardingStop = bus.segmentEndIdResolved == fromStop.id;
+    final hasPassedBoardingStop = !isAtBoardingStop &&
+        !isApproachingBoardingStop &&
+        !bus.isApproachingStop(fromStop.id);
     final statusLabel = isAtBoardingStop
         ? 'At ${fromStop.name}'
         : isApproachingBoardingStop
             ? 'Approaching ${fromStop.name}'
-            : 'Passed ${currentStop.name}';
-    final etaLabel = isAtBoardingStop || etaMins <= 0 ? 'Now' : '$etaMins min';
+            : hasPassedBoardingStop
+                ? 'Passed ${fromStop.name}'
+                : 'Passed ${currentStop.name}';
+    final etaLabel = hasPassedBoardingStop
+        ? 'Passed'
+        : isAtBoardingStop || etaMins <= 0
+            ? 'Now'
+            : '$etaMins min';
+    final etaColor = hasPassedBoardingStop
+        ? AppTheme.textMuted
+        : etaMins <= 3
+            ? AppTheme.green
+            : AppTheme.amber;
 
     return GestureDetector(
       onTap: onTap,
@@ -345,7 +374,7 @@ class _LiveBusRow extends StatelessWidget {
                   style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.w800,
-                    color: etaMins <= 3 ? AppTheme.green : AppTheme.amber,
+                    color: etaColor,
                   ),
                 ),
                 const SizedBox(height: 4),

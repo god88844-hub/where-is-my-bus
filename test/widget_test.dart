@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vizag_bus_live/data/vizag_data.dart';
 import 'package:vizag_bus_live/models/bus.dart';
+import 'package:vizag_bus_live/screens/bus_journey_screen.dart';
 import 'package:vizag_bus_live/widgets/shared_widgets.dart';
 
 void main() {
@@ -101,5 +102,107 @@ void main() {
     );
 
     expect(find.text('28K'), findsOneWidget);
+  });
+
+  testWidgets('reverse 28K journey screen keeps timeline rows visible',
+      (WidgetTester tester) async {
+    final route = VizagRoutes.byRouteId('28K-R')!;
+    final stop = VizagStops.resolve('chinnamushidivada');
+    final bus = LiveBus(
+      id: 'demo_reverse_28k',
+      routeKey: route.routeId,
+      routeNumber: '28K',
+      currentStopId: stop.id,
+      nextStopId: 'sujatha_nagar',
+      segmentStartStopId: stop.id,
+      segmentEndStopId: 'sujatha_nagar',
+      segmentProgress: 0,
+      etaToNextStopMins: 5,
+      remainingRouteKm: 22.9,
+      lat: stop.lat,
+      lng: stop.lng,
+      crowd: BusCrowd.empty,
+      source: BusDataSource.beacon,
+      lastUpdated: DateTime.now(),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: BusJourneyScreen(
+          bus: bus,
+          stop: stop,
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(find.text('Kothavalasa -> RK Beach'), findsWidgets);
+    expect(find.textContaining('Tap this live card to reveal'), findsOneWidget);
+    expect(find.text('Chinnamushidivada'), findsOneWidget);
+    expect(find.text('Kothavalasa Junction'), findsNothing);
+
+    await tester.tap(find.textContaining('Tap this live card to reveal'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(find.textContaining('Showing all stops. Tap to return'),
+        findsOneWidget);
+    expect(
+      find.text('Kothavalasa Junction', skipOffstage: false),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Kothavalasa Railway Station', skipOffstage: false),
+      findsOneWidget,
+    );
+    expect(find.text('Mangalapalem', skipOffstage: false), findsOneWidget);
+  });
+
+  testWidgets('reverse 300C journey screen keeps corridor stops visible',
+      (WidgetTester tester) async {
+    final route = VizagRoutes.byRouteId('300C-R')!;
+    final stop = VizagStops.resolve('pendurti_college');
+    final bus = LiveBus(
+      id: 'demo_reverse_300c',
+      routeKey: route.routeId,
+      routeNumber: '300C',
+      currentStopId: 'gopalapatnam',
+      nextStopId: 'vepagunta',
+      segmentStartStopId: 'gopalapatnam',
+      segmentEndStopId: 'vepagunta',
+      segmentProgress: 0.3,
+      etaToNextStopMins: 4,
+      remainingRouteKm: 18.2,
+      lat: stop.lat,
+      lng: stop.lng,
+      crowd: BusCrowd.moderate,
+      source: BusDataSource.beacon,
+      lastUpdated: DateTime.now(),
+    );
+
+    await tester.pumpWidget(
+      MaterialApp(
+        home: BusJourneyScreen(
+          bus: bus,
+          stop: stop,
+        ),
+      ),
+    );
+    await tester.pump();
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(find.text('Chodavaram -> RTC Complex'), findsWidgets);
+    expect(find.textContaining('Tap this live card to reveal'), findsOneWidget);
+
+    await tester.tap(find.textContaining('Tap this live card to reveal'));
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 500));
+
+    expect(find.textContaining('Showing all stops. Tap to return'),
+        findsOneWidget);
   });
 }

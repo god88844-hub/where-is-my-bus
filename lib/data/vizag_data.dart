@@ -3,6 +3,8 @@
 // Stop coordinates are approximate based on known Vizag geography.
 // Verify key stops on the ground and update lat/lng as needed.
 
+import 'osm_route_enrichment_data.dart';
+
 // ─────────────────────────────────────────────────────────────
 //  BUS TYPES
 // ─────────────────────────────────────────────────────────────
@@ -122,7 +124,8 @@ class BusRoute {
   final String fromTelugu;
   final String toTelugu;
   final List<String> viaStops; // display only — intermediate landmarks
-  final List<String> stopIds; // ordered stop IDs
+  final List<String> stopIds; // full ordered stop IDs, including minor stops
+  final List<String> majorStopIds; // default visible timeline stops
   final BusType busType;
   final int frequencyMins;
   // Directional route id to switch to when the conductor starts the return trip.
@@ -139,6 +142,7 @@ class BusRoute {
     this.toTelugu = '',
     this.viaStops = const [],
     required this.stopIds,
+    this.majorStopIds = const [],
     this.busType = BusType.redOrdinary,
     this.frequencyMins = 20,
     this.returnRouteNumber,
@@ -154,6 +158,110 @@ class BusRoute {
       : '$from → $to';
   String get origin => stopIds.firstOrNull ?? '';
   String get terminus => stopIds.lastOrNull ?? '';
+  List<String> get visibleStopIds {
+    if (majorStopIds.isEmpty) return stopIds;
+
+    final visible = <String>[];
+    final majorSet = majorStopIds.toSet();
+    for (final stopId in stopIds) {
+      if (majorSet.contains(stopId) && !visible.contains(stopId)) {
+        visible.add(stopId);
+      }
+    }
+
+    return visible.isEmpty ? stopIds : visible;
+  }
+
+  bool get hasHiddenSubStops => visibleStopIds.length < stopIds.length;
+
+  List<String> stopIdsBetween(String fromStopId, String toStopId) {
+    final fromIndex = stopIds.indexOf(fromStopId);
+    final toIndex = stopIds.indexOf(toStopId);
+    if (fromIndex < 0 || toIndex < fromIndex) return const [];
+    return stopIds.sublist(fromIndex, toIndex + 1);
+  }
+
+  List<String> visibleStopIdsBetween(String fromStopId, String toStopId) {
+    final segment = stopIdsBetween(fromStopId, toStopId);
+    if (segment.isEmpty) return const [];
+
+    final visibleSet = visibleStopIds.toSet();
+    final visibleSegment = <String>[segment.first];
+    if (segment.length > 2) {
+      for (final stopId in segment.sublist(1, segment.length - 1)) {
+        if (visibleSet.contains(stopId) && !visibleSegment.contains(stopId)) {
+          visibleSegment.add(stopId);
+        }
+      }
+    }
+    if (segment.length > 1 && visibleSegment.last != segment.last) {
+      visibleSegment.add(segment.last);
+    }
+
+    return visibleSegment;
+  }
+
+  List<RouteStopGroup> get stopGroups {
+    final anchors = visibleStopIds;
+    if (stopIds.isEmpty) return const [];
+    if (anchors.isEmpty) {
+      return [
+        RouteStopGroup(
+          anchorStopId: stopIds.first,
+          startIndex: 0,
+          stopIds: stopIds,
+        ),
+      ];
+    }
+
+    final groups = <RouteStopGroup>[];
+    for (var i = 0; i < anchors.length; i++) {
+      final anchorStopId = anchors[i];
+      final startIndex = stopIds.indexOf(anchorStopId);
+      if (startIndex < 0) continue;
+
+      final nextAnchorIndex = i == anchors.length - 1
+          ? stopIds.length
+          : stopIds.indexOf(anchors[i + 1]);
+      final endExclusive =
+          nextAnchorIndex <= startIndex ? startIndex + 1 : nextAnchorIndex;
+
+      groups.add(
+        RouteStopGroup(
+          anchorStopId: anchorStopId,
+          startIndex: startIndex,
+          stopIds: stopIds.sublist(startIndex, endExclusive),
+        ),
+      );
+    }
+
+    return groups.isEmpty
+        ? [
+            RouteStopGroup(
+              anchorStopId: stopIds.first,
+              startIndex: 0,
+              stopIds: stopIds,
+            ),
+          ]
+        : groups;
+  }
+}
+
+class RouteStopGroup {
+  const RouteStopGroup({
+    required this.anchorStopId,
+    required this.startIndex,
+    required this.stopIds,
+  });
+
+  final String anchorStopId;
+  final int startIndex;
+  final List<String> stopIds;
+
+  List<String> get minorStopIds =>
+      stopIds.length <= 1 ? const [] : stopIds.sublist(1);
+
+  bool get hasMinorStops => stopIds.length > 1;
 }
 
 class _StopArea {
@@ -169,6 +277,686 @@ class _ExactStopCoordinate {
   final double lat;
   final double lng;
 }
+
+class _ManualRouteSpec {
+  const _ManualRouteSpec({
+    required this.routeId,
+    required this.number,
+    required this.majorStopLabels,
+    required this.stopLabels,
+  });
+
+  factory _ManualRouteSpec.parse(String source) {
+    final parts = source.split('|');
+    if (parts.length != 3) {
+      throw FormatException(
+        'Manual route source must be routeId|number|stop -> stop',
+        source,
+      );
+    }
+
+    final stopLabels = parts[2]
+        .split('->')
+        .map((label) => label.trim())
+        .where((label) => label.isNotEmpty)
+        .toList(growable: false);
+
+    if (stopLabels.length < 2) {
+      throw FormatException(
+        'Manual route must include at least two stops',
+        source,
+      );
+    }
+
+    return _ManualRouteSpec(
+      routeId: parts[0].trim(),
+      number: parts[1].trim(),
+      majorStopLabels: stopLabels,
+      stopLabels: stopLabels,
+    );
+  }
+
+  final String routeId;
+  final String number;
+  final List<String> majorStopLabels;
+  final List<String> stopLabels;
+}
+
+String _normalizeManualStopToken(String label) => label
+    .trim()
+    .toLowerCase()
+    .replaceAll('&', ' and ')
+    .replaceAll(RegExp(r'[^a-z0-9]+'), '_')
+    .replaceAll(RegExp(r'_+'), '_')
+    .replaceAll(RegExp(r'^_|_$'), '');
+
+const Map<String, String> _manualStopIdAliases = {
+  'aganampudi': 'aganampudi',
+  'airport': 'airport',
+  'air_port': 'airport',
+  'anakapalli': 'anakapalli',
+  'anakapalle': 'anakapalli',
+  'arilova': 'arilova',
+  'arilova_colony': 'arilova',
+  'carshed': 'carshed',
+  'chodavaram': 'chodavaram',
+  'collector_office': 'collector_office',
+  'co_office': 'collector_office',
+  'co_off': 'collector_office',
+  'bheemili_x_road': 'bheemili_x_road',
+  'c_office': 'collector_office',
+  'car_shed': 'carshed',
+  'col_office': 'collector_office',
+  'col_off': 'collector_office',
+  'convent': 'convent_junction',
+  'convent_jn': 'convent_junction',
+  'conventjn': 'convent_junction',
+  'baji_jn': 'baji_junction',
+  'devarapalli': 'devarapalli',
+  'duvvada': 'duvvada',
+  'endada': 'endada',
+  'estate': 'industrial_estate',
+  'gajuwaka': 'gajuwaka',
+  'gangavaram': 'gangavaram',
+  'gopalpatnam': 'gopalapatnam',
+  'gopalapatnam': 'gopalapatnam',
+  'gurudwar': 'gurudwara',
+  'gurudwara': 'gurudwara',
+  'gurudwara_jn': 'gurudwara',
+  'hanumanthuwaka': 'hanumanthawaka',
+  'i_estate': 'industrial_estate',
+  'jagadamba': 'jagadamba',
+  'kancharapalam': 'kancharapalem',
+  'kancharapalem': 'kancharapalem',
+  'kommadi': 'kommadi',
+  'kothavalasa': 'kothavalasa',
+  'kurmannapalem': 'kurmannapalem',
+  'kurmanapalem': 'kurmannapalem',
+  'maddilapalem': 'maddilapalem',
+  'madhurawada': 'madhurawada',
+  'malkapuram': 'malkapuram',
+  'marripalam': 'marripalem',
+  'nad': 'nad_junction',
+  'nad_jn': 'nad_junction',
+  'nad_junction': 'nad_junction',
+  'nad_x_road': 'nad_junction',
+  'old_post_office': 'old_post_office',
+  'old_bus_stand': 'town_kotharoad',
+  'old_bustand': 'town_kotharoad',
+  'ohpo': 'old_post_office',
+  'o_h_p_o': 'old_post_office',
+  'parawada': 'parawada',
+  'pendurthi': 'pendurthi',
+  'pendurthy': 'pendurthi',
+  'purna_market': 'purna_market',
+  'poornamarket': 'purna_market',
+  'prn_market': 'purna_market',
+  'purushotapuram': 'purushottapuram',
+  'purushottapuram_sml': 'purushottapuram',
+  'railway_station': 'railway_station',
+  'rly_station': 'railway_station',
+  'rk_beach': 'rk_beach',
+  'r_k_beach': 'rk_beach',
+  'rkbh': 'rk_beach',
+  'rama_talkies': 'rama_talkies',
+  'rtc_complex': 'rtc_complex',
+  'sabbavaram': 'sabbavaram',
+  'scindia': 'scindia',
+  'sheelanagar': 'sheelanagar',
+  'simhachalam': 'simhachalam',
+  'simhachalam_hill': 'simhachalam_hilltop',
+  'sujatha_nagar': 'sujatha_nagar',
+  'sujathanagar': 'sujatha_nagar',
+  'sujatanagar': 'sujatha_nagar',
+  'sml_hill': 'simhachalam_hilltop',
+  'siripuram': 'siripuram',
+  'tagarapuvalasa_junction': 'tagarapuvalasa',
+  'tagarapuvalasa_town': 'tagarapuvalasa',
+  'chinna_mushidivada': 'chinnamushidivada',
+  'chinamushidvada': 'chinnamushidivada',
+  'chinamushidivada': 'chinnamushidivada',
+  'chinnamusidivada': 'chinnamushidivada',
+  'tagarapuvalasa': 'tagarapuvalasa',
+  'vepagunta': 'vepagunta',
+  'venkojipalem': 'venkojipalem',
+  'vizianagaram': 'vizianagaram',
+  'vizainagaram': 'vizianagaram',
+  'vijayanagaram': 'vizianagaram',
+  'vuda_park': 'vuda_park',
+  'waltair': 'waltair',
+  'yarada': 'yarada',
+  'yarada_beach': 'yarada',
+  'yelamanchili': 'yelamanchili',
+  'zoo_park': 'vizag_zoo',
+};
+
+String _manualStopIdForLabel(String label) {
+  final normalized = _normalizeManualStopToken(label);
+  return _manualStopIdAliases[normalized] ?? normalized;
+}
+
+String _importedStopIdForLabel(String label) {
+  final normalized = _normalizeManualStopToken(label);
+  return _resolveImportedStopId(normalized) ?? normalized;
+}
+
+String? _resolveImportedStopId(String token) {
+  if (token.isEmpty) return null;
+
+  final explicit = osmImportedStopAliases[token];
+  if (explicit != null) return explicit;
+
+  final manual = _manualStopIdAliases[token];
+  if (manual != null) return manual;
+
+  if (token.startsWith('apsrtc_bus_station_')) {
+    return _resolveImportedStopId(
+        token.substring('apsrtc_bus_station_'.length));
+  }
+  if (token.startsWith('apsrtc_bus_stand_')) {
+    return _resolveImportedStopId(token.substring('apsrtc_bus_stand_'.length));
+  }
+  if (token.startsWith('apsrtc_city_bus_stop_')) {
+    return _resolveImportedStopId(
+        token.substring('apsrtc_city_bus_stop_'.length));
+  }
+  if (token.startsWith('apsrtc_complex_')) {
+    return 'rtc_complex';
+  }
+  if (token.endsWith('_junction_bus_stop')) {
+    return _resolveImportedStopId(
+      token.substring(0, token.length - '_junction_bus_stop'.length),
+    );
+  }
+  if (token.endsWith('_bus_stop')) {
+    return _resolveImportedStopId(
+      token.substring(0, token.length - '_bus_stop'.length),
+    );
+  }
+  if (token.endsWith('_junction')) {
+    return _resolveImportedStopId(
+      token.substring(0, token.length - '_junction'.length),
+    );
+  }
+  if (token.endsWith('_town')) {
+    return _resolveImportedStopId(
+      token.substring(0, token.length - '_town'.length),
+    );
+  }
+
+  return null;
+}
+
+final List<_ManualRouteSpec> _manualDepotRouteSpecs = [
+  // To add hidden sub-stops later, replace a `.parse(...)` entry with an
+  // explicit `_ManualRouteSpec(...)` and keep `majorStopLabels` shorter than
+  // `stopLabels`. `stopLabels` should contain the full travel path in order.
+  const _ManualRouteSpec(
+    routeId: '222',
+    number: '222',
+    majorStopLabels: [
+      'RTC Complex',
+      'MVP Colony',
+      'Hanumanthawaka',
+      'Madhurawada',
+      'Anandapuram',
+      'Tagarapuvalasa',
+    ],
+    stopLabels: [
+      'RTC Complex',
+      'Rama Talkies',
+      'MVP Colony',
+      'Venkojipalem',
+      'Hanumanthawaka',
+      'Old Dairy Farm',
+      'Vizag Zoo',
+      'Endada',
+      'Carshed',
+      'Madhurawada',
+      'Kommadi',
+      'Marikavalasa',
+      'Boravanipalem',
+      'Paradesipalem',
+      'Boyapalem',
+      'Pyda Engineering College',
+      'Bheemili X Road',
+      'Anandapuram',
+      'Peddipalem',
+      'Tallavalasa',
+      'Tagarapuvalasa',
+    ],
+  ),
+  const _ManualRouteSpec(
+    routeId: '222R',
+    number: '222R',
+    majorStopLabels: [
+      'Railway Station',
+      'RTC Complex',
+      'MVP Colony',
+      'Hanumanthawaka',
+      'Madhurawada',
+      'Anandapuram',
+      'Tagarapuvalasa',
+    ],
+    stopLabels: [
+      'Railway Station',
+      'RTC Complex',
+      'Rama Talkies',
+      'MVP Colony',
+      'Venkojipalem',
+      'Hanumanthawaka',
+      'Old Dairy Farm',
+      'Vizag Zoo',
+      'Endada',
+      'Carshed',
+      'Madhurawada',
+      'Kommadi',
+      'Marikavalasa',
+      'Boravanipalem',
+      'Paradesipalem',
+      'Boyapalem',
+      'Pyda Engineering College',
+      'Bheemili X Road',
+      'Anandapuram',
+      'Peddipalem',
+      'Tallavalasa',
+      'Tagarapuvalasa',
+    ],
+  ),
+
+  // GWK depot
+  _ManualRouteSpec.parse(
+    'gwk-99|99|Old GWK -> New GWK -> Sriharipuram/CG -> Malkapuram/PQ -> '
+    'Scindia -> Pipeline/K Gate -> Dockyard Godowns -> Maruthi Circle -> '
+    'INS Dega -> Solar Plant',
+  ),
+  _ManualRouteSpec.parse(
+    'gwk-38d|38D|Nadupuru D.Col -> Gantyada -> Gajuwaka -> Birla -> '
+    'Kancharapalem -> Tatichetlapalem -> Gurudwar',
+  ),
+  _ManualRouteSpec.parse(
+    'gwk-38h|38H|Gantyada HB Colony -> RTC Complex',
+  ),
+  _ManualRouteSpec.parse(
+    'gwk-38g65|38G/65|Gangavaram Colony -> Gangavaram -> '
+    'Venkannapalem/Kranthingr -> Gantyada/J.Colony -> Gajuwaka -> Old GWK -> '
+    'Port Qtrs -> Scindia',
+  ),
+  _ManualRouteSpec.parse(
+    'gwk-38j|38J|Kranthi Nagar -> Janatha Colony -> Birla -> Kancharapalem -> '
+    'Tathichetlapalem -> Gurudwar',
+  ),
+  _ManualRouteSpec.parse(
+    'gwk-38r|38R|Maddilapalem -> Gurudwar/CBS -> '
+    'Tadichettlapalem/Conv.Jn -> Kancharapalem/Essar -> '
+    'Birla/Solar Plant -> Rajakoduru -> Krishna Palem -> Appanna Palem -> '
+    'Kondavarapalem',
+  ),
+  _ManualRouteSpec.parse(
+    'gwk-38y|38Y|Duvvada R/S -> Fakeertakya -> Birla -> Kancharapalem -> '
+    'Tatichetlapalem -> RTC Complex',
+  ),
+  _ManualRouteSpec.parse(
+    'gwk-16|16|Purna Market -> Old Bus Stand -> Convent -> Yarada Beach',
+  ),
+  _ManualRouteSpec.parse(
+    'gwk-55d|55D & 55D/V|Scindia -> Malkapuram/Port Qtrs -> '
+    'Sriharipuram/Coromandal -> Gajuwaka -> Old Gajuwaka -> Sub Station -> '
+    'Natayyapalem -> Jaggayyapalem -> New Airport -> Chandrayyapeta -> '
+    'Santapalem -> Kothavalasa Jn -> RCPuram/Pata Valasa -> K Kotapadu',
+  ),
+  _ManualRouteSpec.parse(
+    'gwk-55k|55K|Durga Temple -> HCC Company/Gangavaram Colony -> '
+    'Scindia/Main Gate/Gangavaram -> Malkapuram/Port Qtrs/Venkatapuram Jn -> '
+    'Sriharipuram/Coramandal/Gantyada -> Gajuwaka -> Old Gajuwaka -> '
+    'Substation -> Sheelanagar -> New Airport -> NAD X Road -> '
+    'Gopalapatnam/Bunk -> Vepagunta -> Purushotapuram -> Kothavalasa',
+  ),
+  _ManualRouteSpec.parse(
+    'gwk-55t|55T|Gajuwaka Depot -> Old Gajuwaka -> Sub Station -> '
+    'Dukkavanipalem -> Egalavanipalem -> Tagarapuvalasa',
+  ),
+  _ManualRouteSpec.parse(
+    'gwk-63a|63A|Appikonda/Palavalasa -> Dasaripeta/Gollapeta -> '
+    'Nammidoddi Jn -> Islampeta -> Dockyard Godowns -> Maruthi Circle -> '
+    'INS Dega -> Solar Plant -> Essar -> RK Beach',
+  ),
+  _ManualRouteSpec.parse(
+    'gwk-66v99|66V/99|Vangali -> Nayanammapalem -> Gorlavanipalem -> '
+    'Sabbavaram -> Essar -> Convent -> Old Bustand -> Poornamarket -> '
+    'RK Beach',
+  ),
+  _ManualRouteSpec.parse(
+    'gwk-67|67|Maddilapalem -> Sabbavaram/Bus Station -> Asakapalli X Road -> '
+    'Askapalli -> Pydivada -> Gollapalem -> Narapadu',
+  ),
+  _ManualRouteSpec.parse(
+    'gwk-400|400|Old Gajuwaka -> Gajuwaka -> Sriharipuram/Coromandal -> '
+    'Scindia -> Pipeline/K Gate -> Dockyard Godowns -> Maruthi Circle -> '
+    'Maddilapalem',
+  ),
+  _ManualRouteSpec.parse(
+    'gwk-400p|400P|Palavalsa/Kalapaka -> Gollapeta/Pittavanipalem -> '
+    'Nammidoddi/Chinnapalem -> Islam Peta -> Madeenabagh -> '
+    'Steel Plant Gate -> Venkateswara Gudi -> Ukku Nagaram Jn -> K.B.R.Jn -> '
+    'Kurmannapalem -> Srinagar -> Old Gajuwaka -> RTC Complex',
+  ),
+  _ManualRouteSpec.parse(
+    'gwk-400r|400R|Maddilapalem -> RTC Complex -> Convent -> Essar -> '
+    'Solar Plant -> INS Dega -> Maruthi Circle -> Yathapalem/Kothapeta -> '
+    'Kothaptm/KG Palem',
+  ),
+  _ManualRouteSpec.parse(
+    'gwk-400sy|400S/400Y|Sabbavaram -> Amruthapuram -> '
+    'Amarapinivanipalem/Jn -> Gowri Deg Col/Chinthagatla X Road -> '
+    'Jerupothulapalem -> Narava -> Scindia -> Pipeline/K Gate -> '
+    'Dockyard Godowns -> Maruthi Circle -> RTC Complex',
+  ),
+  _ManualRouteSpec.parse(
+    'gwk-411v|411V|Old Gajuwaka -> VT Agraharam/Court -> Inada/APSP Q Rtrs -> '
+    'Jonnada/Lendi -> Dakamarri/Raghu -> Modavalasa -> Maddilapalem -> '
+    'RTC Complex -> Convent -> Essar -> Solar Plant -> INS Dega -> '
+    'Vizainagaram',
+  ),
+  _ManualRouteSpec.parse(
+    'gwk-500y|500Y|Yelamanchili -> RTC Complex -> Gurudwara -> '
+    'Thatichetlapalem',
+  ),
+  _ManualRouteSpec.parse(
+    'gwk-311|311|Scindia -> Lagisettypalem -> Aripaka/Tekkalipalem -> '
+    'Chinayathapalem -> Lingalatirugudu -> Chodavaram',
+  ),
+
+  // MDWD depot
+  _ManualRouteSpec.parse(
+    'mdwd-500p|500P|Madhurawada Depot -> VBC -> Caeshed -> Law College -> '
+    'Yandada -> Zoo Park -> Venkojipalem -> Maddilapalem -> RTC Complex -> '
+    'Gurudawar/RL -> Thatichetulapalem -> Kancharapalem -> Birla -> '
+    'Salavanipalem -> Sirasapalli -> Kotharu -> Koppaka -> '
+    'Desapathrunipalem -> Jajulavanipalem -> Sub Station -> Parawada -> '
+    'Pudimadaka',
+  ),
+  _ManualRouteSpec.parse(
+    'mdwd-25dm|25D/M|OHPO / RK Beach -> Purna Market / Co.Off -> Jagadamba -> '
+    'RTC Complex -> Maddilapalem -> Venkojipalem -> Zoo Park -> Endada -> '
+    'Law College -> Carshed/MVVCity -> VBC/MDWD/KMD -> '
+    'NGRP/SS Nagar/YSR/AMVT Clny',
+  ),
+  _ManualRouteSpec.parse(
+    'mdwd-25dv|25D/V|OHPO/TKR -> Purna Market -> Jagadamba -> RTC Complex -> '
+    'Maddilapalem -> Venkojipalem -> Zoo Park -> Endada -> Law College -> '
+    'Carshed/MVVCity -> VBC/MDWD/KMD',
+  ),
+  _ManualRouteSpec.parse(
+    'mdwd-25k|25K|OHPO/TKR -> Purna Market -> Jagadamba -> RTC Complex -> '
+    'Maddilapalem -> Venkojipalem -> Zoo Park -> Endada -> Amaravathi Nagar',
+  ),
+  _ManualRouteSpec.parse(
+    'mdwd-25j|25J|Rly.Station -> RTC Complex -> Maddilapalem -> Venkojipalem '
+    '-> Zoo Park -> Endada -> Law College -> Sevanagar',
+  ),
+  _ManualRouteSpec.parse(
+    'mdwd-25r|25R|Rly Station -> RTC Complex -> Maddilapalem -> Venkojipalem '
+    '-> Zoo Park -> Endada -> Law College -> Carshed -> Bakkannapalem -> '
+    'AMBTKR Clny/AMVT Nagar',
+  ),
+  _ManualRouteSpec.parse(
+    'mdwd-25e|25E|Amaravathi Nagar -> Marikavalsa -> MDWD/KMD Jn -> Carshed '
+    '-> Law College -> Endada -> Zoo Park -> Venkojipalem -> '
+    'Old Post Office',
+  ),
+  _ManualRouteSpec.parse(
+    'mdwd-25p|25P|OHPO/RK Beach -> PRN-Market -> Jagadamba/Rlystation -> '
+    'RTC Complex -> Maddilapalem -> Venkojipalem -> Zoo Park -> Endada -> '
+    'P.M.Palem',
+  ),
+  _ManualRouteSpec.parse(
+    'mdwd-25v|25V|R.K.Beach/TKR -> Collector Office/PRN Market -> Jagadamba '
+    '-> Marikavalasa Colony',
+  ),
+  _ManualRouteSpec.parse(
+    'mdwd-jp01|JP01|Madhurawada Depot -> Kommadi/Madhurawada -> VSP -> NAD '
+    '-> Pendurthy -> Sabbavaram -> Chodavaram -> Vaddadi -> Ghatroad/MDGL -> '
+    'KDR/KPRM -> Jolaput',
+  ),
+  _ManualRouteSpec.parse(
+    'mdwd-25m|25M|MDWD-Depot -> ITSEZ Road/Haritha Jn -> Marikavalsa -> '
+    'Boravanipalem/MCV-Clny -> IIM/Anandapuram -> Bheemili X Road -> '
+    'Boyapalem -> Paradesipalem -> Madhurawada -> Carshed -> NAD X Road',
+  ),
+
+  // SML depot
+  _ManualRouteSpec.parse(
+    'sml-28|28 / 28H|Simhachalam Hill -> Simhachalam -> Srinivanagar -> '
+    'Gopalapatnam -> NAD X Road -> Marripalem -> Estate -> Kancharapalem -> '
+    'Rly.Newcolony -> RTC Complex -> Jagadamba -> Col.Office -> RK.Beach',
+  ),
+  _ManualRouteSpec.parse(
+    'sml-28zh|28Z/H|Simhachalam Hill -> Simhachalam -> Srinivanagar -> '
+    'Gopalapatnam -> NAD X Road -> Birla Jn -> Kancharapalem Highway -> '
+    'Thatichetlapalem -> Gurudwara Jn -> RTC Complex -> Jagadamba/Baraks -> '
+    'Zillaparishad/RK.Beach',
+  ),
+  const _ManualRouteSpec(
+    routeId: '28K',
+    number: '28K',
+    majorStopLabels: [
+      'RK Beach',
+      'Jagadamba',
+      'RTC Complex',
+      'NAD',
+      'Gopalapatnam',
+      'Pendurthi',
+      'Kothavalasa',
+    ],
+    stopLabels: [
+      'RK Beach',
+      'Collector Office',
+      'Jagadamba',
+      'RTC Complex',
+      'Railway Station',
+      'Convent Junction',
+      'Gnanapuram',
+      'Urvasi',
+      'Kancharapalem',
+      'Industrial Estate',
+      '104 Area',
+      'Marripalem',
+      'Karasa',
+      'NAD Junction',
+      'Baji Junction',
+      'Simhachalam Railway Station',
+      'Gopalapatnam',
+      'Gopalapatnam Bunk',
+      'Naidu Thota',
+      'Vepagunta',
+      'Purushottapuram',
+      'Sujatha Nagar',
+      'Chinnamushidivada',
+      'Pendurti College',
+      'Pendurthi',
+      'Saripalli',
+      'Chintalapalem',
+      'Desapatrunipalem',
+      'Mangalapalem',
+      'Kothavalasa Railway Station',
+      'Kothavalasa Junction',
+      'Kothavalasa',
+    ],
+  ),
+  _ManualRouteSpec.parse(
+    'sml-55|55|Scindia Jn -> Malkapuram -> Sriharipuram -> New Gajuwaka -> '
+    'Old Gajuwaka -> Sub Station -> Nathayyapalem -> Sheelanagar -> '
+    'Air Port -> NAD X Road -> Gopalapatnam -> Simhachalam/SML Hill',
+  ),
+  _ManualRouteSpec.parse(
+    'sml-505|505|Scindia Jn -> Pipeline -> Dockyard/Godowns -> Maruthi Circle '
+    '-> INS Dega -> Solor Plant -> CWC Godowns -> MOV Jn. -> '
+    'Loco Shed Jn -> 104 Area -> Marripalem -> Simhachalam',
+  ),
+  _ManualRouteSpec.parse(
+    'sml-55y|55Y|JNNURM Colony -> Mangalapalem -> Duvvada -> Pakeertakiya -> '
+    'Kurmanapalem -> Srinagar -> Old Gajuwaka -> Sub-Station -> '
+    'Natayyapalem -> Sheelanagar -> Airport -> Simhachalam/Pendurthi',
+  ),
+  _ManualRouteSpec.parse(
+    'sml-6|6 / 6H|Pendurthi/SS.NGR/VUDA Colony/Sujatha Nagar C2 Zone -> '
+    'Chinamushidvada -> Purushottapuram -> Vepagunta -> Gopalapatnam -> '
+    'NAD X Road -> Marripalem -> Estate -> Kancharapalem -> O.H.P.O. -> '
+    'Simhachalam Hill',
+  ),
+  _ManualRouteSpec.parse(
+    'sml-6d|6D|Dabbanda -> China Dabbanda/Colony -> Dabbanda X Road -> '
+    'SR.Puram -> Adivivaram -> Simhachalam -> Srinivasanagar -> OHPO',
+  ),
+  _ManualRouteSpec.parse(
+    'sml-6a|6A|Simhachalam -> Srinivanagar -> Gopalapatnam -> NAD X Road -> '
+    'Marripalem -> Industrial Estate -> Kancharapalem -> Convent Jn -> '
+    'Rly.Station -> RTC Complex',
+  ),
+  _ManualRouteSpec.parse(
+    'sml-60|60|SML Hill -> Simhachalam -> Adivivaram -> Pineapple Colony -> '
+    'Sri Krishnapuram -> Mudasarlova Park -> Pedagadili -> Venkojipalem -> '
+    'Maddilapalem -> RTC Complex -> Jagadamba -> Market/Col.Office -> OHPO',
+  ),
+  _ManualRouteSpec.parse(
+    'sml-68k|68K|R.K.Beach/OHPO -> Collector Office/VUDA Park/P.M -> '
+    'Jagadamba/Waltair Depot -> RTC Complex -> Maddilapalem -> Venkojipalem '
+    '-> Pedagadili -> Nallabilli/Peda Gudipala -> Vayalapadu Jn. -> '
+    'Kasipuram -> Devarapalli',
+  ),
+  _ManualRouteSpec.parse(
+    'sml-300c|300C|RTC Complex -> Rly.Station -> Rly.Newcolony -> '
+    'Kancharapalem -> Estate -> Marripalem -> NAD X Road -> Gopalapatnam -> '
+    'Vepagunta -> Patharoad -> Sabbavaram -> Gottivada -> Lagisettypalem -> '
+    'Aripaka/Tekkalipalem -> Chinayathapalem -> Lingalatirugudu -> '
+    'KM Stone 1 -> Adduru -> KM Stone 2 -> Chodavaram',
+  ),
+  _ManualRouteSpec.parse(
+    'sml-300s|300S|RTC Complex -> Rly.Station -> Rly.Newcolony/Convent Jn -> '
+    'Kancharapalem -> Estate -> Marripalem -> Gopalapatnam -> '
+    'Vepagunta/Srinivasanagar -> Purushottapuram/SML -> '
+    'Chinamushidivada -> Sabbavaram',
+  ),
+  _ManualRouteSpec.parse(
+    'sml-700|700 / 700H|Simhachalam Depot/Hill -> Simhachalam -> S.R.Puram '
+    '-> Satrav/Checkpost -> Sontyam -> Neelakundeelu -> Padmanabham -> '
+    'Reddipalli -> Chinnapuram -> VSP X Road -> VZM',
+  ),
+  _ManualRouteSpec.parse(
+    'sml-55s|55S|Simhachalam Hill -> Simhachalam -> Adivivaram -> '
+    'Chinamushidivada -> Purushottapuram -> Vepagunta -> Pandragi -> '
+    'Egalavanipalem/Reganigudem -> Anandapuram/Mukundapuram -> '
+    'R T.Valasa/Boni Vill -> Tagarapuvalasa',
+  ),
+
+  // VSC depot
+  _ManualRouteSpec.parse(
+    'vsc-111v|111V|Kurmannapalem -> Srinagar -> Old Gajuwaka -> Autonagar -> '
+    'Natayyapalem -> Sheelanagar -> Airport -> NAD -> Birla -> '
+    'Kancharapalem -> Tatichetlapalem -> Railway Station -> RTC Complex -> '
+    'Maddilapalem -> Venkojipalem -> Zoo Park -> Endeda -> Carshed -> '
+    'Madhurawada/Kommadi -> Marikavalasa -> Boyapalem -> Vijayanagaram',
+  ),
+  _ManualRouteSpec.parse(
+    'vsc-111|111|Duvvada -> Pakheertakya -> Kurmannapalem -> Srinagr -> '
+    'Old Gajuwka -> Tagarapuvalasa',
+  ),
+  _ManualRouteSpec.parse(
+    'vsc-38k|38K|Sector-5 -> Ukkunagaram -> KBR -> Kurmannapalem -> '
+    'Srinagar -> Old Gajuwaka -> Autonagar -> Natayyapalem -> Sheelanagar -> '
+    'Airport -> NAD -> RTC Complex',
+  ),
+  _ManualRouteSpec.parse(
+    'vsc-38y|38Y|Duvvada Rly Station -> RTC Complex -> CBS -> GWK',
+  ),
+  _ManualRouteSpec.parse(
+    'vsc-38ry|38R/Y|RTC Complex -> Gurudwara -> Tatichetlapalem -> '
+    'Kancharapalem -> Birla -> NAD Jn -> Airport -> Sheelanagar -> '
+    'Rajianagar/Duvvada',
+  ),
+  _ManualRouteSpec.parse(
+    'vsc-400n|400N|RTC Complex -> Convent/Gurudwara -> Essar/TT.Palem -> '
+    'Solar Plant/Kancharapalem -> INS Dega/Birla -> '
+    'Vadacheepurapalli/MTYPalem',
+  ),
+  _ManualRouteSpec.parse(
+    'vsc-500a|500A|RTC Complex -> Gurudwara -> Tatichetlapalem -> '
+    'Kancharapalem -> Birla -> Srinagar -> Kurmannapalem -> Aganampudi -> '
+    'Lankelapalem -> Salapuvanipalem -> Atchutapuram',
+  ),
+  _ManualRouteSpec.parse(
+    'vsc-600|600 / 600S|Anakapalli -> VZM Road -> Koppaka -> Kotturu -> '
+    'Sirasapalli -> Salapuvanipalem -> Lankelapalem -> EM Palem Road -> '
+    'Aganampudi -> Toll Gate -> Kurmannapalem -> Srinagar/KBR -> '
+    'Old Gajuwaka/Ukkungaram -> New Gajuwaka/SMG -> Scindia',
+  ),
+  _ManualRouteSpec.parse(
+    'vsc-400lp500|400L/P/500|Anakapalli -> VZM Road -> Koppaka -> Kotturu -> '
+    'Sirasapalli -> Salapuvanipalem -> Lankelapalem -> '
+    'New Gajuwaka/NAD Jn/Pipeline -> Sriharipuram/Birla Jn/Dockyard -> '
+    'Malkapuram/Kancharapalem/Maruthi Circle -> '
+    'Scindia/Tatichetlapalem/INS Dega -> Steel Plant Schools/RTC Complex',
+  ),
+  _ManualRouteSpec.parse(
+    'vsc-744|744|Anakapalli/Dosuru -> VZM Road/Gandivanipalem -> '
+    'Koppaka/Rajannapalem -> Kotturu/Bandharupalem -> '
+    'Sirasapalli/Vadacheepurapalli -> Tollgate/Substation -> '
+    'Kurmannapalem/Jajulavanipalem -> Srinagar/Desapatrunipalem -> '
+    'Old Gajuwaka/Sector-8 -> New Gajuwaka/General Hospital -> Scindia',
+  ),
+  _ManualRouteSpec.parse(
+    'vsc-311|311|Scindia -> Malkapuram/Port Qtrs -> Sriharipuram/CG -> '
+    'New Gajuwaka -> Old Gajuwaka -> Srinagar -> Kurmanpalem -> '
+    'Fakeertakiya X Road -> Duvvada -> Narava -> Chodavaram -> '
+    'Diddupalem -> Venkannapalem -> Govada/S.Factory -> Gajapathinagaram',
+  ),
+  _ManualRouteSpec.parse(
+    'vsc-gunupur|GUNUPUR|Kurmannapalem -> Old Gajuwaka -> NAD Junction -> '
+    'Visakhapatnam -> Carshed/Madhurawada -> Anadapuram -> Tagarapuvalasa -> '
+    'Bhogapuram -> Nathavalasa -> Pusapatirega -> Pydibheemavaram -> '
+    'Ranastalam/OBS -> Chilakapalem -> Srikakulam -> Narasannapeta -> '
+    'Challapeta Jn -> Saravakota -> Gunupur',
+  ),
+
+  // Waltair depot
+  _ManualRouteSpec.parse(
+    'wtr-68k68d|68K / 68D|RK Beach -> Collector Office -> Jagadamba -> '
+    'RTC Complex -> Maddilapalem -> Venkojipalem -> Kothavalasa / '
+    'Devarapalli',
+  ),
+  _ManualRouteSpec.parse(
+    'wtr-333|333|OBS/Town Kotta Road / Waltair Depot -> VUDA Park -> '
+    'R.K.Beach/MVP R.B -> C.Office/MDP/TKRD-R -> Devarapalli',
+  ),
+  _ManualRouteSpec.parse(
+    'wtr-60c|60C|OHPO / R K Beach -> Purna Market / C.Office -> '
+    'Arilova Colony',
+  ),
+  _ManualRouteSpec.parse(
+    'wtr-52d|52D|OHPO / R K Beach -> Purna Market / C.Office -> '
+    'Ravindra Nagar',
+  ),
+  _ManualRouteSpec.parse(
+    'wtr-48a48s|48A/48S|OHPO/RKB -> Purna Market / ZP/C.Office -> '
+    'Madhavadhara VUDA Colony/SML',
+  ),
+  _ManualRouteSpec.parse(
+    'wtr-14|14|Venkojipalem -> Appughar -> Waltair Jn. (Depot) -> '
+    'Chinawaltair -> OHPO',
+  ),
+  _ManualRouteSpec.parse(
+    'wtr-999|999|RTC Complex -> Maddilapalem/Siripuram -> Boyapalem -> '
+    'Boddapalem -> Bheemili',
+  ),
+  _ManualRouteSpec.parse(
+    'wtr-900k|900K|OBS/KRD -> Railway Station -> Bheemili',
+  ),
+  _ManualRouteSpec.parse(
+    'wtr-12d|12D|RTC Complex -> Railway Station -> Rly New Colony -> '
+    'Kancharapalem -> Nallabilli -> Vayalapadu Jn. -> Devarapalli',
+  ),
+];
 
 // ─────────────────────────────────────────────────────────────
 //  ALL STOPS
@@ -204,6 +992,7 @@ class VizagStops {
       _StopArea(18.106625706188016, 83.39558591934815);
 
   static const Map<String, _ExactStopCoordinate> _verifiedCoordinates = {
+    '104_area': _ExactStopCoordinate(17.7389487, 83.2570021),
     'au_outgate': _ExactStopCoordinate(17.722201402907455, 83.32734693840492),
     'achutapuram': _ExactStopCoordinate(17.563775665980852, 82.97908605785608),
     'adavivaram': _ExactStopCoordinate(17.780415421644747, 83.25265653441035),
@@ -212,15 +1001,19 @@ class VizagStops {
     'anakapalli': _ExactStopCoordinate(17.689651085658205, 83.0023607303745),
     'anandapuram': _ExactStopCoordinate(17.894901577346417, 83.37762676648626),
     'arilova': _ExactStopCoordinate(17.75971389220103, 83.32105142204054),
+    'baji_junction': _ExactStopCoordinate(17.7441257, 83.2279861),
     'bhpv': _ExactStopCoordinate(17.702152156880658, 83.20561102228203),
     'bhimili': _ExactStopCoordinate(17.892554182561323, 83.453218638804),
     'cbm': _ExactStopCoordinate(17.724599083333377, 83.30864710597724),
     'carshed': _ExactStopCoordinate(17.8035495291326, 83.3531076324752),
+    'chinnamushidivada': _ExactStopCoordinate(17.8063886, 83.2086317),
+    'chintalapalem': _ExactStopCoordinate(17.851132, 83.19556),
     'chodavaram': _ExactStopCoordinate(17.82744494216951, 82.9352841698859),
     'collector_office':
         _ExactStopCoordinate(17.708743005671018, 83.30702866022884),
     'convent_junction':
         _ExactStopCoordinate(17.717146175809056, 83.2898968133065),
+    'desapatrunipalem': _ExactStopCoordinate(17.8661634, 83.1914891),
     'devarapalli': _ExactStopCoordinate(17.99055168753284, 82.9807434173196),
     'duvvada': _ExactStopCoordinate(17.70403637708094, 83.15151410285544),
     'endada': _ExactStopCoordinate(17.782165460333573, 83.3583397356011),
@@ -228,19 +1021,25 @@ class VizagStops {
         _ExactStopCoordinate(17.697491334083118, 83.29910527788323),
     'gajuwaka': _ExactStopCoordinate(17.690008733886543, 83.22348803257371),
     'gangavaram': _ExactStopCoordinate(17.643407630087204, 83.2292091616115),
+    'gnanapuram': _ExactStopCoordinate(17.7210917, 83.2869877),
+    'gopalapatnam_bunk': _ExactStopCoordinate(17.7527467, 83.2177002),
     'gopalapatnam': _ExactStopCoordinate(17.75183293706425, 83.21784190654942),
     'gurudwara': _ExactStopCoordinate(17.7365862288982, 83.3075160467041),
     'hb_colony': _ExactStopCoordinate(17.745956316232608, 83.32309677945763),
     'hanumanthawaka':
         _ExactStopCoordinate(17.755138799198114, 83.33186522858041),
     'ins_kalinga': _ExactStopCoordinate(17.855434559762365, 83.41625821512292),
+    'industrial_estate': _ExactStopCoordinate(17.7368204, 83.2638254),
     'jagadamba': _ExactStopCoordinate(17.71206765708635, 83.30249739782423),
     'kailasagiri': _ExactStopCoordinate(17.747415331681864, 83.34628558404164),
     'kailasapuram': _ExactStopCoordinate(17.740651368024675, 83.28879401053344),
     'kambalakonda': _ExactStopCoordinate(17.76801566042918, 83.3429641790169),
+    'karasa': _ExactStopCoordinate(17.7409553, 83.2439078),
     'kancharapalem': _ExactStopCoordinate(17.73239409467747, 83.27799289458622),
     'kommadi': _ExactStopCoordinate(17.824417121280245, 83.3565806008761),
     'kothavalasa': _ExactStopCoordinate(17.896970472566025, 83.18532471449139),
+    'kothavalasa_junction': _ExactStopCoordinate(17.8972996, 83.185235),
+    'kothavalasa_railway_station': _ExactStopCoordinate(17.8909912, 83.1864598),
     'kurmannapalem':
         _ExactStopCoordinate(17.685289956188655, 83.16764523824004),
     'mvp_colony': _ExactStopCoordinate(17.742888294530275, 83.3279246927025),
@@ -248,9 +1047,12 @@ class VizagStops {
     'madhavadhara': _ExactStopCoordinate(17.74977901942765, 83.24891570575984),
     'madhurawada': _ExactStopCoordinate(17.81647302589971, 83.35674215777088),
     'malkapuram': _ExactStopCoordinate(17.68863872588815, 83.24581148364551),
+    'mangalapalem': _ExactStopCoordinate(17.8765897, 83.189386),
+    'marripalem': _ExactStopCoordinate(17.740433, 83.2495589),
     'mindi': _ExactStopCoordinate(17.70199953424382, 83.21542163379708),
     'muralinagar': _ExactStopCoordinate(17.747113832411678, 83.26325627984068),
     'nad_junction': _ExactStopCoordinate(17.74279634488214, 83.23550511882578),
+    'naidu_thota': _ExactStopCoordinate(17.7692577, 83.2171472),
     'ntpc': _ExactStopCoordinate(17.571668967078267, 83.08823248250994),
     'narava': _ExactStopCoordinate(17.74410580408655, 83.18223789542121),
     'naval_base': _ExactStopCoordinate(17.692370509767372, 83.26818092693208),
@@ -260,7 +1062,9 @@ class VizagStops {
     'parawada': _ExactStopCoordinate(17.62445568461084, 83.08582889911706),
     'pedagantyada': _ExactStopCoordinate(17.66687589603718, 83.20616506455174),
     'pendurthi': _ExactStopCoordinate(17.822163955417253, 83.20503083491597),
+    'pendurti_college': _ExactStopCoordinate(17.8121652, 83.207114),
     'purna_market': _ExactStopCoordinate(17.706518406139903, 83.29849101266711),
+    'purushottapuram': _ExactStopCoordinate(17.79096, 83.2127314),
     'rk_beach': _ExactStopCoordinate(17.711497390294234, 83.31811820871287),
     'rtc_complex': _ExactStopCoordinate(17.724044586973633, 83.30707513638193),
     'railway_station':
@@ -276,16 +1080,20 @@ class VizagStops {
     'simhachalam': _ExactStopCoordinate(17.77232576103274, 83.24339618949288),
     'simhachalam_hilltop':
         _ExactStopCoordinate(17.767548764556327, 83.24833933232567),
+    'simhachalam_railway_station': _ExactStopCoordinate(17.7466609, 83.2215738),
     'siripuram': _ExactStopCoordinate(17.72300011952982, 83.31776117785729),
     'sitammadhara': _ExactStopCoordinate(17.7429392912984, 83.3143017276225),
     'sontyam': _ExactStopCoordinate(17.872300133367357, 83.29536248410979),
+    'saripalli': _ExactStopCoordinate(17.8404629, 83.1990301),
     'steel_plant': _ExactStopCoordinate(17.685019182479433, 83.16530112827884),
+    'sujatha_nagar': _ExactStopCoordinate(17.7986359, 83.2107136),
     'tagarapuvalasa':
         _ExactStopCoordinate(17.932587899019126, 83.42676591136784),
     'tenneti_park': _ExactStopCoordinate(17.747826148648866, 83.34938853634995),
     'town_kotharoad':
         _ExactStopCoordinate(17.702068187780064, 83.29638707158956),
     'ukkunagaram': _ExactStopCoordinate(17.652654270282426, 83.15958329108672),
+    'urvasi': _ExactStopCoordinate(17.7350067, 83.2709818),
     'vuda_park': _ExactStopCoordinate(17.725304232693844, 83.338887732702),
     'venkojipalem': _ExactStopCoordinate(17.746535561674218, 83.32864749132816),
     'vepagunta': _ExactStopCoordinate(17.77602269891302, 83.2164654068468),
@@ -296,6 +1104,16 @@ class VizagStops {
     'yarada': _ExactStopCoordinate(17.66473114881509, 83.27828361410154),
     'yelamanchili': _ExactStopCoordinate(17.54774790354826, 82.85402221798682),
     'vizag_zoo': _ExactStopCoordinate(17.769297064004434, 83.34400148979927),
+    'rama_talkies': _ExactStopCoordinate(17.7278055, 83.311448),
+    'old_dairy_farm': _ExactStopCoordinate(17.763125, 83.3361134),
+    'marikavalasa': _ExactStopCoordinate(17.8370764, 83.3586865),
+    'boravanipalem': _ExactStopCoordinate(17.8459761, 83.3592485),
+    'paradesipalem': _ExactStopCoordinate(17.8584832, 83.3636069),
+    'boyapalem': _ExactStopCoordinate(17.8694017, 83.3680055),
+    'pyda_engineering_college': _ExactStopCoordinate(17.8728521, 83.3709375),
+    'bheemili_x_road': _ExactStopCoordinate(17.8823398, 83.3759579),
+    'peddipalem': _ExactStopCoordinate(17.9026532, 83.3999171),
+    'tallavalasa': _ExactStopCoordinate(17.9103926, 83.4119912),
   };
 
   static BusStop _areaStop({
@@ -316,7 +1134,309 @@ class VizagStops {
     );
   }
 
-  static final Map<String, BusStop> all = {
+  static bool _containsAnyToken(String value, List<String> tokens) =>
+      tokens.any(value.contains);
+
+  static _StopArea _guessManualStopArea(String id) {
+    if (_containsAnyToken(id, const [
+      'rk_beach',
+      'ohpo',
+      'old_post_office',
+      'collector',
+      'waltair',
+      'appughar',
+      'chinawaltair',
+      'vuda_park',
+      'siripuram',
+      'beach',
+      'zillaparishad',
+      'obs',
+    ])) {
+      return _beachRoad;
+    }
+
+    if (_containsAnyToken(id, const [
+      'rtc',
+      'jagadamba',
+      'convent',
+      'market',
+      'railway',
+      'town_kotta',
+      'town_kotha',
+      'old_bus_stand',
+      'old_bustand',
+      'c_office',
+      'co_office',
+      'co_off',
+      'rly',
+      'cbs',
+    ])) {
+      return _cityCore;
+    }
+
+    if (_containsAnyToken(id, const [
+      'scindia',
+      'malkapuram',
+      'sriharipuram',
+      'coromandal',
+      'coramandal',
+      'pipeline',
+      'dockyard',
+      'maruthi',
+      'dega',
+      'solar',
+      'port',
+      'yarada',
+      'appikonda',
+      'islampeta',
+      'birla',
+      'essar',
+      'tt_palem',
+    ])) {
+      return _portArea;
+    }
+
+    if (_containsAnyToken(id, const [
+      'gajuwaka',
+      'gwk',
+      'kurmannapalem',
+      'kurmanapalem',
+      'srinagar',
+      'autonagar',
+      'duvvada',
+      'fakeert',
+      'pakeert',
+      'natayyapalem',
+      'nathayyapalem',
+      'jaggayyapalem',
+      'sheelanagar',
+      'sub_station',
+      'substation',
+      'airport',
+      'old_gajuwaka',
+      'new_gajuwaka',
+      'ukku',
+      'ukkunagaram',
+      'sector',
+      'kbr',
+      'aganampudi',
+      'lankelapalem',
+      'salapuvanipalem',
+      'salavanipalem',
+      'desapathrunipalem',
+      'jajulavanipalem',
+      'toll',
+      'nadupuru',
+      'gantyada',
+      'gangavaram',
+      'mindi',
+    ])) {
+      return _gajuwakaArea;
+    }
+
+    if (_containsAnyToken(id, const [
+      'maddilapalem',
+      'venkojipalem',
+      'zoo',
+      'endada',
+      'carshed',
+      'law',
+      'mvv',
+      'madhurawada',
+      'kommadi',
+      'marikaval',
+      'boyapalem',
+      'paradesipalem',
+      'andadapuram',
+      'anadapuram',
+      'anandapuram',
+      'bheemili',
+      'bhimili',
+      'arilova',
+      'pedagadili',
+      'mudasarlova',
+      'iim',
+      'haritha',
+      'itsez',
+      'yandada',
+      'boddapalem',
+      'nallabilli',
+      'vayalapadu',
+      'ravindra_nagar',
+      'amaravathi_nagar',
+      'amaravathi',
+      'sevanagar',
+      'bakkannapalem',
+    ])) {
+      return _madhurawadaArea;
+    }
+
+    if (_containsAnyToken(id, const [
+      'simhachalam',
+      'sml',
+      'gopalapatnam',
+      'nad',
+      'marripalem',
+      'estate',
+      'industrial',
+      'vepagunta',
+      'purushottapuram',
+      'purushotapuram',
+      'chinamushid',
+      'adavivaram',
+      'pineapple',
+      'sr_puram',
+      'srinivasanagar',
+      'srinivanagar',
+      'sujatha',
+      'dabbanda',
+      'satra',
+      'checkpost',
+      'pandragi',
+    ])) {
+      return _simhachalamArea;
+    }
+
+    if (_containsAnyToken(id, const [
+      'pendurthi',
+      'pendurthy',
+      'kothavalasa',
+      'vaddadi',
+      'sabbavaram',
+      'patharoad',
+      'gottivada',
+      'lagisetty',
+      'aripaka',
+      'tekkalipalem',
+      'chinayathapalem',
+      'lingalatirugudu',
+      'padmanabham',
+      'reddipalli',
+      'chinnapuram',
+      'vsp_x_road',
+      'neelakundeelu',
+      'vzm',
+    ])) {
+      return _pendurthiArea;
+    }
+
+    if (_containsAnyToken(id, const [
+      'anakapalli',
+      'vzm_road',
+      'koppaka',
+      'kotturu',
+      'sirasapalli',
+      'gandivanipalem',
+      'dosuru',
+      'pudimadaka',
+      'atchutapuram',
+      'achutapuram',
+      'yelamanchili',
+      'vangali',
+      'govada',
+      'factory',
+    ])) {
+      return _anakapalleArea;
+    }
+
+    if (_containsAnyToken(id, const [
+      'tagarapuvalasa',
+      'bhogapuram',
+      'nathavalasa',
+      'pusapatirega',
+      'pydibheemavaram',
+      'ranastalam',
+      'srikakulam',
+      'narasannapeta',
+      'challapeta',
+      'saravakota',
+      'gunupur',
+      'jolaput',
+    ])) {
+      return _tagarapuvalasaArea;
+    }
+
+    if (_containsAnyToken(id, const [
+      'vizianagaram',
+      'vizainagaram',
+      'vijayanagaram',
+      'devarapalli',
+      'gajapathinagaram',
+      'vadacheepurapalli',
+      'vadacheepurupalli',
+      'mtypalem',
+    ])) {
+      return _vizianagaramArea;
+    }
+
+    if (_containsAnyToken(id, const [
+      'parawada',
+      'ntpc',
+      'madeenabagh',
+      'palavalasa',
+      'kalapaka',
+      'gollapeta',
+      'nammidoddi',
+      'steel_plant_gate',
+      'venkateswara_gudi',
+      'kotharu',
+    ])) {
+      return _parawadaArea;
+    }
+
+    return _cityCore;
+  }
+
+  static BusStop _draftManualStop(String label, {String? stopId}) {
+    final id = stopId ?? _manualStopIdForLabel(label);
+    final area = _guessManualStopArea(id);
+    final seed = id.codeUnits.fold<int>(0, (sum, unit) => sum + unit);
+    final latOffset = ((seed % 11) - 5) * 0.0011;
+    final lngOffset = (((seed ~/ 11) % 11) - 5) * 0.0011;
+    final verified = _verifiedCoordinates[id];
+
+    return BusStop(
+      id: id,
+      name: label.trim(),
+      nameTelugu: '',
+      lat: verified?.lat ?? area.lat + latOffset,
+      lng: verified?.lng ?? area.lng + lngOffset,
+    );
+  }
+
+  static Map<String, BusStop> _buildManualStops() {
+    final stops = <String, BusStop>{};
+
+    for (final spec in _manualDepotRouteSpecs) {
+      for (final label in spec.stopLabels) {
+        final id = _manualStopIdForLabel(label);
+        if (_baseStops.containsKey(id) || stops.containsKey(id)) continue;
+        stops[id] = _draftManualStop(label);
+      }
+    }
+
+    return stops;
+  }
+
+  static Map<String, BusStop> _buildImportedStops() {
+    final stops = <String, BusStop>{};
+
+    for (final spec in osmImportedRouteSpecs) {
+      for (final label in spec.stopLabels) {
+        final id = _importedStopIdForLabel(label);
+        if (_baseStops.containsKey(id) ||
+            _manualStops.containsKey(id) ||
+            stops.containsKey(id)) {
+          continue;
+        }
+        stops[id] = _draftManualStop(label, stopId: id);
+      }
+    }
+
+    return stops;
+  }
+
+  static final Map<String, BusStop> _baseStops = {
     // Area anchors keep nearby stops clustered so route snapping and mock GPS
     // interpolation follow realistic city corridors instead of random points.
     // ── Core city hubs ──
@@ -964,6 +2084,15 @@ class VizagStops {
     ),
   };
 
+  static final Map<String, BusStop> _manualStops = _buildManualStops();
+  static final Map<String, BusStop> _importedStops = _buildImportedStops();
+
+  static final Map<String, BusStop> all = {
+    ..._baseStops,
+    ..._manualStops,
+    ..._importedStops,
+  };
+
   static BusStop? get(String id) => all[id];
 
   static BusStop resolve(
@@ -1029,10 +2158,12 @@ class VizagStops {
 // ─────────────────────────────────────────────────────────────
 class VizagRoutes {
   static final List<BusRoute> all = _generateAllRoutes();
+  static final Map<String, List<OsmImportedRouteSpec>>
+      _importedRouteSpecsByNumber = _groupImportedRouteSpecsByNumber();
 
   static List<BusRoute> _generateAllRoutes() {
     final routes = <BusRoute>[];
-    for (final base in _baseRoutes) {
+    for (final base in _allBaseRoutes) {
       // Standard routes can always be reversed by the conductor. When a route
       // does not define an explicit return route id, generate one and link the
       // forward and reverse trips to each other.
@@ -1049,6 +2180,7 @@ class VizagRoutes {
           toTelugu: base.toTelugu,
           viaStops: base.viaStops,
           stopIds: base.stopIds,
+          majorStopIds: base.visibleStopIds,
           busType: base.busType,
           frequencyMins: base.frequencyMins,
           returnRouteNumber: reverseRouteId,
@@ -1063,6 +2195,7 @@ class VizagRoutes {
           toTelugu: base.fromTelugu,
           viaStops: base.viaStops.reversed.toList(),
           stopIds: base.stopIds.reversed.toList(),
+          majorStopIds: base.visibleStopIds.reversed.toList(),
           busType: base.busType,
           frequencyMins: base.frequencyMins,
           returnRouteNumber: forwardRoute.routeId,
@@ -1074,6 +2207,323 @@ class VizagRoutes {
     }
     return routes;
   }
+
+  static Map<String, List<OsmImportedRouteSpec>>
+      _groupImportedRouteSpecsByNumber() {
+    final grouped = <String, List<OsmImportedRouteSpec>>{};
+    for (final spec in osmImportedRouteSpecs) {
+      grouped
+          .putIfAbsent(spec.number, () => <OsmImportedRouteSpec>[])
+          .add(spec);
+    }
+    return grouped;
+  }
+
+  static List<BusRoute> _buildManualDepotRoutes() =>
+      _manualDepotRouteSpecs.map(_manualRouteFromSpec).toList(growable: false);
+
+  static BusRoute _manualRouteFromSpec(_ManualRouteSpec spec) {
+    final stopIds = <String>[];
+    final stopLabels = <String>[];
+    final majorStopIds = <String>[];
+    final majorStopLabels = <String>[];
+
+    for (final label in spec.stopLabels) {
+      final stopId = _manualStopIdForLabel(label);
+      stopIds.add(stopId);
+      stopLabels.add(VizagStops.label(stopId, fallbackName: label));
+    }
+
+    for (final label in spec.majorStopLabels) {
+      final stopId = _manualStopIdForLabel(label);
+      if (stopIds.contains(stopId) && !majorStopIds.contains(stopId)) {
+        majorStopIds.add(stopId);
+        majorStopLabels.add(VizagStops.label(stopId, fallbackName: label));
+      }
+    }
+
+    return BusRoute(
+      routeId: spec.routeId,
+      number: spec.number,
+      from: stopLabels.first,
+      to: stopLabels.last,
+      viaStops: majorStopLabels.length <= 2
+          ? const []
+          : majorStopLabels.sublist(1, majorStopLabels.length - 1),
+      stopIds: stopIds,
+      majorStopIds: majorStopIds,
+      busType: BusType.redOrdinary,
+      frequencyMins: 20,
+    );
+  }
+
+  static final List<BusRoute> _manualDepotRoutes = _buildManualDepotRoutes();
+
+  static final Set<String> _manualOverrideRouteNumbers = {
+    for (final spec in _manualDepotRouteSpecs)
+      if (spec.routeId == spec.number) spec.number,
+  };
+
+  static List<BusRoute> _buildAllBaseRoutes() {
+    final sourceRoutes = <BusRoute>[
+      ..._baseRoutes.where(
+        (route) => !_manualOverrideRouteNumbers.contains(route.number),
+      ),
+      ..._manualDepotRoutes,
+    ];
+
+    return sourceRoutes
+        .map(_enrichRouteWithImportedStops)
+        .map(_applySharedMinorStopCorridors)
+        .toList(growable: false);
+  }
+
+  static BusRoute _enrichRouteWithImportedStops(BusRoute route) {
+    if (route.hasHiddenSubStops) return route;
+
+    final importedStopIds = _bestImportedStopIds(route);
+    if (importedStopIds == null ||
+        importedStopIds.length <= route.stopIds.length) {
+      return route;
+    }
+
+    return BusRoute(
+      routeId: route.routeId,
+      number: route.number,
+      from: route.from,
+      to: route.to,
+      fromTelugu: route.fromTelugu,
+      toTelugu: route.toTelugu,
+      viaStops: route.viaStops,
+      stopIds: importedStopIds,
+      majorStopIds: route.visibleStopIds,
+      busType: route.busType,
+      frequencyMins: route.frequencyMins,
+      returnRouteNumber: route.returnRouteNumber,
+    );
+  }
+
+  static const List<String> _pendurthiCorridorStopIds = [
+    'gopalapatnam',
+    'vepagunta',
+    'purushottapuram',
+    'sujatha_nagar',
+    'chinnamushidivada',
+    'pendurti_college',
+    'pendurthi',
+  ];
+
+  static BusRoute _applySharedMinorStopCorridors(BusRoute route) {
+    final expandedStopIds = _expandSharedCorridor(
+      stopIds: route.stopIds,
+      corridorStopIds: _pendurthiCorridorStopIds,
+    );
+    if (_stringListsEqual(expandedStopIds, route.stopIds)) {
+      return route;
+    }
+
+    return BusRoute(
+      routeId: route.routeId,
+      number: route.number,
+      from: route.from,
+      to: route.to,
+      fromTelugu: route.fromTelugu,
+      toTelugu: route.toTelugu,
+      viaStops: route.viaStops,
+      stopIds: expandedStopIds,
+      majorStopIds: route.visibleStopIds,
+      busType: route.busType,
+      frequencyMins: route.frequencyMins,
+      returnRouteNumber: route.returnRouteNumber,
+    );
+  }
+
+  static List<String> _expandSharedCorridor({
+    required List<String> stopIds,
+    required List<String> corridorStopIds,
+  }) {
+    if (stopIds.length < 2) return stopIds;
+
+    final corridorIndexByStopId = <String, int>{
+      for (var i = 0; i < corridorStopIds.length; i++) corridorStopIds[i]: i,
+    };
+    final expandedStopIds = <String>[];
+    var index = 0;
+
+    while (index < stopIds.length) {
+      final startCorridorIndex = corridorIndexByStopId[stopIds[index]];
+      if (startCorridorIndex == null) {
+        expandedStopIds.add(stopIds[index]);
+        index += 1;
+        continue;
+      }
+
+      var segmentEndIndex = index;
+      var previousCorridorIndex = startCorridorIndex;
+      int? direction;
+
+      while (segmentEndIndex + 1 < stopIds.length) {
+        final nextCorridorIndex =
+            corridorIndexByStopId[stopIds[segmentEndIndex + 1]];
+        if (nextCorridorIndex == null ||
+            nextCorridorIndex == previousCorridorIndex) {
+          break;
+        }
+
+        final nextDirection =
+            nextCorridorIndex > previousCorridorIndex ? 1 : -1;
+        if (direction != null && direction != nextDirection) {
+          break;
+        }
+
+        direction ??= nextDirection;
+        segmentEndIndex += 1;
+        previousCorridorIndex = nextCorridorIndex;
+      }
+
+      if (segmentEndIndex == index) {
+        expandedStopIds.add(stopIds[index]);
+        index += 1;
+        continue;
+      }
+
+      final originalSegment = stopIds.sublist(index, segmentEndIndex + 1);
+      final corridorSegment = _corridorSlice(
+        corridorStopIds,
+        startCorridorIndex,
+        previousCorridorIndex,
+      );
+      expandedStopIds.addAll(
+        _stringListsEqual(originalSegment, corridorSegment)
+            ? originalSegment
+            : corridorSegment,
+      );
+      index = segmentEndIndex + 1;
+    }
+
+    return _collapseAdjacentDuplicates(expandedStopIds);
+  }
+
+  static List<String> _corridorSlice(
+    List<String> corridorStopIds,
+    int startIndex,
+    int endIndex,
+  ) {
+    if (startIndex <= endIndex) {
+      return corridorStopIds.sublist(startIndex, endIndex + 1);
+    }
+
+    return corridorStopIds
+        .sublist(endIndex, startIndex + 1)
+        .reversed
+        .toList(growable: false);
+  }
+
+  static bool _stringListsEqual(List<String> a, List<String> b) {
+    if (identical(a, b)) return true;
+    if (a.length != b.length) return false;
+    for (var i = 0; i < a.length; i++) {
+      if (a[i] != b[i]) return false;
+    }
+    return true;
+  }
+
+  static List<String>? _bestImportedStopIds(BusRoute route) {
+    final anchorStopIds = route.visibleStopIds;
+    if (anchorStopIds.length < 2) return null;
+
+    final candidateSpecs = _importedRouteSpecsByNumber[route.number];
+    if (candidateSpecs == null || candidateSpecs.isEmpty) {
+      return null;
+    }
+
+    List<String>? bestStopIds;
+    var bestScore = -1;
+
+    for (final spec in candidateSpecs) {
+      final mappedStopIds = _collapseAdjacentDuplicates(
+        spec.stopLabels.map(_importedStopIdForLabel),
+      );
+      if (mappedStopIds.length <= route.stopIds.length) continue;
+
+      for (final reversed in [false, true]) {
+        final directionalStopIds = reversed
+            ? mappedStopIds.reversed.toList(growable: false)
+            : mappedStopIds;
+        final anchorIndices =
+            _orderedAnchorIndices(directionalStopIds, anchorStopIds);
+        if (anchorIndices == null) continue;
+
+        final candidateStopIds = directionalStopIds.sublist(
+          anchorIndices.first,
+          anchorIndices.last + 1,
+        );
+        if (candidateStopIds.length <= route.stopIds.length) continue;
+
+        final score = _importedCandidateScore(
+          route,
+          spec,
+          reversed: reversed,
+          stopCount: candidateStopIds.length,
+        );
+        if (score > bestScore) {
+          bestScore = score;
+          bestStopIds = candidateStopIds;
+        }
+      }
+    }
+
+    return bestStopIds;
+  }
+
+  static List<int>? _orderedAnchorIndices(
+    List<String> stopIds,
+    List<String> anchorStopIds,
+  ) {
+    final indices = <int>[];
+    var searchStart = 0;
+
+    for (final anchorStopId in anchorStopIds) {
+      final index = stopIds.indexOf(anchorStopId, searchStart);
+      if (index < 0) return null;
+      indices.add(index);
+      searchStart = index + 1;
+    }
+
+    return indices;
+  }
+
+  static List<String> _collapseAdjacentDuplicates(Iterable<String> stopIds) {
+    final collapsed = <String>[];
+    for (final stopId in stopIds) {
+      if (stopId.isEmpty) continue;
+      if (collapsed.isEmpty || collapsed.last != stopId) {
+        collapsed.add(stopId);
+      }
+    }
+    return collapsed;
+  }
+
+  static int _importedCandidateScore(
+    BusRoute route,
+    OsmImportedRouteSpec spec, {
+    required bool reversed,
+    required int stopCount,
+  }) {
+    final specFrom = _normalizeRouteLabel(reversed ? spec.to : spec.from);
+    final specTo = _normalizeRouteLabel(reversed ? spec.from : spec.to);
+
+    var score = stopCount;
+    if (_normalizeRouteLabel(route.from) == specFrom) score += 1000;
+    if (_normalizeRouteLabel(route.to) == specTo) score += 1000;
+    if (!reversed) score += 1;
+    return score;
+  }
+
+  static String _normalizeRouteLabel(String value) =>
+      value.trim().toLowerCase().replaceAll(RegExp(r'[^a-z0-9]+'), '');
+
+  static final List<BusRoute> _allBaseRoutes = _buildAllBaseRoutes();
 
   static const List<BusRoute> _baseRoutes = [
     // ── 10K ──────────────────────────────────────────────────

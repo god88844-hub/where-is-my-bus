@@ -148,6 +148,351 @@ void main() {
       expect(reverseRoute!.number, '68K');
       expect(reverseRoute.returnRouteNumber, '68K');
     });
+
+    test('28K keeps a useful major-stop spine while hiding minor stops', () {
+      final route = VizagRoutes.byRouteId('28K');
+
+      expect(route, isNotNull);
+      expect(route!.number, '28K');
+      expect(route.stopIds.first, 'rk_beach');
+      expect(route.stopIds.last, 'kothavalasa');
+      expect(route.visibleStopIds, [
+        'rk_beach',
+        'jagadamba',
+        'rtc_complex',
+        'nad_junction',
+        'gopalapatnam',
+        'pendurthi',
+        'kothavalasa',
+      ]);
+      expect(route.hasHiddenSubStops, isTrue);
+      expect(
+        route.stopIdsBetween('rk_beach', 'kothavalasa'),
+        containsAllInOrder([
+          'collector_office',
+          'jagadamba',
+          'rtc_complex',
+          'railway_station',
+          'kancharapalem',
+          'marripalem',
+          'nad_junction',
+          'gopalapatnam',
+          'vepagunta',
+          'sujatha_nagar',
+          'chinnamushidivada',
+          'pendurthi',
+          'saripalli',
+          'mangalapalem',
+        ]),
+      );
+      expect(
+        route.visibleStopIdsBetween('rk_beach', 'kothavalasa'),
+        [
+          'rk_beach',
+          'jagadamba',
+          'rtc_complex',
+          'nad_junction',
+          'gopalapatnam',
+          'pendurthi',
+          'kothavalasa',
+        ],
+      );
+      expect(route.stopGroups.first.minorStopIds, contains('collector_office'));
+      expect(route.stopGroups[4].minorStopIds, contains('vepagunta'));
+      expect(
+          route.stopGroups.first.minorStopIds, isNot(contains('kothavalasa')));
+    });
+
+    test('28K reverse direction keeps the same hidden-stop grouping', () {
+      final route = VizagRoutes.byRouteId('28K-R');
+
+      expect(route, isNotNull);
+      expect(route!.number, '28K');
+      expect(route.from, 'Kothavalasa');
+      expect(route.to, 'RK Beach');
+      expect(route.stopIds.first, 'kothavalasa');
+      expect(route.stopIds.last, 'rk_beach');
+      expect(route.visibleStopIds, [
+        'kothavalasa',
+        'pendurthi',
+        'gopalapatnam',
+        'nad_junction',
+        'rtc_complex',
+        'jagadamba',
+        'rk_beach',
+      ]);
+      expect(route.hasHiddenSubStops, isTrue);
+      expect(route.stopGroups, isNotEmpty);
+      expect(route.stopGroups.first.minorStopIds,
+          contains('kothavalasa_junction'));
+      expect(route.stopGroups[1].minorStopIds, contains('pendurti_college'));
+      expect(route.stopGroups[5].minorStopIds, contains('collector_office'));
+    });
+
+    test('68K shares the same Pendurthi corridor minor stops', () {
+      final route = VizagRoutes.byRouteId('68K');
+
+      expect(route, isNotNull);
+      expect(route!.visibleStopIds, [
+        'kothavalasa',
+        'pendurthi',
+        'vepagunta',
+        'simhachalam',
+        'hanumanthawaka',
+        'rtc_complex',
+        'jagadamba',
+        'rk_beach',
+      ]);
+      expect(route.hasHiddenSubStops, isTrue);
+      expect(
+        route.stopIds,
+        containsAllInOrder([
+          'kothavalasa',
+          'pendurthi',
+          'pendurti_college',
+          'chinnamushidivada',
+          'sujatha_nagar',
+          'purushottapuram',
+          'vepagunta',
+          'simhachalam',
+        ]),
+      );
+      expect(route.stopGroups[1].minorStopIds, contains('pendurti_college'));
+    });
+
+    test('300C now expands the Gopalapatnam-Pendurthi corridor', () {
+      final route = VizagRoutes.byRouteId('300C');
+
+      expect(route, isNotNull);
+      expect(route!.visibleStopIds, [
+        'rtc_complex',
+        'nad_junction',
+        'gopalapatnam',
+        'pendurthi',
+        'sabbavaram',
+        'chodavaram',
+      ]);
+      expect(route.hasHiddenSubStops, isTrue);
+      expect(
+        route.stopIds,
+        containsAllInOrder([
+          'gopalapatnam',
+          'vepagunta',
+          'purushottapuram',
+          'sujatha_nagar',
+          'chinnamushidivada',
+          'pendurti_college',
+          'pendurthi',
+          'sabbavaram',
+        ]),
+      );
+      expect(route.stopGroups[2].minorStopIds, contains('vepagunta'));
+    });
+
+    test('300C reverse direction keeps the shared corridor stops too', () {
+      final route = VizagRoutes.byRouteId('300C-R');
+
+      expect(route, isNotNull);
+      expect(route!.visibleStopIds, [
+        'chodavaram',
+        'sabbavaram',
+        'pendurthi',
+        'gopalapatnam',
+        'nad_junction',
+        'rtc_complex',
+      ]);
+      expect(route.hasHiddenSubStops, isTrue);
+      expect(
+        route.stopIds,
+        containsAllInOrder([
+          'chodavaram',
+          'sabbavaram',
+          'pendurthi',
+          'pendurti_college',
+          'chinnamushidivada',
+          'sujatha_nagar',
+          'purushottapuram',
+          'vepagunta',
+          'gopalapatnam',
+          'nad_junction',
+          'rtc_complex',
+        ]),
+      );
+    });
+
+    test('10K keeps its visible beach-road anchors and adds minor stops', () {
+      final route = VizagRoutes.byRouteId('10K');
+
+      expect(route, isNotNull);
+      expect(route!.visibleStopIds, [
+        'rtc_complex',
+        'jagadamba',
+        'rk_beach',
+        'vuda_park',
+        'tenneti_park',
+        'kailasagiri',
+      ]);
+      expect(route.hasHiddenSubStops, isTrue);
+      expect(
+        route.stopIds,
+        containsAllInOrder([
+          'rk_beach',
+          'appughar_bus_stop',
+          'vuda_park',
+          'tenneti_park',
+          'kailasagiri',
+        ]),
+      );
+      expect(
+        route.stopIds,
+        containsAllInOrder([
+          'kgh_out_gate',
+          'kgh_in_gate',
+          'vuda_park',
+        ]),
+      );
+    });
+
+    test('12D imports intermediate corridor stops without changing anchors',
+        () {
+      final route = VizagRoutes.byRouteId('12D');
+
+      expect(route, isNotNull);
+      expect(route!.visibleStopIds, [
+        'rtc_complex',
+        'nad_junction',
+        'gopalapatnam',
+        'pendurthi',
+        'kothavalasa',
+        'anandapuram',
+        'devarapalli',
+      ]);
+      expect(route.hasHiddenSubStops, isTrue);
+      expect(
+        route.stopIds,
+        containsAllInOrder([
+          'railway_station',
+          'kancharapalem',
+          'gopalapatnam',
+          'pendurti_college',
+          'kothavalasa',
+          'koruvada',
+          'anandapuram',
+          'devarapalli',
+        ]),
+      );
+    });
+
+    test('12D reverse direction also keeps imported intermediate stops', () {
+      final route = VizagRoutes.byRouteId('12D-R');
+
+      expect(route, isNotNull);
+      expect(route!.visibleStopIds, [
+        'devarapalli',
+        'kothavalasa',
+        'pendurthi',
+        'nad_junction',
+        'railway_station',
+        'rtc_complex',
+      ]);
+      expect(route.hasHiddenSubStops, isTrue);
+      expect(
+        route.stopIds,
+        containsAllInOrder([
+          'devarapalli',
+          'kasipuram',
+          'anandapuram',
+          'kothavalasa',
+          'pendurthi',
+          'gopalapatnam',
+          'nad_junction',
+          'kancharapalem',
+          'railway_station',
+          'rtc_complex',
+        ]),
+      );
+    });
+
+    test('222 now uses the exact inland corridor with hidden minor stops', () {
+      final route = VizagRoutes.byRouteId('222');
+
+      expect(route, isNotNull);
+      expect(route!.visibleStopIds, [
+        'rtc_complex',
+        'mvp_colony',
+        'hanumanthawaka',
+        'madhurawada',
+        'anandapuram',
+        'tagarapuvalasa',
+      ]);
+      expect(route.hasHiddenSubStops, isTrue);
+      expect(
+        route.stopIds,
+        containsAllInOrder([
+          'rtc_complex',
+          'rama_talkies',
+          'mvp_colony',
+          'venkojipalem',
+          'hanumanthawaka',
+          'old_dairy_farm',
+          'vizag_zoo',
+          'endada',
+          'carshed',
+          'madhurawada',
+          'marikavalasa',
+          'paradesipalem',
+          'anandapuram',
+          'tagarapuvalasa',
+        ]),
+      );
+      expect(
+        route.visibleStopIdsBetween('rtc_complex', 'anandapuram'),
+        [
+          'rtc_complex',
+          'mvp_colony',
+          'hanumanthawaka',
+          'madhurawada',
+          'anandapuram',
+        ],
+      );
+      expect(route.stopGroups.first.minorStopIds, contains('rama_talkies'));
+      expect(route.stopGroups[3].minorStopIds, contains('kommadi'));
+    });
+
+    test('222R keeps the railway station lead-in on the same OSM corridor', () {
+      final route = VizagRoutes.byRouteId('222R');
+
+      expect(route, isNotNull);
+      expect(route!.visibleStopIds, [
+        'railway_station',
+        'rtc_complex',
+        'mvp_colony',
+        'hanumanthawaka',
+        'madhurawada',
+        'anandapuram',
+        'tagarapuvalasa',
+      ]);
+      expect(route.hasHiddenSubStops, isTrue);
+      expect(route.stopIds.first, 'railway_station');
+      expect(route.stopIds.last, 'tagarapuvalasa');
+      expect(
+        route.stopIds,
+        containsAllInOrder([
+          'railway_station',
+          'rtc_complex',
+          'rama_talkies',
+          'mvp_colony',
+          'hanumanthawaka',
+          'madhurawada',
+          'pyda_engineering_college',
+          'bheemili_x_road',
+          'anandapuram',
+          'peddipalem',
+          'tallavalasa',
+          'tagarapuvalasa',
+        ]),
+      );
+    });
   });
 
   group('RouteProgressService stop radius handling', () {

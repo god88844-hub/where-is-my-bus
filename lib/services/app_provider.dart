@@ -103,11 +103,23 @@ class AppProvider extends ChangeNotifier {
       if (fromIndex < 0 || toIndex < 0 || fromIndex >= toIndex) continue;
 
       final liveBuses = _buses
-          .where((bus) => bus.routeKey == route.routeId && bus.isApproachingStop(from.id))
+          .where((bus) => bus.routeKey == route.routeId)
           .toList()
-        ..sort((a, b) => _etaToStopMins(a, from.id).compareTo(_etaToStopMins(b, from.id)));
+        ..sort((a, b) {
+          final aApproaching = a.isApproachingStop(from.id);
+          final bApproaching = b.isApproachingStop(from.id);
+          if (aApproaching != bApproaching) {
+            return aApproaching ? -1 : 1;
+          }
 
-      if (liveBuses.isEmpty) continue;
+          final etaCompare =
+              _etaToStopMins(a, from.id).compareTo(_etaToStopMins(b, from.id));
+          if (etaCompare != 0) return etaCompare;
+
+          return b.lastUpdated.compareTo(a.lastUpdated);
+        });
+      final approachingLiveBuses =
+          liveBuses.where((bus) => bus.isApproachingStop(from.id)).toList();
 
       results.add(
         RouteResult(
@@ -117,12 +129,20 @@ class AppProvider extends ChangeNotifier {
           fromIndex: fromIndex,
           toIndex: toIndex,
           liveBuses: liveBuses,
-          nextBusEtaMins: _etaToStopMins(liveBuses.first, from.id),
+          nextBusEtaMins: approachingLiveBuses.isEmpty
+              ? route.frequencyMins
+              : _etaToStopMins(approachingLiveBuses.first, from.id),
         ),
       );
     }
     results.sort((a, b) => a.nextBusEtaMins.compareTo(b.nextBusEtaMins));
     return results;
+  }
+
+  @visibleForTesting
+  void debugSetBuses(List<LiveBus> buses) {
+    _buses = List<LiveBus>.from(buses);
+    _busLoading = false;
   }
 
   List<NearbyBus> busesAtStop(BusStop stop) {
@@ -190,8 +210,9 @@ class AppProvider extends ChangeNotifier {
         route: route,
         effectiveSpeedKmh: effectiveSpeed,
       );
-      final intermediateStops =
-          busIdx < 0 || stopIdx < 0 ? 0 : (stopIdx - busIdx - 1).clamp(0, route.stopIds.length);
+      final intermediateStops = busIdx < 0 || stopIdx < 0
+          ? 0
+          : (stopIdx - busIdx - 1).clamp(0, route.stopIds.length);
       final dwellMins =
           ((intermediateStops * AppConstants.stopDwellTimeSeconds) / 60).ceil();
       return distanceEta + dwellMins;

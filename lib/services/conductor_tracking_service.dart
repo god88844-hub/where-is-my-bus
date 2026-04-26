@@ -113,6 +113,9 @@ class ConductorTrackingService extends ChangeNotifier {
   }
 
   Future<void> setDraftRoute(BusRoute route) async {
+    if (tracking) {
+      throw StateError('Stop tracking before changing the route');
+    }
     selectedRoute = route.routeId;
     if (selectedStopId != null && !route.stopIds.contains(selectedStopId)) {
       selectedStopId = null;
@@ -244,19 +247,10 @@ class ConductorTrackingService extends ChangeNotifier {
   }
 
   Future<void> changeRoute(BusRoute route) async {
-    await stopDebugSimulation(resumeGps: false);
-    selectedRoute = route.routeId;
-    selectedStopId = null;
-    _clearProgressState();
-    statusMessage =
-        'Changing route to ${route.number} ${route.from} to ${route.to}...';
-    await _resolveCurrentStopFromLocation();
-    await _persistSession();
-    notifyListeners();
-
     if (tracking) {
-      await syncNow();
+      throw StateError('Stop tracking before changing the route');
     }
+    await setDraftRoute(route);
   }
 
   bool get canReverseDirection =>

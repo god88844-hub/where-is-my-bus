@@ -163,32 +163,23 @@ class _ConductorScreenState extends State<ConductorScreen> {
   }
 
   Future<void> _selectRoute(BusRoute route) async {
+    if (_tracking) {
+      _show('Stop tracking before changing the route number');
+      return;
+    }
+
     setState(() {
       _selectedRoute = route.routeId;
       _searchCtrl.text = '${route.number}: ${route.from} -> ${route.to}';
       _showDropdown = false;
-      if (!_tracking) {
-        _selectedStopId = null;
-        _busType = route.busType;
-      }
+      _selectedStopId = null;
+      _busType = route.busType;
     });
     FocusScope.of(context).unfocus();
 
     try {
-      if (_tracking) {
-        setState(() {
-          _loading = true;
-          _statusMessage =
-              'Changing route to ${route.number}: ${route.from} -> ${route.to}';
-        });
-        await _trackingService.changeRoute(route);
-        if (mounted) {
-          _show('Route changed to ${route.number}');
-        }
-      } else {
-        await _trackingService.setDraftRoute(route);
-        await _trackingService.setDraftBusType(_busType);
-      }
+      await _trackingService.setDraftRoute(route);
+      await _trackingService.setDraftBusType(_busType);
     } catch (e) {
       if (!mounted) return;
       setState(() {
@@ -441,12 +432,23 @@ class _ConductorScreenState extends State<ConductorScreen> {
               _RouteSearchField(
                 controller: _searchCtrl,
                 focusNode: _routeSearchFocus,
-                enabled: !_loading,
+                enabled: !_loading && !_tracking,
                 showDropdown: _showDropdown,
                 filtered: _filtered,
                 onClear: !_tracking && !_loading ? _clearRouteSelection : null,
                 onSelect: _selectRoute,
               ),
+              if (_tracking) ...[
+                const SizedBox(height: 8),
+                const Text(
+                  'Stop tracking before choosing another route number.',
+                  style: TextStyle(
+                    color: AppTheme.textMuted,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w600,
+                  ),
+                ),
+              ],
               const SizedBox(height: 20),
               const Text(
                 'Bus Type',
@@ -903,7 +905,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                   _tracking
                       ? _debugSimulationActive
                           ? 'Debug simulation is driving the bus forward using the same route-snapping logic as live GPS.'
-                          : 'Live tracking is active. Selecting another route above switches the same bus to the new route.'
+                          : 'Live tracking is active. Stop tracking before changing the route number.'
                       : 'Select a route, choose the bus type, and start tracking once',
                   style: const TextStyle(
                     color: AppTheme.textMuted,
@@ -1174,47 +1176,52 @@ class _RouteSearchField extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        TextField(
-          controller: controller,
-          focusNode: focusNode,
-          enabled: enabled,
-          style: const TextStyle(color: AppTheme.textPrimary),
-          decoration: InputDecoration(
-            hintText: 'Search bus number (e.g. 28K, 38Y)',
-            hintStyle: const TextStyle(color: AppTheme.textMuted),
-            filled: true,
-            fillColor: AppTheme.surface,
-            contentPadding:
-                const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
-            border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: AppTheme.divider),
-            ),
-            enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: AppTheme.divider),
-            ),
-            focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(10),
-              borderSide: const BorderSide(color: Color(0xFF185FA5)),
-            ),
-            prefixIcon: const Icon(
-              Icons.search,
-              color: AppTheme.textMuted,
-              size: 20,
-            ),
-            suffixIcon: controller.text.trim().isEmpty || onClear == null
-                ? null
-                : IconButton(
-                    onPressed: onClear,
-                    tooltip: 'Clear route',
-                    icon: const Icon(
-                      Icons.close,
-                      color: AppTheme.textMuted,
-                      size: 20,
-                    ),
-                  ),
-          ),
+        ValueListenableBuilder<TextEditingValue>(
+          valueListenable: controller,
+          builder: (context, value, _) {
+            return TextField(
+              controller: controller,
+              focusNode: focusNode,
+              enabled: enabled,
+              style: const TextStyle(color: AppTheme.textPrimary),
+              decoration: InputDecoration(
+                hintText: 'Search bus number (e.g. 28K, 38Y)',
+                hintStyle: const TextStyle(color: AppTheme.textMuted),
+                filled: true,
+                fillColor: AppTheme.surface,
+                contentPadding:
+                    const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: AppTheme.divider),
+                ),
+                enabledBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: AppTheme.divider),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: const BorderSide(color: Color(0xFF185FA5)),
+                ),
+                prefixIcon: const Icon(
+                  Icons.search,
+                  color: AppTheme.textMuted,
+                  size: 20,
+                ),
+                suffixIcon: value.text.trim().isEmpty || onClear == null
+                    ? null
+                    : IconButton(
+                        onPressed: onClear,
+                        tooltip: 'Clear route',
+                        icon: const Icon(
+                          Icons.close,
+                          color: AppTheme.textMuted,
+                          size: 20,
+                        ),
+                      ),
+              ),
+            );
+          },
         ),
         if (showDropdown && filtered.isNotEmpty)
           Container(
