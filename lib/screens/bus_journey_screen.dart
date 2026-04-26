@@ -693,17 +693,26 @@ class _HeroSummary extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final lastPassedStop = VizagStops.resolve(
+      liveBus.segmentStartIdResolved,
+      fallbackName: route.from,
+    );
     final nextStop =
         nextIdx >= 0 ? VizagStops.resolve(route.stopIds[nextIdx]) : null;
     final focusStop = nextStop ??
-        VizagStops.resolve(
-          liveBus.segmentStartIdResolved,
-          fallbackName: route.from,
-        );
+        lastPassedStop;
     final stopsAway = userStopIdx < 0 || currentIdx < 0
         ? 0
         : (userStopIdx - currentIdx).clamp(0, route.stopIds.length);
     final remainingKm = liveBus.remainingRouteKm?.toStringAsFixed(1) ?? '--';
+    final totalRouteKm = RouteProgressService.routeDistanceKm(route);
+    final routeProgressPct = totalRouteKm <= 0
+        ? null
+        : (((totalRouteKm - (liveBus.remainingRouteKm ?? totalRouteKm)) /
+                    totalRouteKm)
+                .clamp(0.0, 1.0) *
+            100)
+            .round();
     final nextEta = liveBus.etaToNextStopMins <= 0
         ? 'Now'
         : '${liveBus.etaToNextStopMins} min';
@@ -754,8 +763,8 @@ class _HeroSummary extends StatelessWidget {
                         const SizedBox(height: 3),
                         Text(
                           liveBus.isBetweenStops
-                              ? 'Approaching ${focusStop.name}'
-                              : 'Bus is tracking near ${focusStop.name}',
+                              ? 'Last passed ${lastPassedStop.name} · Next ${focusStop.name}'
+                              : 'Bus is tracking at ${lastPassedStop.name}',
                           style: const TextStyle(
                             color: _JourneyPalette.muted,
                             fontSize: 12,
@@ -789,8 +798,10 @@ class _HeroSummary extends StatelessWidget {
                   const SizedBox(width: 10),
                   Expanded(
                     child: _StatTile(
-                      label: 'Remain',
-                      value: '$remainingKm km',
+                      label: 'Progress',
+                      value: routeProgressPct == null
+                          ? '$remainingKm km'
+                          : '$routeProgressPct%',
                       accent: AppTheme.amber,
                     ),
                   ),
@@ -828,7 +839,7 @@ class _HeroSummary extends StatelessWidget {
                       : userStopIdx >= 0 &&
                               currentIdx >= 0 &&
                               userStopIdx >= currentIdx
-                          ? '${userStop.name} is still ahead on this trip.'
+                          ? '${userStop.name} is still ahead on this trip. Last passed ${lastPassedStop.name}; next stop ${focusStop.name}.'
                           : '${userStop.name} has already been passed on this run.',
                   style: const TextStyle(
                     color: _JourneyPalette.ink,
