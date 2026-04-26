@@ -11,6 +11,9 @@ class RouteProgressSnapshot {
     required this.currentStopIndex,
     required this.nextStopIndex,
     required this.segmentProgress,
+    required this.routeProgress,
+    required this.projectedDistanceKm,
+    required this.totalRouteKm,
     required this.distanceToNextStopKm,
     required this.remainingRouteKm,
     required this.snappedLat,
@@ -23,6 +26,9 @@ class RouteProgressSnapshot {
   final int currentStopIndex;
   final int nextStopIndex;
   final double segmentProgress;
+  final double routeProgress;
+  final double projectedDistanceKm;
+  final double totalRouteKm;
   final double distanceToNextStopKm;
   final double remainingRouteKm;
   final double snappedLat;
@@ -34,12 +40,18 @@ class RouteProgressSnapshot {
 }
 
 class RouteProgressService {
-  static const int _localWindowBackSegments = 1;
-  static const int _localWindowAheadSegments = 6;
+  static const int _localWindowBackSegments = 2;
+  static const int _localWindowAheadSegments = 8;
   static const double _localWindowToleranceKm = 0.18;
   static const double _backtrackToleranceKm = 0.08;
-  static const double _maxRouteSnapDistanceKm = AppConstants.stopReachRadiusKm;
-  static const double _stopArrivalDistanceKm = AppConstants.stopReachRadiusKm;
+  static const double _maxHintLeapKm = 8.0;
+  static const double _backtrackPenaltyMultiplier = 10.0;
+  static const double _forwardLeapPenaltyMultiplier = 0.15;
+  static const double _maxRouteSnapDistanceKm = 0.45;
+  static const double _stopArrivalDistanceKm = 0.35;
+
+  static double get stopArrivalDistanceKm => _stopArrivalDistanceKm;
+  static double get maxRouteSnapDistanceKm => _maxRouteSnapDistanceKm;
 
   static RouteProgressSnapshot? snapToRoute({
     required BusRoute route,
@@ -58,6 +70,9 @@ class RouteProgressService {
         currentStopIndex: 0,
         nextStopIndex: 0,
         segmentProgress: 1,
+        routeProgress: 1,
+        projectedDistanceKm: 0,
+        totalRouteKm: 0,
         distanceToNextStopKm: 0,
         remainingRouteKm: 0,
         snappedLat: onlyStop.lat,
@@ -67,14 +82,18 @@ class RouteProgressService {
       );
     }
 
-    final hintIndex = route.stopIds.indexOf(hintCurrentStopId ?? '');
+    final segments = _routeSegments(route);
+    if (segments.isEmpty) return null;
 
-    var best = _bestProjectionForRange(
-      route: route,
+    final hintIndex = route.stopIds.indexOf(hintCurrentStopId ?? '');
+    final hintDistanceKm =
+        hintIndex >= 0 ? distanceFromRouteStartKm(route, hintIndex) : null;
+
+    var best = _bestProjectionForSegments(
+      segments: segments,
       lat: lat,
       lng: lng,
-      startIndex: 0,
-      endIndex: route.stopIds.length - 2,
+      hintDistanceKm: hintDistanceKm,
     );
 
     if (hintIndex >= 0) {
@@ -83,54 +102,56 @@ class RouteProgressService {
         route.stopIds.length - 2,
         hintIndex + _localWindowAheadSegments,
       );
-      final localBest = _bestProjectionForRange(
-        route: route,
+      final localSegments = segments
+          .where(
+            (segment) =>
+                segment.startStopIndex >= localStart &&
+                segment.startStopIndex <= localEnd,
+          )
+          .toList(growable: false);
+      final localBest = _bestProjectionForSegments(
+        segments: localSegments,
         lat: lat,
         lng: lng,
-        startIndex: localStart,
-        endIndex: localEnd,
+        hintDistanceKm: hintDistanceKm,
       );
 
-      // Prefer the local forward window when it is nearly as good as the
-      // global best. The route data is intentionally coarse, so the globally
-      // nearest straight-line segment can lag behind the real bus position.
-      if (best != null &&
-          localBest != null &&
-          localBest.segmentIndex >= (hintIndex - _localWindowBackSegments) &&
-          localBest.distanceFromRouteKm <=
-              best.distanceFromRouteKm + _localWindowToleranceKm) {
+      if (best == null) {
         best = localBest;
-      } else if (best != null &&
-          localBest != null &&
-          best.segmentIndex < hintIndex &&
-          localBest.distanceFromRouteKm <=
-              best.distanceFromRouteKm + _backtrackToleranceKm) {
-        best = localBest;
+      } else if (localBest != null) {
+        final globalScore = _projectionScore(
+          best,
+          hintDistanceKm: hintDistanceKm,
+        );
+        final localScore = _projectionScore(
+          localBest,
+          hintDistanceKm: hintDistanceKm,
+        );
+        final globalBacktracks = hintDistanceKm != null &&
+            best.projectedDistanceKm < hintDistanceKm - _backtrackToleranceKm;
+
+        if (localBest.distanceFromRouteKm <=
+                best.distanceFromRouteKm + _localWindowToleranceKm ||
+            localScore <= globalScore ||
+            globalBacktracks) {
+          best = localBest;
+        }
       }
     }
 
     if (best == null) return null;
 
-    final currentStopId = route.stopIds[best.segmentIndex];
-    final nextStopId = route.stopIds[best.segmentIndex + 1];
+    final totalRouteKm = routeDistanceKm(route);
+    final currentStopId = route.stopIds[best.startStopIndex];
+    final nextStopId = route.stopIds[best.endStopIndex];
     final currentStop = VizagStops.get(currentStopId);
     final nextStop = VizagStops.get(nextStopId);
     final distanceToCurrentStopCoordinateKm = currentStop == null
         ? double.infinity
-        : LocationService.distanceKm(
-            lat,
-            lng,
-            currentStop.lat,
-            currentStop.lng,
-          );
+        : LocationService.distanceKm(lat, lng, currentStop.lat, currentStop.lng);
     final distanceToNextStopCoordinateKm = nextStop == null
         ? double.infinity
-        : LocationService.distanceKm(
-            lat,
-            lng,
-            nextStop.lat,
-            nextStop.lng,
-          );
+        : LocationService.distanceKm(lat, lng, nextStop.lat, nextStop.lng);
 
     if (best.distanceFromRouteKm > _maxRouteSnapDistanceKm &&
         distanceToCurrentStopCoordinateKm > _stopArrivalDistanceKm &&
@@ -138,68 +159,81 @@ class RouteProgressService {
       return null;
     }
 
-    final distanceToNextStopKm = best.segmentLengthKm * (1 - best.progress);
+    var resolvedCurrentStopIndex = best.startStopIndex;
+    var resolvedNextStopIndex = best.endStopIndex;
+    var resolvedCurrentStopId = currentStopId;
+    var resolvedNextStopId = nextStopId;
+    var projectedDistanceKm = best.projectedDistanceKm;
+    var segmentProgress = best.progress;
+    var snappedLat = best.snappedLat;
+    var snappedLng = best.snappedLng;
 
-    var remainingRouteKm = distanceToNextStopKm;
-    for (var i = best.segmentIndex + 1; i < route.stopIds.length - 1; i++) {
-      remainingRouteKm += segmentDistanceKmForRoute(route, i);
-    }
-
-    final arrivedAtNextStop =
+    final arrivedAtNextStop = nextStop != null &&
         distanceToNextStopCoordinateKm <= _stopArrivalDistanceKm &&
-            distanceToNextStopCoordinateKm <= distanceToCurrentStopCoordinateKm;
+        distanceToNextStopCoordinateKm <= distanceToCurrentStopCoordinateKm;
 
     if (arrivedAtNextStop) {
-      if (nextStop != null) {
-        final arrivedIndex = best.segmentIndex + 1;
-        if (arrivedIndex >= route.stopIds.length - 1) {
-          return RouteProgressSnapshot(
-            currentStopId: nextStopId,
-            nextStopId: '',
-            currentStopIndex: route.stopIds.length - 1,
-            nextStopIndex: route.stopIds.length - 1,
-            segmentProgress: 1,
-            distanceToNextStopKm: 0,
-            remainingRouteKm: 0,
-            snappedLat: nextStop.lat,
-            snappedLng: nextStop.lng,
-            distanceFromRouteKm: distanceToNextStopCoordinateKm,
-          );
-        }
+      resolvedCurrentStopIndex = best.endStopIndex;
+      resolvedCurrentStopId = route.stopIds[resolvedCurrentStopIndex];
+      projectedDistanceKm =
+          distanceFromRouteStartKm(route, resolvedCurrentStopIndex);
+      snappedLat = nextStop.lat;
+      snappedLng = nextStop.lng;
 
-        final nextLegStopId = route.stopIds[arrivedIndex + 1];
-        final nextLegDistanceKm =
-            segmentDistanceKmForRoute(route, arrivedIndex);
-        var remainingAfterArrivalKm = nextLegDistanceKm;
-        for (var i = arrivedIndex + 1; i < route.stopIds.length - 1; i++) {
-          remainingAfterArrivalKm += segmentDistanceKmForRoute(route, i);
-        }
-
+      if (resolvedCurrentStopIndex >= route.stopIds.length - 1) {
         return RouteProgressSnapshot(
-          currentStopId: nextStopId,
-          nextStopId: nextLegStopId,
-          currentStopIndex: arrivedIndex,
-          nextStopIndex: arrivedIndex + 1,
-          segmentProgress: 0,
-          distanceToNextStopKm: nextLegDistanceKm,
-          remainingRouteKm: remainingAfterArrivalKm,
-          snappedLat: nextStop.lat,
-          snappedLng: nextStop.lng,
+          currentStopId: resolvedCurrentStopId,
+          nextStopId: '',
+          currentStopIndex: resolvedCurrentStopIndex,
+          nextStopIndex: resolvedCurrentStopIndex,
+          segmentProgress: 1,
+          routeProgress: 1,
+          projectedDistanceKm: totalRouteKm,
+          totalRouteKm: totalRouteKm,
+          distanceToNextStopKm: 0,
+          remainingRouteKm: 0,
+          snappedLat: snappedLat,
+          snappedLng: snappedLng,
           distanceFromRouteKm: distanceToNextStopCoordinateKm,
         );
       }
+
+      resolvedNextStopIndex = resolvedCurrentStopIndex + 1;
+      resolvedNextStopId = route.stopIds[resolvedNextStopIndex];
+      segmentProgress = 0;
+    } else if (currentStop != null &&
+        distanceToCurrentStopCoordinateKm <= _stopArrivalDistanceKm &&
+        distanceToCurrentStopCoordinateKm < distanceToNextStopCoordinateKm) {
+      projectedDistanceKm =
+          distanceFromRouteStartKm(route, resolvedCurrentStopIndex);
+      segmentProgress = 0;
+      snappedLat = currentStop.lat;
+      snappedLng = currentStop.lng;
     }
 
+    final nextStopDistanceKm =
+        distanceFromRouteStartKm(route, resolvedNextStopIndex);
+    final distanceToNextStopKm =
+        math.max(0, nextStopDistanceKm - projectedDistanceKm).toDouble();
+    final remainingRouteKm =
+        math.max(0, totalRouteKm - projectedDistanceKm).toDouble();
+    final routeProgress = totalRouteKm <= 0
+        ? (resolvedNextStopIndex <= resolvedCurrentStopIndex ? 1.0 : 0.0)
+        : (projectedDistanceKm / totalRouteKm).clamp(0.0, 1.0).toDouble();
+
     return RouteProgressSnapshot(
-      currentStopId: currentStopId,
-      nextStopId: nextStopId,
-      currentStopIndex: best.segmentIndex,
-      nextStopIndex: best.segmentIndex + 1,
-      segmentProgress: best.progress,
+      currentStopId: resolvedCurrentStopId,
+      nextStopId: resolvedNextStopId,
+      currentStopIndex: resolvedCurrentStopIndex,
+      nextStopIndex: resolvedNextStopIndex,
+      segmentProgress: segmentProgress.clamp(0.0, 1.0).toDouble(),
+      routeProgress: routeProgress,
+      projectedDistanceKm: projectedDistanceKm,
+      totalRouteKm: totalRouteKm,
       distanceToNextStopKm: distanceToNextStopKm,
       remainingRouteKm: remainingRouteKm,
-      snappedLat: best.snappedLat,
-      snappedLng: best.snappedLng,
+      snappedLat: snappedLat,
+      snappedLng: snappedLng,
       distanceFromRouteKm: best.distanceFromRouteKm,
     );
   }
@@ -238,11 +272,30 @@ class RouteProgressService {
     return AppConstants.defaultEtaSpeedKmh;
   }
 
+  static double routeDistanceKm(BusRoute route) {
+    var totalDistanceKm = 0.0;
+    for (var i = 0; i < route.stopIds.length - 1; i++) {
+      totalDistanceKm += segmentDistanceKmForRoute(route, i);
+    }
+    return totalDistanceKm;
+  }
+
+  static double distanceFromRouteStartKm(BusRoute route, int stopIndex) {
+    if (stopIndex <= 0) return 0;
+
+    var distanceKm = 0.0;
+    for (var i = 0; i < stopIndex && i < route.stopIds.length - 1; i++) {
+      distanceKm += segmentDistanceKmForRoute(route, i);
+    }
+    return distanceKm;
+  }
+
   static double segmentDistanceKmForRoute(BusRoute route, int startIndex) {
     if (startIndex < 0 || startIndex >= route.stopIds.length - 1) return 0;
     final start = VizagStops.get(route.stopIds[startIndex]);
     final end = VizagStops.get(route.stopIds[startIndex + 1]);
     if (start == null || end == null) return 0;
+    if (!start.hasCoordinates || !end.hasCoordinates) return 0;
     return segmentDistanceKm(start, end);
   }
 
@@ -250,30 +303,58 @@ class RouteProgressService {
     return LocationService.distanceKm(start.lat, start.lng, end.lat, end.lng);
   }
 
-  static _SegmentProjection? _bestProjectionForRange({
-    required BusRoute route,
+  static List<_RouteSegment> _routeSegments(BusRoute route) {
+    final segments = <_RouteSegment>[];
+    var distanceFromStartKm = 0.0;
+
+    for (var i = 0; i < route.stopIds.length - 1; i++) {
+      final startStop = VizagStops.get(route.stopIds[i]);
+      final endStop = VizagStops.get(route.stopIds[i + 1]);
+      final segmentLengthKm = startStop == null ||
+              endStop == null ||
+              !startStop.hasCoordinates ||
+              !endStop.hasCoordinates
+          ? 0.0
+          : segmentDistanceKm(startStop, endStop);
+
+      if (segmentLengthKm > 0) {
+        segments.add(
+          _RouteSegment(
+            startStopIndex: i,
+            endStopIndex: i + 1,
+            startStop: startStop!,
+            endStop: endStop!,
+            startDistanceKm: distanceFromStartKm,
+            endDistanceKm: distanceFromStartKm + segmentLengthKm,
+            segmentLengthKm: segmentLengthKm,
+          ),
+        );
+      }
+
+      distanceFromStartKm += segmentLengthKm;
+    }
+
+    return segments;
+  }
+
+  static _SegmentProjection? _bestProjectionForSegments({
+    required List<_RouteSegment> segments,
     required double lat,
     required double lng,
-    required int startIndex,
-    required int endIndex,
+    double? hintDistanceKm,
   }) {
     _SegmentProjection? best;
 
-    for (var i = startIndex; i <= endIndex; i++) {
-      final startStop = VizagStops.get(route.stopIds[i]);
-      final endStop = VizagStops.get(route.stopIds[i + 1]);
-      if (startStop == null || endStop == null) continue;
-
+    for (final segment in segments) {
       final candidate = _projectToSegment(
-        segmentIndex: i,
+        segment: segment,
         lat: lat,
         lng: lng,
-        startStop: startStop,
-        endStop: endStop,
       );
 
       if (best == null ||
-          candidate.distanceFromRouteKm < best.distanceFromRouteKm) {
+          _projectionScore(candidate, hintDistanceKm: hintDistanceKm) <
+              _projectionScore(best, hintDistanceKm: hintDistanceKm)) {
         best = candidate;
       }
     }
@@ -282,52 +363,110 @@ class RouteProgressService {
   }
 
   static _SegmentProjection _projectToSegment({
-    required int segmentIndex,
+    required _RouteSegment segment,
     required double lat,
     required double lng,
-    required BusStop startStop,
-    required BusStop endStop,
   }) {
-    final dx = endStop.lng - startStop.lng;
-    final dy = endStop.lat - startStop.lat;
+    final dx = segment.endStop.lng - segment.startStop.lng;
+    final dy = segment.endStop.lat - segment.startStop.lat;
     final lengthSquared = (dx * dx) + (dy * dy);
 
     var progress = 0.0;
     if (lengthSquared > 0) {
-      progress = (((lng - startStop.lng) * dx) + ((lat - startStop.lat) * dy)) /
+      progress = (((lng - segment.startStop.lng) * dx) +
+              ((lat - segment.startStop.lat) * dy)) /
           lengthSquared;
       progress = progress.clamp(0.0, 1.0);
     }
 
-    final snappedLng = startStop.lng + (dx * progress);
-    final snappedLat = startStop.lat + (dy * progress);
+    final snappedLng = segment.startStop.lng + (dx * progress);
+    final snappedLat = segment.startStop.lat + (dy * progress);
     final distanceFromRouteKm =
         LocationService.distanceKm(lat, lng, snappedLat, snappedLng);
-    final segmentLengthKm = segmentDistanceKm(startStop, endStop);
 
     return _SegmentProjection(
-      segmentIndex: segmentIndex,
+      startStopIndex: segment.startStopIndex,
+      endStopIndex: segment.endStopIndex,
+      startDistanceKm: segment.startDistanceKm,
+      endDistanceKm: segment.endDistanceKm,
       progress: progress,
+      projectedDistanceKm:
+          segment.startDistanceKm + (segment.segmentLengthKm * progress),
       snappedLat: snappedLat,
       snappedLng: snappedLng,
       distanceFromRouteKm: distanceFromRouteKm,
-      segmentLengthKm: segmentLengthKm,
+      segmentLengthKm: segment.segmentLengthKm,
     );
   }
+
+  static double _projectionScore(
+    _SegmentProjection projection, {
+    double? hintDistanceKm,
+  }) {
+    var score = projection.distanceFromRouteKm;
+    if (hintDistanceKm == null) {
+      return score;
+    }
+
+    final backtrackKm =
+        math.max(0, hintDistanceKm - projection.projectedDistanceKm);
+    final forwardLeapKm =
+        math.max(0, projection.projectedDistanceKm - hintDistanceKm);
+
+    if (backtrackKm > _backtrackToleranceKm) {
+      score +=
+          (backtrackKm - _backtrackToleranceKm) * _backtrackPenaltyMultiplier;
+    }
+
+    if (forwardLeapKm > _maxHintLeapKm) {
+      score +=
+          (forwardLeapKm - _maxHintLeapKm) * _forwardLeapPenaltyMultiplier;
+    }
+
+    return score;
+  }
+}
+
+class _RouteSegment {
+  const _RouteSegment({
+    required this.startStopIndex,
+    required this.endStopIndex,
+    required this.startStop,
+    required this.endStop,
+    required this.startDistanceKm,
+    required this.endDistanceKm,
+    required this.segmentLengthKm,
+  });
+
+  final int startStopIndex;
+  final int endStopIndex;
+  final BusStop startStop;
+  final BusStop endStop;
+  final double startDistanceKm;
+  final double endDistanceKm;
+  final double segmentLengthKm;
 }
 
 class _SegmentProjection {
   const _SegmentProjection({
-    required this.segmentIndex,
+    required this.startStopIndex,
+    required this.endStopIndex,
+    required this.startDistanceKm,
+    required this.endDistanceKm,
     required this.progress,
+    required this.projectedDistanceKm,
     required this.snappedLat,
     required this.snappedLng,
     required this.distanceFromRouteKm,
     required this.segmentLengthKm,
   });
 
-  final int segmentIndex;
+  final int startStopIndex;
+  final int endStopIndex;
+  final double startDistanceKm;
+  final double endDistanceKm;
   final double progress;
+  final double projectedDistanceKm;
   final double snappedLat;
   final double snappedLng;
   final double distanceFromRouteKm;

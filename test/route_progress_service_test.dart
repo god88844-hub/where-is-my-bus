@@ -2,7 +2,6 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:vizag_bus_live/data/vizag_data.dart';
 import 'package:vizag_bus_live/models/bus.dart';
 import 'package:vizag_bus_live/services/route_progress_service.dart';
-import 'package:vizag_bus_live/utils/constants.dart';
 
 class _LongSegmentFixture {
   const _LongSegmentFixture({
@@ -88,8 +87,9 @@ void main() {
       final fixture = _findLongSegmentFixture(2.4, minSegmentIndex: 1);
       final previousStop =
           VizagStops.get(fixture.route.stopIds[fixture.segmentIndex - 1])!;
-      final progress =
-          1 - ((AppConstants.stopReachRadiusKm + 0.25) / fixture.segmentKm);
+      final progress = 1 -
+          ((RouteProgressService.stopArrivalDistanceKm + 0.25) /
+              fixture.segmentKm);
       final lat = fixture.startStop.lat +
           ((fixture.endStop.lat - fixture.startStop.lat) * progress);
       final lng = fixture.startStop.lng +
@@ -106,6 +106,24 @@ void main() {
       expect(snapshot!.currentStopId, fixture.startStop.id);
       expect(snapshot.nextStopId, fixture.endStop.id);
       expect(snapshot.segmentProgress, greaterThan(0.35));
+    });
+
+    test('keeps forward Pendhurthi fixes on the Pendhurthi corridor', () {
+      final route = VizagRoutes.byRouteId('300C')!;
+      final pendurthi = VizagStops.get('pendurthi')!;
+
+      final snapshot = RouteProgressService.snapToRoute(
+        route: route,
+        lat: pendurthi.lat,
+        lng: pendurthi.lng,
+        hintCurrentStopId: 'gopalapatnam',
+      );
+
+      expect(snapshot, isNotNull);
+      expect(snapshot!.currentStopId, 'pendurthi');
+      expect(snapshot.nextStopId, 'sabbavaram');
+      expect(snapshot.currentStopId, isNot('gopalapatnam'));
+      expect(snapshot.projectedDistanceKm, greaterThan(0));
     });
   });
 
@@ -498,10 +516,10 @@ void main() {
   group('RouteProgressService stop radius handling', () {
     final fixture = _findLongSegmentFixture(2.4);
 
-    test('advances only after the live fix enters the next stop 1 km radius',
+    test('advances only after the live fix enters the next stop arrival radius',
         () {
-      const outsideRadiusKm = AppConstants.stopReachRadiusKm + 0.2;
-      const insideRadiusKm = AppConstants.stopReachRadiusKm - 0.2;
+      final outsideRadiusKm = RouteProgressService.stopArrivalDistanceKm + 0.08;
+      final insideRadiusKm = RouteProgressService.stopArrivalDistanceKm - 0.08;
       final outsideProgress = 1 - (outsideRadiusKm / fixture.segmentKm);
       final insideProgress = 1 - (insideRadiusKm / fixture.segmentKm);
 

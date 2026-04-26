@@ -3,6 +3,8 @@
 // Stop coordinates are approximate based on known Vizag geography.
 // Verify key stops on the ground and update lat/lng as needed.
 
+import 'google_route_enrichment_data.dart';
+import 'manual_route_enrichment_data.dart';
 import 'osm_route_enrichment_data.dart';
 
 // ─────────────────────────────────────────────────────────────
@@ -59,16 +61,16 @@ extension BusTypeExt on BusType {
 }
 
 // ─────────────────────────────────────────────────────────────
-//  STOP
+//  STOP GRAPH
 // ─────────────────────────────────────────────────────────────
-class BusStop {
+class Stop {
   final String id;
   final String name;
   final String nameTelugu;
   final double lat;
   final double lng;
 
-  const BusStop({
+  const Stop({
     required this.id,
     required this.name,
     required this.nameTelugu,
@@ -78,14 +80,14 @@ class BusStop {
 
   bool get hasCoordinates => lat != 0 && lng != 0;
 
-  BusStop copyWith({
+  Stop copyWith({
     String? id,
     String? name,
     String? nameTelugu,
     double? lat,
     double? lng,
   }) {
-    return BusStop(
+    return Stop(
       id: id ?? this.id,
       name: name ?? this.name,
       nameTelugu: nameTelugu ?? this.nameTelugu,
@@ -102,8 +104,8 @@ class BusStop {
         'lng': lng,
       };
 
-  factory BusStop.fromJson(Map<String, dynamic> json) {
-    return BusStop(
+  factory Stop.fromJson(Map<String, dynamic> json) {
+    return Stop(
       id: json['id'] as String? ?? '',
       name: json['name'] as String? ?? '',
       nameTelugu: json['nameTelugu'] as String? ?? '',
@@ -113,42 +115,167 @@ class BusStop {
   }
 }
 
+typedef BusStop = Stop;
+
+class RouteStop {
+  const RouteStop({
+    required this.stopId,
+    required this.sequence,
+    this.isMajor = false,
+  });
+
+  final String stopId;
+  final int sequence;
+  final bool isMajor;
+
+  RouteStop copyWith({
+    String? stopId,
+    int? sequence,
+    bool? isMajor,
+  }) {
+    return RouteStop(
+      stopId: stopId ?? this.stopId,
+      sequence: sequence ?? this.sequence,
+      isMajor: isMajor ?? this.isMajor,
+    );
+  }
+}
+
 // ─────────────────────────────────────────────────────────────
 //  ROUTE
 // ─────────────────────────────────────────────────────────────
 class BusRoute {
-  final String routeId; // internal directional key
-  final String number;
+  final String id; // internal directional key
+  final String baseRoute;
+  final bool isForward;
   final String from;
   final String to;
   final String fromTelugu;
   final String toTelugu;
   final List<String> viaStops; // display only — intermediate landmarks
-  final List<String> stopIds; // full ordered stop IDs, including minor stops
-  final List<String> majorStopIds; // default visible timeline stops
+  final List<RouteStop> stops; // ordered stop refs, including minor stops
   final BusType busType;
   final int frequencyMins;
   // Directional route id to switch to when the conductor starts the return trip.
   // If omitted, the app auto-generates a reverse trip using the same public
   // route number.
-  final String? returnRouteNumber;
+  final String? returnRouteId;
 
-  const BusRoute({
+  BusRoute({
+    String? id,
     String? routeId,
-    required this.number,
+    String? baseRoute,
+    String? number,
+    bool? isForward,
     required this.from,
     required this.to,
     this.fromTelugu = '',
     this.toTelugu = '',
     this.viaStops = const [],
-    required this.stopIds,
-    this.majorStopIds = const [],
+    List<RouteStop>? stops,
+    List<String>? stopIds,
+    List<String> majorStopIds = const [],
     this.busType = BusType.redOrdinary,
     this.frequencyMins = 20,
-    this.returnRouteNumber,
-  }) : routeId = routeId ?? number;
+    String? returnRouteId,
+    String? returnRouteNumber,
+  })  : assert(baseRoute != null || number != null),
+        assert(stops != null || stopIds != null),
+        assert(stops == null || stopIds == null),
+        id = id ?? routeId ?? baseRoute ?? number!,
+        baseRoute = baseRoute ?? number!,
+        isForward = isForward ??
+            !(id ?? routeId ?? baseRoute ?? number!).endsWith('-R'),
+        stops = _buildRouteStops(
+          stops: stops,
+          stopIds: stopIds,
+          majorStopIds: majorStopIds,
+        ),
+        returnRouteId = returnRouteId ?? returnRouteNumber;
 
-  String get displayName => '$number: $from → $to';
+  String get routeId => id;
+  String get number => baseRoute;
+  String? get returnRouteNumber => returnRouteId;
+
+  static List<RouteStop> _buildRouteStops({
+    List<RouteStop>? stops,
+    List<String>? stopIds,
+    required List<String> majorStopIds,
+  }) {
+    if (stops != null) {
+      final sortedStops = [...stops]
+        ..sort((a, b) => a.sequence.compareTo(b.sequence));
+      final normalized = <RouteStop>[];
+      for (final stop in sortedStops) {
+        final stopId = stop.stopId.trim();
+        if (stopId.isEmpty) continue;
+        if (normalized.isNotEmpty && normalized.last.stopId == stopId) {
+          final previous = normalized.removeLast();
+          normalized.add(
+            RouteStop(
+              stopId: stopId,
+              sequence: previous.sequence,
+              isMajor: previous.isMajor || stop.isMajor,
+            ),
+          );
+          continue;
+        }
+        normalized.add(
+          RouteStop(
+            stopId: stopId,
+            sequence: normalized.length,
+            isMajor: stop.isMajor,
+          ),
+        );
+      }
+      return List.unmodifiable(normalized);
+    }
+
+    final majorSet = majorStopIds.toSet();
+    final normalized = <RouteStop>[];
+    for (final rawStopId in stopIds ?? const <String>[]) {
+      final stopId = rawStopId.trim();
+      if (stopId.isEmpty) continue;
+      if (normalized.isNotEmpty && normalized.last.stopId == stopId) {
+        final previous = normalized.removeLast();
+        normalized.add(
+          RouteStop(
+            stopId: stopId,
+            sequence: previous.sequence,
+            isMajor: previous.isMajor || majorSet.contains(stopId),
+          ),
+        );
+        continue;
+      }
+      normalized.add(
+        RouteStop(
+          stopId: stopId,
+          sequence: normalized.length,
+          isMajor: majorSet.contains(stopId),
+        ),
+      );
+    }
+    return List.unmodifiable(normalized);
+  }
+
+  late final List<RouteStop> orderedStops = List.unmodifiable(
+    [...stops]..sort((a, b) => a.sequence.compareTo(b.sequence)),
+  );
+
+  late final List<String> stopIds =
+      List.unmodifiable(orderedStops.map((stop) => stop.stopId));
+
+  late final List<String> majorStopIds = List.unmodifiable(() {
+    final majorStopIds = <String>[];
+    final seenStopIds = <String>{};
+    for (final stop in orderedStops) {
+      if (!stop.isMajor || !seenStopIds.add(stop.stopId)) continue;
+      majorStopIds.add(stop.stopId);
+    }
+    return majorStopIds;
+  }());
+
+  String get displayName => '$baseRoute: $from → $to';
   String get viaLabel => viaStops.isEmpty ? '' : 'via ${viaStops.join(', ')}';
 
   // Compatibility getters used by screens/widgets
@@ -173,6 +300,9 @@ class BusRoute {
   }
 
   bool get hasHiddenSubStops => visibleStopIds.length < stopIds.length;
+
+  RouteStop? stopRef(String stopId) =>
+      orderedStops.where((stop) => stop.stopId == stopId).firstOrNull;
 
   List<String> stopIdsBetween(String fromStopId, String toStopId) {
     final fromIndex = stopIds.indexOf(fromStopId);
@@ -1436,6 +1566,55 @@ class VizagStops {
     return stops;
   }
 
+  static Map<String, BusStop> _buildGoogleImportedStops() {
+    final stops = <String, BusStop>{};
+
+    for (final spec in googleImportedStops) {
+      final existing = stops[spec.id] ??
+          _importedStops[spec.id] ??
+          _manualStops[spec.id] ??
+          _baseStops[spec.id];
+      stops[spec.id] = BusStop(
+        id: spec.id,
+        name: spec.name.trim().isNotEmpty
+            ? spec.name.trim()
+            : existing?.name ?? _formatIdAsName(spec.id),
+        nameTelugu: spec.nameTelugu.isNotEmpty
+            ? spec.nameTelugu
+            : existing?.nameTelugu ?? '',
+        lat: spec.lat != 0 ? spec.lat : existing?.lat ?? 0,
+        lng: spec.lng != 0 ? spec.lng : existing?.lng ?? 0,
+      );
+    }
+
+    return stops;
+  }
+
+  static Map<String, BusStop> _buildManualOverrideStops() {
+    final stops = <String, BusStop>{};
+
+    for (final spec in manualStopOverrides) {
+      final existing = stops[spec.id] ??
+          _googleImportedStops[spec.id] ??
+          _importedStops[spec.id] ??
+          _manualStops[spec.id] ??
+          _baseStops[spec.id];
+      stops[spec.id] = BusStop(
+        id: spec.id,
+        name: spec.name.trim().isNotEmpty
+            ? spec.name.trim()
+            : existing?.name ?? _formatIdAsName(spec.id),
+        nameTelugu: spec.nameTelugu.isNotEmpty
+            ? spec.nameTelugu
+            : existing?.nameTelugu ?? '',
+        lat: spec.lat != 0 ? spec.lat : existing?.lat ?? 0,
+        lng: spec.lng != 0 ? spec.lng : existing?.lng ?? 0,
+      );
+    }
+
+    return stops;
+  }
+
   static final Map<String, BusStop> _baseStops = {
     // Area anchors keep nearby stops clustered so route snapping and mock GPS
     // interpolation follow realistic city corridors instead of random points.
@@ -2086,14 +2265,26 @@ class VizagStops {
 
   static final Map<String, BusStop> _manualStops = _buildManualStops();
   static final Map<String, BusStop> _importedStops = _buildImportedStops();
+  static final Map<String, BusStop> _googleImportedStops =
+      _buildGoogleImportedStops();
+  static final Map<String, BusStop> _manualOverrideStops =
+      _buildManualOverrideStops();
 
   static final Map<String, BusStop> all = {
     ..._baseStops,
     ..._manualStops,
     ..._importedStops,
+    ..._googleImportedStops,
+    ..._manualOverrideStops,
   };
 
   static BusStop? get(String id) => all[id];
+
+  static String normalizeStopToken(String label) =>
+      _normalizeManualStopToken(label);
+
+  static String canonicalStopIdForLabel(String label) =>
+      _importedStopIdForLabel(label);
 
   static BusStop resolve(
     String? id, {
@@ -2158,6 +2349,14 @@ class VizagStops {
 // ─────────────────────────────────────────────────────────────
 class VizagRoutes {
   static final List<BusRoute> all = _generateAllRoutes();
+  static final Map<String, ManualRouteOverrideSpec>
+      _manualRouteOverridesByRouteId = {
+    for (final spec in manualRouteOverrides) spec.routeId: spec,
+  };
+  static final Map<String, GoogleImportedRouteSpec>
+      _googleImportedRouteSpecsByRouteId = {
+    for (final spec in googleImportedRouteSpecs) spec.routeId: spec,
+  };
   static final Map<String, List<OsmImportedRouteSpec>>
       _importedRouteSpecsByNumber = _groupImportedRouteSpecsByNumber();
 
@@ -2273,9 +2472,72 @@ class VizagRoutes {
     ];
 
     return sourceRoutes
+        .map(_enrichRouteWithGoogleStops)
         .map(_enrichRouteWithImportedStops)
         .map(_applySharedMinorStopCorridors)
+        .map(_applyManualRouteOverride)
         .toList(growable: false);
+  }
+
+  static BusRoute _applyManualRouteOverride(BusRoute route) {
+    final spec = _manualRouteOverridesByRouteId[route.routeId];
+    if (spec == null) return route;
+
+    final majorStopIds =
+        spec.majorStopIds.isEmpty ? route.visibleStopIds : spec.majorStopIds;
+    if (_orderedAnchorIndices(spec.stopIds, majorStopIds) == null) {
+      return route;
+    }
+    if (_stringListsEqual(spec.stopIds, route.stopIds) &&
+        _stringListsEqual(majorStopIds, route.visibleStopIds)) {
+      return route;
+    }
+
+    return BusRoute(
+      routeId: route.routeId,
+      number: route.number,
+      from: route.from,
+      to: route.to,
+      fromTelugu: route.fromTelugu,
+      toTelugu: route.toTelugu,
+      viaStops: route.viaStops,
+      stopIds: spec.stopIds,
+      majorStopIds: majorStopIds,
+      busType: route.busType,
+      frequencyMins: route.frequencyMins,
+      returnRouteNumber: route.returnRouteNumber,
+    );
+  }
+
+  static BusRoute _enrichRouteWithGoogleStops(BusRoute route) {
+    final spec = _googleImportedRouteSpecsByRouteId[route.routeId];
+    if (spec == null) return route;
+
+    final majorStopIds = route.visibleStopIds;
+    if (_orderedAnchorIndices(spec.stopIds, majorStopIds) == null) {
+      return route;
+    }
+    if (_stringListsEqual(spec.stopIds, route.stopIds)) {
+      return route;
+    }
+    if (spec.stopIds.length < route.stopIds.length) {
+      return route;
+    }
+
+    return BusRoute(
+      routeId: route.routeId,
+      number: route.number,
+      from: route.from,
+      to: route.to,
+      fromTelugu: route.fromTelugu,
+      toTelugu: route.toTelugu,
+      viaStops: route.viaStops,
+      stopIds: spec.stopIds,
+      majorStopIds: majorStopIds,
+      busType: route.busType,
+      frequencyMins: route.frequencyMins,
+      returnRouteNumber: route.returnRouteNumber,
+    );
   }
 
   static BusRoute _enrichRouteWithImportedStops(BusRoute route) {
@@ -2525,7 +2787,7 @@ class VizagRoutes {
 
   static final List<BusRoute> _allBaseRoutes = _buildAllBaseRoutes();
 
-  static const List<BusRoute> _baseRoutes = [
+  static final List<BusRoute> _baseRoutes = [
     // ── 10K ──────────────────────────────────────────────────
     BusRoute(
         number: '10K',
