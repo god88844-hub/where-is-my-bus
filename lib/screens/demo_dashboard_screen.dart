@@ -6,7 +6,6 @@ import '../services/app_provider.dart';
 import '../utils/app_theme.dart';
 import '../widgets/shared_widgets.dart';
 import '../widgets/staff_mode_access.dart';
-import 'beacon_screen.dart';
 import 'home_screen.dart';
 
 class DemoDashboardScreen extends StatelessWidget {
@@ -41,7 +40,7 @@ class DemoDashboardScreen extends StatelessWidget {
             ),
             onOpenPassengerHelp: () => Navigator.push(
               context,
-              MaterialPageRoute(builder: (_) => const BeaconScreen()),
+              MaterialPageRoute(builder: (_) => const HomeScreen()),
             ),
             onOpenStaffMode: () => showStaffModeAccessSheet(
               context,

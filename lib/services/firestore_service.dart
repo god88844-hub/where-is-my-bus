@@ -122,6 +122,7 @@ class FirestoreService {
     int? etaToNextStopMins,
     BusType? busType,
     String? writerUid,
+    String? tripToStopId,
   }) async {
     await _db.collection('live_buses').doc(busId).set({
       'bus_id': busId,
@@ -150,6 +151,7 @@ class FirestoreService {
       'crowd': crowd.index,
       'source': BusDataSource.beacon.index,
       'writer_uid': writerUid,
+      'trip_to_stop': tripToStopId ?? '',
       'ts': FieldValue.serverTimestamp(),
       'active': true,
     }, SetOptions(merge: true));
@@ -176,6 +178,7 @@ class FirestoreService {
     double? effectiveSpeedKmh,
     int? etaToNextStopMins,
     BusType? busType,
+    String? tripToStopId,
   }) async {
     final uid = await ensureUserId();
     await upsertLiveBus(
@@ -199,6 +202,7 @@ class FirestoreService {
       effectiveSpeedKmh: effectiveSpeedKmh,
       etaToNextStopMins: etaToNextStopMins,
       busType: busType,
+      tripToStopId: tripToStopId,
       writerUid: uid,
     );
   }
@@ -255,6 +259,7 @@ class FirestoreService {
                   _nullableDoubleValue(d['effective_speed_kmh']),
               crowd: _crowdFromValue(d['crowd']),
               source: _sourceFromValue(d['source']),
+              tripToStopId: _nullableStringValue(d['trip_to_stop']),
               lastUpdated: _dateTimeValue(d['ts']),
             ),
           );
@@ -417,6 +422,34 @@ class FirestoreService {
       'ended_at': FieldValue.serverTimestamp(),
       'last_seen_at': FieldValue.serverTimestamp(),
     }, SetOptions(merge: true));
+  }
+
+  /// Passenger complaint (e.g. "bus didn't stop at my stop").
+  /// Best-effort: returns false when Firestore rejects the write (rules not
+  /// deployed yet) so the UI can inform the passenger.
+  Future<bool> submitComplaint({
+    required String type,
+    String? routeNumber,
+    String? stopId,
+    String? busId,
+    String? note,
+  }) async {
+    try {
+      final uid = await ensureUserId();
+      await _db.collection('complaints').add({
+        'type': type,
+        'route': routeNumber ?? '',
+        'stop_id': stopId ?? '',
+        'bus_id': busId ?? '',
+        'note': note ?? '',
+        'reporter_uid': uid,
+        'ts': FieldValue.serverTimestamp(),
+      });
+      return true;
+    } catch (e) {
+      debugPrint('FirestoreService.submitComplaint failed: $e');
+      return false;
+    }
   }
 
   /// Best-effort cleanup: deactivate buses not updated within [maxAgeMins].

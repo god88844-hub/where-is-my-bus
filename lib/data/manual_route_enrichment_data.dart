@@ -257,6 +257,7 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'rtc_complex',
       'nad_junction',
       'gopalapatnam',
+      'vepagunta',
       'pendurthi',
       'kothavalasa',
       'anandapuram',
@@ -315,6 +316,7 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'devarapalli',
       'kothavalasa',
       'pendurthi',
+      'vepagunta',
       'nad_junction',
       'railway_station',
       'rtc_complex'
@@ -801,13 +803,14 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     ],
   ),
 
-  // 222: RTC Complex -> Tagarapuvalasa
+  // 222: Railway_station -> Kasuluvada
   ManualRouteOverrideSpec(
     routeId: '222',
     baseRoute: '222',
-    from: 'RTC Complex',
-    to: 'Tagarapuvalasa',
+    from: 'Railway Station',
+    to: 'Kasuluvada',
     stopIds: [
+      'railway_station',
       'rtc_complex',
       'rama_talkies',
       'mvp_colony',
@@ -828,25 +831,29 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'anandapuram',
       'peddipalem',
       'tallavalasa',
-      'tagarapuvalasa'
+      'tagarapuvalasa',
+      'kasuluvada'
     ],
     majorStopIds: [
+      'railway_station',
       'rtc_complex',
       'mvp_colony',
       'hanumanthawaka',
       'madhurawada',
       'anandapuram',
-      'tagarapuvalasa'
+      'tagarapuvalasa',
+      'kasuluvada'
     ],
   ),
 
-  // 222-R: Tagarapuvalasa -> RTC Complex
+  // 222-R: Kasuluvada -> Railway Station
   ManualRouteOverrideSpec(
     routeId: '222-R',
     baseRoute: '222',
-    from: 'Tagarapuvalasa',
-    to: 'RTC Complex',
+    from: 'Kasuluvada',
+    to: 'Railway Station',
     stopIds: [
+      'kasuluvada',
       'tagarapuvalasa',
       'tallavalasa',
       'peddipalem',
@@ -867,15 +874,18 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'venkojipalem',
       'mvp_colony',
       'rama_talkies',
-      'rtc_complex'
+      'rtc_complex',
+      'railway_station'
     ],
     majorStopIds: [
+      'kasuluvada',
       'tagarapuvalasa',
       'anandapuram',
       'madhurawada',
       'hanumanthawaka',
       'mvp_colony',
-      'rtc_complex'
+      'rtc_complex',
+      'railway_station'
     ],
   ),
 
@@ -1037,10 +1047,15 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     to: 'Kommadi',
     stopIds: [
       'old_post_office',
+      'purna_market',
       'jagadamba',
       'rtc_complex',
       'maddilapalem',
+      'venkojipalem',
+      'vizag_zoo',
       'endada',
+      'law_college',
+      'carshed',
       'madhurawada',
       'kommadi'
     ],
@@ -1064,10 +1079,15 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     stopIds: [
       'kommadi',
       'madhurawada',
+      'carshed',
+      'law_college',
       'endada',
+      'vizag_zoo',
+      'venkojipalem',
       'maddilapalem',
       'rtc_complex',
       'jagadamba',
+      'purna_market',
       'old_post_office'
     ],
     majorStopIds: [
@@ -1101,7 +1121,9 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'rtc_complex',
       'maddilapalem',
       'endada',
-      'madhurawada'
+      'madhurawada',
+      'kommadi',
+      'marikavalasa'
     ],
   ),
 
@@ -1120,6 +1142,8 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'old_post_office'
     ],
     majorStopIds: [
+      'marikavalasa',
+      'kommadi',
       'madhurawada',
       'endada',
       'maddilapalem',
@@ -1135,7 +1159,15 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     baseRoute: '25IT',
     from: 'RTC Complex',
     to: 'IT Park',
-    stopIds: ['rtc_complex', 'maddilapalem', 'endada', 'carshed'],
+    stopIds: [
+      'rtc_complex',
+      'maddilapalem',
+      'venkojipalem',
+      'vizag_zoo',
+      'endada',
+      'law_college',
+      'carshed'
+    ],
     majorStopIds: ['rtc_complex', 'maddilapalem', 'endada', 'carshed'],
   ),
 
@@ -1145,7 +1177,15 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     baseRoute: '25IT',
     from: 'IT Park',
     to: 'RTC Complex',
-    stopIds: ['carshed', 'endada', 'maddilapalem', 'rtc_complex'],
+    stopIds: [
+      'carshed',
+      'law_college',
+      'endada',
+      'vizag_zoo',
+      'venkojipalem',
+      'maddilapalem',
+      'rtc_complex'
+    ],
     majorStopIds: ['carshed', 'endada', 'maddilapalem', 'rtc_complex'],
   ),
 
@@ -1159,15 +1199,21 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'railway_station',
       'rtc_complex',
       'maddilapalem',
+      'venkojipalem',
+      'vizag_zoo',
       'endada',
-      'madhurawada'
+      'law_college',
+      'sevanagar'
     ],
     majorStopIds: [
       'railway_station',
       'rtc_complex',
       'maddilapalem',
+      'venkojipalem',
+      'vizag_zoo',
       'endada',
-      'madhurawada'
+      'law_college',
+      'sevanagar'
     ],
   ),
 
@@ -1178,15 +1224,21 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     from: 'Sevanagar',
     to: 'Railway Station',
     stopIds: [
-      'madhurawada',
+      'sevanagar',
+      'law_college',
       'endada',
+      'vizag_zoo',
+      'venkojipalem',
       'maddilapalem',
       'rtc_complex',
       'railway_station'
     ],
     majorStopIds: [
-      'madhurawada',
+      'sevanagar',
+      'law_college',
       'endada',
+      'vizag_zoo',
+      'venkojipalem',
       'maddilapalem',
       'rtc_complex',
       'railway_station'
@@ -1201,10 +1253,15 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     to: 'Bakkannapalem',
     stopIds: [
       'old_post_office',
+      'purna_market',
       'jagadamba',
       'rtc_complex',
       'maddilapalem',
+      'venkojipalem',
+      'vizag_zoo',
       'endada',
+      'law_college',
+      'carshed',
       'madhurawada'
     ],
     majorStopIds: [
@@ -1213,7 +1270,9 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'rtc_complex',
       'maddilapalem',
       'endada',
-      'madhurawada'
+      'madhurawada',
+      'kommadi',
+      'marikavalasa'
     ],
   ),
 
@@ -1225,13 +1284,20 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     to: 'OHPO',
     stopIds: [
       'madhurawada',
+      'carshed',
+      'law_college',
       'endada',
+      'vizag_zoo',
+      'venkojipalem',
       'maddilapalem',
       'rtc_complex',
       'jagadamba',
+      'purna_market',
       'old_post_office'
     ],
     majorStopIds: [
+      'marikavalasa',
+      'kommadi',
       'madhurawada',
       'endada',
       'maddilapalem',
@@ -1249,11 +1315,18 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     to: 'Marikavalasa',
     stopIds: [
       'old_post_office',
+      'purna_market',
       'jagadamba',
       'rtc_complex',
       'maddilapalem',
+      'venkojipalem',
+      'vizag_zoo',
       'endada',
-      'madhurawada'
+      'law_college',
+      'carshed',
+      'madhurawada',
+      'kommadi',
+      'marikavalasa'
     ],
     majorStopIds: [
       'old_post_office',
@@ -1261,7 +1334,9 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'rtc_complex',
       'maddilapalem',
       'endada',
-      'madhurawada'
+      'madhurawada',
+      'kommadi',
+      'marikavalasa'
     ],
   ),
 
@@ -1272,14 +1347,23 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     from: 'Marikavalasa',
     to: 'OHPO',
     stopIds: [
+      'marikavalasa',
+      'kommadi',
       'madhurawada',
+      'carshed',
+      'law_college',
       'endada',
+      'vizag_zoo',
+      'venkojipalem',
       'maddilapalem',
       'rtc_complex',
       'jagadamba',
+      'purna_market',
       'old_post_office'
     ],
     majorStopIds: [
+      'marikavalasa',
+      'kommadi',
       'madhurawada',
       'endada',
       'maddilapalem',
@@ -1298,10 +1382,15 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     stopIds: [
       'hb_colony',
       'pm_palem',
+      'carshed',
+      'law_college',
       'endada',
+      'vizag_zoo',
+      'venkojipalem',
       'maddilapalem',
       'rtc_complex',
       'jagadamba',
+      'purna_market',
       'old_post_office'
     ],
     majorStopIds: [
@@ -1323,10 +1412,15 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     to: 'Ratnagiri HB Colony',
     stopIds: [
       'old_post_office',
+      'purna_market',
       'jagadamba',
       'rtc_complex',
       'maddilapalem',
+      'venkojipalem',
+      'vizag_zoo',
       'endada',
+      'law_college',
+      'carshed',
       'pm_palem',
       'hb_colony'
     ],
@@ -1351,7 +1445,11 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'railway_station',
       'rtc_complex',
       'maddilapalem',
+      'venkojipalem',
+      'vizag_zoo',
       'endada',
+      'law_college',
+      'carshed',
       'pm_palem'
     ],
     majorStopIds: [
@@ -1371,7 +1469,11 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     to: 'Railway Station',
     stopIds: [
       'pm_palem',
+      'carshed',
+      'law_college',
       'endada',
+      'vizag_zoo',
+      'venkojipalem',
       'maddilapalem',
       'rtc_complex',
       'railway_station'
@@ -1393,10 +1495,14 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     to: 'Nagarapalem',
     stopIds: [
       'old_post_office',
+      'purna_market',
       'jagadamba',
       'rtc_complex',
       'maddilapalem',
+      'venkojipalem',
+      'vizag_zoo',
       'endada',
+      'law_college',
       'carshed'
     ],
     majorStopIds: [
@@ -1417,10 +1523,14 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     to: 'OHPO',
     stopIds: [
       'carshed',
+      'law_college',
       'endada',
+      'vizag_zoo',
+      'venkojipalem',
       'maddilapalem',
       'rtc_complex',
       'jagadamba',
+      'purna_market',
       'old_post_office'
     ],
     majorStopIds: [
@@ -1443,8 +1553,20 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'rk_beach',
       'jagadamba',
       'rtc_complex',
+      'railway_station',
+      'convent_junction',
+      'gnanapuram',
+      'urvasi',
+      'kancharapalem',
+      'industrial_estate',
+      '104_area',
+      'marripalem',
+      'karasa',
       'nad_junction',
+      'baji_junction',
+      'simhachalam_railway_station',
       'gopalapatnam',
+      'srinivanagar',
       'simhachalam'
     ],
     majorStopIds: [
@@ -1465,8 +1587,20 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     to: 'RK Beach',
     stopIds: [
       'simhachalam',
+      'srinivanagar',
       'gopalapatnam',
+      'simhachalam_railway_station',
+      'baji_junction',
       'nad_junction',
+      'karasa',
+      'marripalem',
+      '104_area',
+      'industrial_estate',
+      'kancharapalem',
+      'urvasi',
+      'gnanapuram',
+      'convent_junction',
+      'railway_station',
       'rtc_complex',
       'jagadamba',
       'rk_beach'
@@ -1711,8 +1845,8 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'railway_station',
       'convent_junction',
       'gnanapuram',
-      'urvasi',
       'kancharapalem',
+      'urvasi',
       'industrial_estate',
       '104_area',
       'marripalem',
@@ -1778,8 +1912,8 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'marripalem',
       '104_area',
       'industrial_estate',
-      'kancharapalem',
       'urvasi',
+      'kancharapalem',
       'gnanapuram',
       'convent_junction',
       'railway_station',
@@ -1977,23 +2111,34 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     to: 'Chodavaram',
     stopIds: [
       'rtc_complex',
+      'railway_station',
+      'rly_newcolony',
+      'kancharapalem',
+      'industrial_estate',
+      'marripalem',
       'nad_junction',
       'gopalapatnam',
       'vepagunta',
-      'purushottapuram',
-      'sujatha_nagar',
-      'chinnamushidivada',
-      'pendurti_college',
-      'pendurthi',
+      'patharoad',
       'sabbavaram',
+      'gottivada',
+      'lagisettypalem',
+      'aripaka',
+      'tekkalipalem',
+      'chinayathapalem',
+      'lingala Tirugudu',
+      'adduru',
       'chodavaram'
     ],
     majorStopIds: [
       'rtc_complex',
+      'railway_station',
       'nad_junction',
       'gopalapatnam',
-      'pendurthi',
+      'vepagunta',
+      'patharoad',
       'sabbavaram',
+      'adduru',
       'chodavaram'
     ],
   ),
@@ -2006,23 +2151,34 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     to: 'RTC Complex',
     stopIds: [
       'chodavaram',
+      'adduru',
+      'lingala Tirugudu',
+      'chinayathapalem',
+      'tekkalipalem',
+      'aripaka',
+      'lagisettypalem',
+      'gottivada',
       'sabbavaram',
-      'pendurthi',
-      'pendurti_college',
-      'chinnamushidivada',
-      'sujatha_nagar',
-      'purushottapuram',
+      'patharoad',
       'vepagunta',
       'gopalapatnam',
       'nad_junction',
+      'marripalem',
+      'industrial_estate',
+      'kancharapalem',
+      'rly_newcolony',
+      'railway_station',
       'rtc_complex'
     ],
     majorStopIds: [
       'chodavaram',
+      'adduru',
       'sabbavaram',
-      'pendurthi',
+      'patharoad',
+      'vepagunta',
       'gopalapatnam',
       'nad_junction',
+      'railway_station',
       'rtc_complex'
     ],
   ),
@@ -2035,23 +2191,35 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     to: 'Madugula',
     stopIds: [
       'rtc_complex',
+      'railway_station',
+      'rly_newcolony',
+      'kancharapalem',
+      'industrial_estate',
+      'marripalem',
       'nad_junction',
       'gopalapatnam',
       'vepagunta',
-      'purushottapuram',
-      'sujatha_nagar',
-      'chinnamushidivada',
-      'pendurti_college',
-      'pendurthi',
+      'patharoad',
       'sabbavaram',
+      'gottivada',
+      'lagisettypalem',
+      'aripaka_tekkalipalem',
+      'chinayathapalem',
+      'lingalatirugudu',
+      'km_stone_1',
+      'adduru',
+      'km_stone_2',
       'chodavaram'
     ],
     majorStopIds: [
       'rtc_complex',
+      'railway_station',
       'nad_junction',
       'gopalapatnam',
-      'pendurthi',
+      'vepagunta',
+      'patharoad',
       'sabbavaram',
+      'adduru',
       'chodavaram'
     ],
   ),
@@ -2064,23 +2232,35 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     to: 'RTC Complex',
     stopIds: [
       'chodavaram',
+      'km_stone_2',
+      'adduru',
+      'km_stone_1',
+      'lingalatirugudu',
+      'chinayathapalem',
+      'aripaka_tekkalipalem',
+      'lagisettypalem',
+      'gottivada',
       'sabbavaram',
-      'pendurthi',
-      'pendurti_college',
-      'chinnamushidivada',
-      'sujatha_nagar',
-      'purushottapuram',
+      'patharoad',
       'vepagunta',
       'gopalapatnam',
       'nad_junction',
+      'marripalem',
+      'industrial_estate',
+      'kancharapalem',
+      'rly_newcolony',
+      'railway_station',
       'rtc_complex'
     ],
     majorStopIds: [
       'chodavaram',
+      'adduru',
       'sabbavaram',
-      'pendurthi',
+      'patharoad',
+      'vepagunta',
       'gopalapatnam',
       'nad_junction',
+      'railway_station',
       'rtc_complex'
     ],
   ),
@@ -2743,17 +2923,31 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     to: 'Steel Plant Sector 5',
     stopIds: [
       'rtc_complex',
-      'gurudwara',
       'nad_junction',
-      'bhpv',
-      'steel_plant'
+      'airport',
+      'sheelanagar',
+      'natayyapalem',
+      'autonagar',
+      'old_gajuwaka',
+      'srinagar',
+      'kurmannapalem',
+      'kbr',
+      'ukkunagaram',
+      'sector_5'
     ],
     majorStopIds: [
       'rtc_complex',
-      'gurudwara',
       'nad_junction',
-      'bhpv',
-      'steel_plant'
+      'airport',
+      'sheelanagar',
+      'natayyapalem',
+      'autonagar',
+      'old_gajuwaka',
+      'srinagar',
+      'kurmannapalem',
+      'kbr',
+      'ukkunagaram',
+      'sector_5'
     ],
   ),
 
@@ -2764,17 +2958,31 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     from: 'Steel Plant Sector 5',
     to: 'RTC Complex',
     stopIds: [
-      'steel_plant',
-      'bhpv',
+      'sector_5',
+      'ukkunagaram',
+      'kbr',
+      'kurmannapalem',
+      'srinagar',
+      'old_gajuwaka',
+      'autonagar',
+      'natayyapalem',
+      'sheelanagar',
+      'airport',
       'nad_junction',
-      'gurudwara',
       'rtc_complex'
     ],
     majorStopIds: [
-      'steel_plant',
-      'bhpv',
+      'sector_5',
+      'ukkunagaram',
+      'kbr',
+      'kurmannapalem',
+      'srinagar',
+      'old_gajuwaka',
+      'autonagar',
+      'natayyapalem',
+      'sheelanagar',
+      'airport',
       'nad_junction',
-      'gurudwara',
       'rtc_complex'
     ],
   ),
@@ -2972,19 +3180,26 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     stopIds: [
       'rtc_complex',
       'gurudwara',
+      'thatichetlapalem',
+      'birla',
       'nad_junction',
+      'airport',
+      'sheelanagar',
+      'akkireddy_palem',
       'bhpv',
+      'autonagar',
       'gajuwaka',
-      'kurmannapalem',
+      'rajiv_nagar_bridge',
       'duvvada'
     ],
     majorStopIds: [
       'rtc_complex',
       'gurudwara',
       'nad_junction',
+      'airport',
+      'sheelanagar',
       'bhpv',
       'gajuwaka',
-      'kurmannapalem',
       'duvvada'
     ],
   ),
@@ -2997,18 +3212,25 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     to: 'RTC Complex',
     stopIds: [
       'duvvada',
-      'kurmannapalem',
+      'rajiv_nagar_bridge',
       'gajuwaka',
+      'autonagar',
       'bhpv',
+      'akkireddy_palem',
+      'sheelanagar',
+      'airport',
       'nad_junction',
+      'birla',
+      'thatichetlapalem',
       'gurudwara',
       'rtc_complex'
     ],
     majorStopIds: [
       'duvvada',
-      'kurmannapalem',
       'gajuwaka',
       'bhpv',
+      'sheelanagar',
+      'airport',
       'nad_junction',
       'gurudwara',
       'rtc_complex'
@@ -3025,6 +3247,7 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'rtc_complex',
       'railway_station',
       'scindia',
+      'port_quarters_bus_stop',
       'malkapuram',
       'gajuwaka',
       'kurmannapalem'
@@ -3069,6 +3292,7 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'kurmannapalem',
       'gajuwaka',
       'malkapuram',
+      'port_quarters_bus_stop',
       'scindia',
       'railway_station',
       'rtc_complex'
@@ -3193,6 +3417,8 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'rtc_complex',
       'railway_station',
       'scindia',
+      'port_quarters_bus_stop',
+      'malkapuram',
       'gajuwaka',
       'kurmannapalem',
       'parawada',
@@ -3220,6 +3446,8 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'parawada',
       'kurmannapalem',
       'gajuwaka',
+      'malkapuram',
+      'port_quarters_bus_stop',
       'scindia',
       'railway_station',
       'rtc_complex'
@@ -3246,6 +3474,8 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'rtc_complex',
       'railway_station',
       'scindia',
+      'port_quarters_bus_stop',
+      'malkapuram',
       'gajuwaka',
       'kurmannapalem',
       'narava'
@@ -3271,6 +3501,8 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'narava',
       'kurmannapalem',
       'gajuwaka',
+      'malkapuram',
+      'port_quarters_bus_stop',
       'scindia',
       'railway_station',
       'rtc_complex',
@@ -4580,14 +4812,21 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     stopIds: [
       'simhachalam',
       'adavivaram',
+      'pineapple_colony',
+      'sri_krishnapuram',
+      'mudasarlova_park',
+      'pedagadili',
+      'venkojipalem',
       'maddilapalem',
       'rtc_complex',
       'jagadamba',
+      'market_col_office',
       'old_post_office'
     ],
     majorStopIds: [
       'simhachalam',
       'adavivaram',
+      'pedagadili',
       'maddilapalem',
       'rtc_complex',
       'jagadamba',
@@ -4603,9 +4842,15 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     to: 'Simhachalam',
     stopIds: [
       'old_post_office',
+      'market_col_office',
       'jagadamba',
       'rtc_complex',
       'maddilapalem',
+      'venkojipalem',
+      'pedagadili',
+      'mudasarlova_park',
+      'sri_krishnapuram',
+      'pineapple_colony',
       'adavivaram',
       'simhachalam'
     ],
@@ -4614,6 +4859,7 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'jagadamba',
       'rtc_complex',
       'maddilapalem',
+      'pedagadili',
       'adavivaram',
       'simhachalam'
     ],
@@ -4731,6 +4977,7 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     to: 'OHPO',
     stopIds: [
       'arilova',
+      'hanumanthawaka',
       'maddilapalem',
       'rtc_complex',
       'jagadamba',
@@ -4738,6 +4985,7 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     ],
     majorStopIds: [
       'arilova',
+      'hanumanthawaka',
       'maddilapalem',
       'rtc_complex',
       'jagadamba',
@@ -4780,6 +5028,7 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'jagadamba',
       'rtc_complex',
       'maddilapalem',
+      'hanumanthawaka',
       'arilova'
     ],
     majorStopIds: [
@@ -4787,6 +5036,7 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'jagadamba',
       'rtc_complex',
       'maddilapalem',
+      'hanumanthawaka',
       'arilova'
     ],
   ),
@@ -4799,6 +5049,7 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     to: 'RK Beach',
     stopIds: [
       'arilova',
+      'hanumanthawaka',
       'maddilapalem',
       'rtc_complex',
       'jagadamba',
@@ -4806,6 +5057,7 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     ],
     majorStopIds: [
       'arilova',
+      'hanumanthawaka',
       'maddilapalem',
       'rtc_complex',
       'jagadamba',
@@ -5041,6 +5293,7 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     to: 'Railway Station',
     stopIds: [
       'arilova',
+      'hanumanthawaka',
       'hb_colony',
       'sitammadhara',
       'satyam_junction',
@@ -5069,6 +5322,7 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'satyam_junction',
       'sitammadhara',
       'hb_colony',
+      'hanumanthawaka',
       'arilova'
     ],
     majorStopIds: [
@@ -5090,9 +5344,19 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     stopIds: [
       'rtc_complex',
       'railway_station',
+      'convent_junction',
+      'gnanapuram',
+      'urvasi',
       'kancharapalem',
+      'industrial_estate',
+      '104_area',
+      'marripalem',
+      'karasa',
       'nad_junction',
+      'baji_junction',
+      'simhachalam_railway_station',
       'gopalapatnam',
+      'srinivanagar',
       'simhachalam',
       'simhachalam_hilltop'
     ],
@@ -5116,9 +5380,19 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     stopIds: [
       'simhachalam_hilltop',
       'simhachalam',
+      'srinivanagar',
       'gopalapatnam',
+      'simhachalam_railway_station',
+      'baji_junction',
       'nad_junction',
+      'karasa',
+      'marripalem',
+      '104_area',
+      'industrial_estate',
       'kancharapalem',
+      'urvasi',
+      'gnanapuram',
+      'convent_junction',
       'railway_station',
       'rtc_complex'
     ],
@@ -5709,6 +5983,7 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'town_kotharoad',
       'convent_junction',
       'scindia',
+      'port_quarters_bus_stop',
       'malkapuram',
       'gajuwaka'
     ],
@@ -5732,6 +6007,7 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
     stopIds: [
       'gajuwaka',
       'malkapuram',
+      'port_quarters_bus_stop',
       'scindia',
       'convent_junction',
       'town_kotharoad',
@@ -8653,10 +8929,16 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'simhachalam',
       'srinivanagar',
       'gopalapatnam',
+      'simhachalam_railway_station',
+      'baji_junction',
       'nad_junction',
+      'karasa',
       'marripalem',
+      '104_area',
       'industrial_estate',
       'kancharapalem',
+      'urvasi',
+      'gnanapuram',
       'convent_junction',
       'railway_station',
       'rtc_complex'
@@ -8685,10 +8967,16 @@ const List<ManualRouteOverrideSpec> manualRouteOverrides = [
       'rtc_complex',
       'railway_station',
       'convent_junction',
+      'gnanapuram',
+      'urvasi',
       'kancharapalem',
       'industrial_estate',
+      '104_area',
       'marripalem',
+      'karasa',
       'nad_junction',
+      'baji_junction',
+      'simhachalam_railway_station',
       'gopalapatnam',
       'srinivanagar',
       'simhachalam'

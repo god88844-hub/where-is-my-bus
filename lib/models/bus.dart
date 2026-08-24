@@ -31,6 +31,7 @@ class LiveBus {
   final BusCrowd crowd;
   final BusDataSource source;
   final DateTime lastUpdated;
+  final String? tripToStopId;
 
   const LiveBus({
     required this.id,
@@ -54,6 +55,7 @@ class LiveBus {
     this.effectiveSpeedKmh,
     this.crowd = BusCrowd.moderate,
     this.source = BusDataSource.timetable,
+    this.tripToStopId,
     required this.lastUpdated,
   }) : routeKey = routeKey ?? routeNumber;
 
@@ -85,6 +87,7 @@ class LiveBus {
       effectiveSpeedKmh: (m['effective_speed_kmh'] as num?)?.toDouble(),
       crowd: _crowdFromValue(m['crowd']),
       source: _sourceFromValue(m['source']),
+      tripToStopId: m['trip_to_stop'] as String?,
       lastUpdated: DateTime.fromMillisecondsSinceEpoch(
           (m['ts'] as num?)?.toInt() ?? DateTime.now().millisecondsSinceEpoch),
     );
@@ -232,6 +235,10 @@ class LiveBus {
   }
 
   bool isApproachingStop(String stopId) {
+    return canBoardAtStop(stopId);
+  }
+
+  bool canBoardAtStop(String stopId) {
     final route = routeRef;
     if (route == null) return false;
 
@@ -241,12 +248,30 @@ class LiveBus {
       return false;
     }
 
-    return busIndex <= stopIndex;
+    // A conductor-customised trip terminus hides the bus from passengers
+    // waiting beyond the stop where that trip actually ends.
+    if (tripToStopId != null && tripToStopId!.isNotEmpty) {
+      final tripToIndex = route.stopIds.indexOf(tripToStopId!);
+      if (tripToIndex >= 0 && stopIndex > tripToIndex) {
+        return false;
+      }
+    }
+
+    if (segmentStartIdResolved == stopId) {
+      return !isBetweenStops;
+    }
+
+    if (segmentEndIdResolved == stopId) {
+      return true;
+    }
+
+    return busIndex < stopIndex;
   }
 
   String get busTypeLabel => routeBusType.label;
-  String get displayBusIdentity =>
-      busPlateNumber.trim().isEmpty ? routeNumber : '$routeNumber • $busPlateNumber';
+  String get displayBusIdentity => busPlateNumber.trim().isEmpty
+      ? routeNumber
+      : '$routeNumber • $busPlateNumber';
 
   String get crowdLabel {
     switch (crowd) {
@@ -318,6 +343,7 @@ class RouteResult {
   final int toIndex;
   final List<LiveBus> liveBuses; // buses currently on this route
   final int nextBusEtaMins;
+  final int rideMins;
 
   const RouteResult({
     required this.route,
@@ -327,7 +353,34 @@ class RouteResult {
     required this.toIndex,
     this.liveBuses = const [],
     this.nextBusEtaMins = 0,
+    this.rideMins = 0,
   });
 
   int get stopCount => (toIndex - fromIndex).abs();
+}
+
+// ─────────────────────────────────────────────
+//  ConnectingRouteResult — one-transfer route option
+// ─────────────────────────────────────────────
+class ConnectingRouteResult {
+  final List<RouteResult> legs;
+  final List<BusStop> transferStops;
+  final List<int> transferWaitMinsByLeg;
+  final int totalEtaMins;
+
+  const ConnectingRouteResult({
+    required this.legs,
+    required this.transferStops,
+    required this.transferWaitMinsByLeg,
+    required this.totalEtaMins,
+  });
+
+  RouteResult get firstLeg => legs.first;
+  RouteResult get secondLeg => legs.length > 1 ? legs[1] : legs.first;
+  BusStop get transferStop => transferStops.first;
+  int get transferWaitMins =>
+      transferWaitMinsByLeg.isEmpty ? 0 : transferWaitMinsByLeg.first;
+  int get changeCount => transferStops.length;
+  int get totalStopCount =>
+      legs.fold<int>(0, (total, leg) => total + leg.stopCount);
 }

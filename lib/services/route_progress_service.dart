@@ -50,8 +50,71 @@ class RouteProgressService {
   static const double _maxRouteSnapDistanceKm = 0.45;
   static const double _stopArrivalDistanceKm = 0.35;
 
+  // Geofence tuning — radius adapts to the spacing of the neighbouring stops
+  // so a bus "crosses" each location precisely:
+  //
+  //   radius = clamp(min(prevGap, nextGap) * 0.4, 0.5 km, 1.0 km)
+  //
+  //   - Dense city stops (~800 m apart) -> ~500 m radius: the bus crosses
+  //     one stop before it can be mistaken for the next.
+  //   - Normal spacing (>= 2.5 km) -> full 1 km radius: the bus shows as
+  //     entering the next stop before passengers see it there.
+  //   - Wrong-stop risk is handled by nearest-coordinate-wins, not by the
+  //     radius alone.
+  static const double _arrivalRadiusFloorKm = 0.50;
+  static const double _arrivalRadiusCeilingKm = 1.00;
+  static const double _arrivalRadiusSpacingFactor = 0.40;
+
+  // Path-snap tolerance scales gently with the segment length but never
+  // drops below the legacy 450 m — tight enough for city corridors,
+  // forgiving on long rural ones.
+  static const double _snapToleranceFloorKm = 0.45;
+  static const double _snapToleranceCeilingKm = 1.00;
+  static const double _snapToleranceSegmentFactor = 0.12;
+
   static double get stopArrivalDistanceKm => _stopArrivalDistanceKm;
+
   static double get maxRouteSnapDistanceKm => _maxRouteSnapDistanceKm;
+
+  /// Arrival radius (geofence) for the stop at [stopIndex] on [route].
+  ///
+  /// Scales with the closest neighbouring stop spacing, clamped to
+  /// [0.5 km .. 1.0 km].
+  static double stopArrivalRadiusKmForRoute(
+    BusRoute route,
+    int stopIndex,
+  ) {
+    if (stopIndex < 0 || stopIndex >= route.stopIds.length) {
+      return _arrivalRadiusCeilingKm;
+    }
+
+    double? nearestNeighbourKm;
+    for (final i in [stopIndex - 1, stopIndex]) {
+      if (i < 0 || i >= route.stopIds.length - 1) continue;
+      final segmentKm = segmentDistanceKmForRoute(route, i);
+      if (segmentKm <= 0) continue;
+      if (nearestNeighbourKm == null || segmentKm < nearestNeighbourKm) {
+        nearestNeighbourKm = segmentKm;
+      }
+    }
+
+    if (nearestNeighbourKm == null) return _arrivalRadiusCeilingKm;
+
+    return (nearestNeighbourKm * _arrivalRadiusSpacingFactor).clamp(
+      _arrivalRadiusFloorKm,
+      _arrivalRadiusCeilingKm,
+    );
+  }
+
+  /// How far from the route path a GPS fix may be and still snap, given the
+  /// length of the segment it projects onto.
+  static double snapToleranceKmForSegment(double segmentLengthKm) {
+    if (segmentLengthKm <= 0) return _maxRouteSnapDistanceKm;
+    return (segmentLengthKm * _snapToleranceSegmentFactor).clamp(
+      _snapToleranceFloorKm,
+      _snapToleranceCeilingKm,
+    );
+  }
 
   static RouteProgressSnapshot? snapToRoute({
     required BusRoute route,
@@ -146,6 +209,11 @@ class RouteProgressService {
     final nextStopId = route.stopIds[best.endStopIndex];
     final currentStop = VizagStops.get(currentStopId);
     final nextStop = VizagStops.get(nextStopId);
+    final currentArrivalRadiusKm =
+        stopArrivalRadiusKmForRoute(route, best.startStopIndex);
+    final nextArrivalRadiusKm =
+        stopArrivalRadiusKmForRoute(route, best.endStopIndex);
+    final snapToleranceKm = snapToleranceKmForSegment(best.segmentLengthKm);
     final distanceToCurrentStopCoordinateKm = currentStop == null
         ? double.infinity
         : LocationService.distanceKm(lat, lng, currentStop.lat, currentStop.lng);
@@ -153,9 +221,9 @@ class RouteProgressService {
         ? double.infinity
         : LocationService.distanceKm(lat, lng, nextStop.lat, nextStop.lng);
 
-    if (best.distanceFromRouteKm > _maxRouteSnapDistanceKm &&
-        distanceToCurrentStopCoordinateKm > _stopArrivalDistanceKm &&
-        distanceToNextStopCoordinateKm > _stopArrivalDistanceKm) {
+    if (best.distanceFromRouteKm > snapToleranceKm &&
+        distanceToCurrentStopCoordinateKm > currentArrivalRadiusKm &&
+        distanceToNextStopCoordinateKm > nextArrivalRadiusKm) {
       return null;
     }
 
@@ -169,7 +237,7 @@ class RouteProgressService {
     var snappedLng = best.snappedLng;
 
     final arrivedAtNextStop = nextStop != null &&
-        distanceToNextStopCoordinateKm <= _stopArrivalDistanceKm &&
+        distanceToNextStopCoordinateKm <= nextArrivalRadiusKm &&
         distanceToNextStopCoordinateKm <= distanceToCurrentStopCoordinateKm;
 
     if (arrivedAtNextStop) {
@@ -204,6 +272,9 @@ class RouteProgressService {
     } else if (currentStop != null &&
         distanceToCurrentStopCoordinateKm <= _stopArrivalDistanceKm &&
         distanceToCurrentStopCoordinateKm < distanceToNextStopCoordinateKm) {
+      // "Pinned at stop" uses the tight at-stop threshold so the segment
+      // progress keeps its granularity; the wide 1 km radius is only for
+      // advancing onto the NEXT stop (early-entry preview).
       projectedDistanceKm =
           distanceFromRouteStartKm(route, resolvedCurrentStopIndex);
       segmentProgress = 0;

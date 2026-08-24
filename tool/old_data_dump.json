@@ -1,0 +1,3877 @@
+{
+  "stops": [
+    {
+      "id": "rtc_complex",
+      "name": "RTC Complex",
+      "nameTelugu": "ఆర్టీసీ కాంప్లెక్స్",
+      "lat": 17.724044586973633,
+      "lng": 83.30707513638193
+    },
+    {
+      "id": "rk_beach",
+      "name": "RK Beach",
+      "nameTelugu": "ఆర్‌కే బీచ్",
+      "lat": 17.711497390294234,
+      "lng": 83.31811820871287
+    },
+    {
+      "id": "jagadamba",
+      "name": "Jagadamba Centre",
+      "nameTelugu": "జగదాంబ సెంటర్",
+      "lat": 17.71206765708635,
+      "lng": 83.30249739782423
+    },
+    {
+      "id": "railway_station",
+      "name": "Railway Station",
+      "nameTelugu": "రైల్వే స్టేషన్",
+      "lat": 17.722383918239547,
+      "lng": 83.29090823893287
+    },
+    {
+      "id": "old_post_office",
+      "name": "Old Post Office (OHPO)",
+      "nameTelugu": "పాత పోస్ట్ ఆఫీస్",
+      "lat": 17.6936347360638,
+      "lng": 83.29213510745258
+    },
+    {
+      "id": "collector_office",
+      "name": "Collector Office",
+      "nameTelugu": "కలెక్టర్ ఆఫీస్",
+      "lat": 17.708743005671018,
+      "lng": 83.30702866022884
+    },
+    {
+      "id": "town_kotharoad",
+      "name": "Town Kotha Road",
+      "nameTelugu": "టౌన్ కొత్త రోడ్",
+      "lat": 17.702068187780064,
+      "lng": 83.29638707158956
+    },
+    {
+      "id": "purna_market",
+      "name": "Purna Market",
+      "nameTelugu": "పూర్ణ మార్కెట్",
+      "lat": 17.706518406139903,
+      "lng": 83.29849101266711
+    },
+    {
+      "id": "waltair",
+      "name": "Waltair",
+      "nameTelugu": "వాల్తేరు",
+      "lat": 17.731811395973004,
+      "lng": 83.34270646688502
+    },
+    {
+      "id": "mvp_colony",
+      "name": "MVP Colony",
+      "nameTelugu": "ఎంవీపీ కాలనీ",
+      "lat": 17.742888294530275,
+      "lng": 83.3279246927025
+    },
+    {
+      "id": "siripuram",
+      "name": "Siripuram",
+      "nameTelugu": "శ్రీపురం",
+      "lat": 17.72300011952982,
+      "lng": 83.31776117785729
+    },
+    {
+      "id": "cbm",
+      "name": "CBM Compound",
+      "nameTelugu": "సీబీఎం కాంపౌండ్",
+      "lat": 17.724599083333377,
+      "lng": 83.30864710597724
+    },
+    {
+      "id": "au_outgate",
+      "name": "AU Out Gate",
+      "nameTelugu": "ఏయూ అవుట్ గేట్",
+      "lat": 17.722201402907455,
+      "lng": 83.32734693840492
+    },
+    {
+      "id": "convent_junction",
+      "name": "Convent Junction",
+      "nameTelugu": "కాన్వెంట్ జంక్షన్",
+      "lat": 17.717146175809056,
+      "lng": 83.2898968133065
+    },
+    {
+      "id": "nad_junction",
+      "name": "NAD Junction",
+      "nameTelugu": "ఎన్‌ఏడీ జంక్షన్",
+      "lat": 17.74279634488214,
+      "lng": 83.23550511882578
+    },
+    {
+      "id": "gopalapatnam",
+      "name": "Gopalapatnam",
+      "nameTelugu": "గోపాలపట్నం",
+      "lat": 17.75183293706425,
+      "lng": 83.21784190654942
+    },
+    {
+      "id": "kancharapalem",
+      "name": "Kancharapalem",
+      "nameTelugu": "కంచరపాలెం",
+      "lat": 17.73239409467747,
+      "lng": 83.27799289458622
+    },
+    {
+      "id": "gurudwara",
+      "name": "Gurudwara",
+      "nameTelugu": "గురుద్వారా",
+      "lat": 17.7365862288982,
+      "lng": 83.3075160467041
+    },
+    {
+      "id": "scindia",
+      "name": "Scindia",
+      "nameTelugu": "సింధియా",
+      "lat": 17.687797833164364,
+      "lng": 83.26444801811117
+    },
+    {
+      "id": "malkapuram",
+      "name": "Malkapuram",
+      "nameTelugu": "మాల్కాపురం",
+      "lat": 17.68863872588815,
+      "lng": 83.24581148364551
+    },
+    {
+      "id": "gajuwaka",
+      "name": "Gajuwaka",
+      "nameTelugu": "గాజువాక",
+      "lat": 17.690008733886543,
+      "lng": 83.22348803257371
+    },
+    {
+      "id": "bhpv",
+      "name": "BHPV",
+      "nameTelugu": "బీహెచ్‌పీవీ",
+      "lat": 17.702152156880658,
+      "lng": 83.20561102228203
+    },
+    {
+      "id": "kurmannapalem",
+      "name": "Kurmannapalem",
+      "nameTelugu": "కుర్మన్నపాలెం",
+      "lat": 17.685289956188655,
+      "lng": 83.16764523824004
+    },
+    {
+      "id": "pedagantyada",
+      "name": "Pedagantyada",
+      "nameTelugu": "పెదగంట్యాడ",
+      "lat": 17.66687589603718,
+      "lng": 83.20616506455174
+    },
+    {
+      "id": "steel_plant",
+      "name": "Steel Plant",
+      "nameTelugu": "స్టీల్ ప్లాంట్",
+      "lat": 17.685019182479433,
+      "lng": 83.16530112827884
+    },
+    {
+      "id": "maddilapalem",
+      "name": "Maddilapalem",
+      "nameTelugu": "మద్దిలపాలెం",
+      "lat": 17.735976634718714,
+      "lng": 83.32088655628978
+    },
+    {
+      "id": "endada",
+      "name": "Endada",
+      "nameTelugu": "ఎందాడ",
+      "lat": 17.782165460333573,
+      "lng": 83.3583397356011
+    },
+    {
+      "id": "arilova",
+      "name": "Arilova Colony",
+      "nameTelugu": "అరిలోవ కాలనీ",
+      "lat": 17.75971389220103,
+      "lng": 83.32105142204054
+    },
+    {
+      "id": "sitammadhara",
+      "name": "Sitammadhara",
+      "nameTelugu": "సీతమ్మధార",
+      "lat": 17.7429392912984,
+      "lng": 83.3143017276225
+    },
+    {
+      "id": "satyam_junction",
+      "name": "Satyam Junction",
+      "nameTelugu": "సత్యం జంక్షన్",
+      "lat": 17.734376910398886,
+      "lng": 83.31290553487592
+    },
+    {
+      "id": "hb_colony",
+      "name": "HB Colony",
+      "nameTelugu": "హెచ్‌బీ కాలనీ",
+      "lat": 17.745956316232608,
+      "lng": 83.32309677945763
+    },
+    {
+      "id": "madhurawada",
+      "name": "Madhurawada",
+      "nameTelugu": "మధురవాడ",
+      "lat": 17.81647302589971,
+      "lng": 83.35674215777088
+    },
+    {
+      "id": "kommadi",
+      "name": "Kommadi",
+      "nameTelugu": "కొమ్మాడి",
+      "lat": 17.824417121280245,
+      "lng": 83.3565806008761
+    },
+    {
+      "id": "anandapuram",
+      "name": "Anandapuram",
+      "nameTelugu": "ఆనందపురం",
+      "lat": 17.894901577346417,
+      "lng": 83.37762676648626
+    },
+    {
+      "id": "tagarapuvalasa",
+      "name": "Tagarapuvalasa",
+      "nameTelugu": "తగరాపువలస",
+      "lat": 17.932587899019126,
+      "lng": 83.42676591136784
+    },
+    {
+      "id": "rushikonda",
+      "name": "Rushikonda",
+      "nameTelugu": "రుషికొండ",
+      "lat": 17.792696018364524,
+      "lng": 83.38411417747774
+    },
+    {
+      "id": "ins_kalinga",
+      "name": "INS Kalinga",
+      "nameTelugu": "ఐఎన్‌ఎస్ కాలింగ",
+      "lat": 17.855434559762365,
+      "lng": 83.41625821512292
+    },
+    {
+      "id": "bhimili",
+      "name": "Bhimili",
+      "nameTelugu": "భీమిలి",
+      "lat": 17.892554182561323,
+      "lng": 83.453218638804
+    },
+    {
+      "id": "simhachalam",
+      "name": "Simhachalam",
+      "nameTelugu": "సింహాచలం",
+      "lat": 17.77232576103274,
+      "lng": 83.24339618949288
+    },
+    {
+      "id": "simhachalam_hilltop",
+      "name": "Simhachalam Hill Top",
+      "nameTelugu": "సింహాచలం కొండపైన",
+      "lat": 17.767548764556327,
+      "lng": 83.24833933232567
+    },
+    {
+      "id": "adavivaram",
+      "name": "Adavivaram",
+      "nameTelugu": "అడవివరం",
+      "lat": 17.780415421644747,
+      "lng": 83.25265653441035
+    },
+    {
+      "id": "vepagunta",
+      "name": "Vepagunta",
+      "nameTelugu": "వేపగుంట",
+      "lat": 17.77602269891302,
+      "lng": 83.2164654068468
+    },
+    {
+      "id": "hanumanthawaka",
+      "name": "Hanumanthawaka Jn",
+      "nameTelugu": "హనుమంతవాక జంక్షన్",
+      "lat": 17.755138799198114,
+      "lng": 83.33186522858041
+    },
+    {
+      "id": "pendurthi",
+      "name": "Pendurthi",
+      "nameTelugu": "పెందుర్తి",
+      "lat": 17.822163955417253,
+      "lng": 83.20503083491597
+    },
+    {
+      "id": "kothavalasa",
+      "name": "Kothavalasa",
+      "nameTelugu": "కొత్తవలస",
+      "lat": 17.896970472566025,
+      "lng": 83.18532471449139
+    },
+    {
+      "id": "duvvada",
+      "name": "Duvvada Railway Station",
+      "nameTelugu": "దువ్వాడ రైల్వే స్టేషన్",
+      "lat": 17.70403637708094,
+      "lng": 83.15151410285544
+    },
+    {
+      "id": "vuda_park",
+      "name": "VUDA Park",
+      "nameTelugu": "వుడా పార్క్",
+      "lat": 17.725304232693844,
+      "lng": 83.338887732702
+    },
+    {
+      "id": "tenneti_park",
+      "name": "Tenneti Park",
+      "nameTelugu": "తెన్నేటి పార్క్",
+      "lat": 17.747826148648866,
+      "lng": 83.34938853634995
+    },
+    {
+      "id": "kailasagiri",
+      "name": "Kailasagiri",
+      "nameTelugu": "కైలాసగిరి",
+      "lat": 17.747415331681864,
+      "lng": 83.34628558404164
+    },
+    {
+      "id": "anakapalli",
+      "name": "Anakapalle",
+      "nameTelugu": "అనకాపల్లి",
+      "lat": 17.689651085658205,
+      "lng": 83.0023607303745
+    },
+    {
+      "id": "aganampudi",
+      "name": "Aganampudi",
+      "nameTelugu": "అగనంపూడి",
+      "lat": 17.688308791621164,
+      "lng": 83.12517773491024
+    },
+    {
+      "id": "parawada",
+      "name": "Parawada",
+      "nameTelugu": "పరవాడ",
+      "lat": 17.62445568461084,
+      "lng": 83.08582889911706
+    },
+    {
+      "id": "sabbavaram",
+      "name": "Sabbavaram",
+      "nameTelugu": "సబ్బవరం",
+      "lat": 17.79095201905506,
+      "lng": 83.12411936404783
+    },
+    {
+      "id": "chodavaram",
+      "name": "Chodavaram",
+      "nameTelugu": "చోడవరం",
+      "lat": 17.82744494216951,
+      "lng": 82.9352841698859
+    },
+    {
+      "id": "sontyam",
+      "name": "Sontyam",
+      "nameTelugu": "సోంత్యం",
+      "lat": 17.872300133367357,
+      "lng": 83.29536248410979
+    },
+    {
+      "id": "yelamanchili",
+      "name": "Yelamanchili",
+      "nameTelugu": "ఏలమంచిలి",
+      "lat": 17.54774790354826,
+      "lng": 82.85402221798682
+    },
+    {
+      "id": "devarapalli",
+      "name": "Devarapalli",
+      "nameTelugu": "దేవరపల్లి",
+      "lat": 17.99055168753284,
+      "lng": 82.9807434173196
+    },
+    {
+      "id": "vizianagaram",
+      "name": "Vizianagaram",
+      "nameTelugu": "విజయనగరం",
+      "lat": 18.106625706188016,
+      "lng": 83.39558591934815
+    },
+    {
+      "id": "pm_palem",
+      "name": "PM Palem",
+      "nameTelugu": "పీఎం పాలెం",
+      "lat": 17.8043162195604,
+      "lng": 83.34442192802376
+    },
+    {
+      "id": "mindi",
+      "name": "Mindi",
+      "nameTelugu": "మింఢి",
+      "lat": 17.70199953424382,
+      "lng": 83.21542163379708
+    },
+    {
+      "id": "naval_base",
+      "name": "Naval Base / Dockyard",
+      "nameTelugu": "నావల్ బేస్",
+      "lat": 17.692370509767372,
+      "lng": 83.26818092693208
+    },
+    {
+      "id": "sagar_nagar",
+      "name": "Sagar Nagar",
+      "nameTelugu": "సాగర్‌నగర్",
+      "lat": 17.766214011571947,
+      "lng": 83.3587514725315
+    },
+    {
+      "id": "madhavadhara",
+      "name": "Madhavadhara",
+      "nameTelugu": "మాధవధార",
+      "lat": 17.74977901942765,
+      "lng": 83.24891570575984
+    },
+    {
+      "id": "muralinagar",
+      "name": "Muralinagar",
+      "nameTelugu": "మురళీనగర్",
+      "lat": 17.747113832411678,
+      "lng": 83.26325627984068
+    },
+    {
+      "id": "kailasapuram",
+      "name": "Kailasapuram",
+      "nameTelugu": "కైలాసపురం",
+      "lat": 17.740651368024675,
+      "lng": 83.28879401053344
+    },
+    {
+      "id": "akkayyapalem",
+      "name": "Akkayapalem",
+      "nameTelugu": "అక్కయ్యపాలెం",
+      "lat": 17.73524302600154,
+      "lng": 83.29995446301888
+    },
+    {
+      "id": "yarada",
+      "name": "Yarada",
+      "nameTelugu": "యారాడ",
+      "lat": 17.66473114881509,
+      "lng": 83.27828361410154
+    },
+    {
+      "id": "airport",
+      "name": "Visakhapatnam Airport",
+      "nameTelugu": "విశాఖ విమానాశ్రయం",
+      "lat": 17.732238188306773,
+      "lng": 83.22351472124394
+    },
+    {
+      "id": "carshed",
+      "name": "Carshed / IT Park",
+      "nameTelugu": "కార్ షెడ్",
+      "lat": 17.8035495291326,
+      "lng": 83.3531076324752
+    },
+    {
+      "id": "port",
+      "name": "Visakhapatnam Port",
+      "nameTelugu": "విశాఖ పోర్ట్",
+      "lat": 17.68811827821838,
+      "lng": 83.24960432025021
+    },
+    {
+      "id": "venkojipalem",
+      "name": "Venkojipalem",
+      "nameTelugu": "వేంకోజీపాలెం",
+      "lat": 17.746535561674218,
+      "lng": 83.32864749132816
+    },
+    {
+      "id": "fishing_harbour",
+      "name": "Fishing Harbour",
+      "nameTelugu": "ఫిషింగ్ హార్బర్",
+      "lat": 17.697491334083118,
+      "lng": 83.29910527788323
+    },
+    {
+      "id": "gangavaram",
+      "name": "Gangavaram",
+      "nameTelugu": "గంగవరం",
+      "lat": 17.643407630087204,
+      "lng": 83.2292091616115
+    },
+    {
+      "id": "narava",
+      "name": "Narava",
+      "nameTelugu": "నారవ",
+      "lat": 17.74410580408655,
+      "lng": 83.18223789542121
+    },
+    {
+      "id": "sheelanagar",
+      "name": "Sheelanagar",
+      "nameTelugu": "శీలానగర్",
+      "lat": 17.718989685422486,
+      "lng": 83.2032147928549
+    },
+    {
+      "id": "rajeev_nagar",
+      "name": "Rajeev Nagar",
+      "nameTelugu": "రాజీవ్ నగర్",
+      "lat": 17.674444520598975,
+      "lng": 83.19204975816568
+    },
+    {
+      "id": "ukkunagaram",
+      "name": "Ukkunagaram",
+      "nameTelugu": "ఉక్కు నగరం",
+      "lat": 17.652654270282426,
+      "lng": 83.15958329108672
+    },
+    {
+      "id": "vizag_zoo",
+      "name": "Zoo Park",
+      "nameTelugu": "జూ పార్క్",
+      "lat": 17.769297064004434,
+      "lng": 83.34400148979927
+    },
+    {
+      "id": "kambalakonda",
+      "name": "Kambalakonda",
+      "nameTelugu": "కంబాలకొండ",
+      "lat": 17.76801566042918,
+      "lng": 83.3429641790169
+    },
+    {
+      "id": "ntpc",
+      "name": "NTPC",
+      "nameTelugu": "ఎన్‌టీపీసీ",
+      "lat": 17.571668967078267,
+      "lng": 83.08823248250994
+    },
+    {
+      "id": "achutapuram",
+      "name": "Achutapuram",
+      "nameTelugu": "అచ్యుతాపురం",
+      "lat": 17.563775665980852,
+      "lng": 82.97908605785608
+    },
+    {
+      "id": "rama_talkies",
+      "name": "Rama Talkies",
+      "nameTelugu": "",
+      "lat": 17.7278055,
+      "lng": 83.311448
+    },
+    {
+      "id": "old_dairy_farm",
+      "name": "Old Dairy Farm",
+      "nameTelugu": "",
+      "lat": 17.763125,
+      "lng": 83.3361134
+    },
+    {
+      "id": "marikavalasa",
+      "name": "Marikavalasa",
+      "nameTelugu": "",
+      "lat": 17.8370764,
+      "lng": 83.3586865
+    },
+    {
+      "id": "boravanipalem",
+      "name": "Boravanipalem",
+      "nameTelugu": "",
+      "lat": 17.8459761,
+      "lng": 83.3592485
+    },
+    {
+      "id": "paradesipalem",
+      "name": "Paradesipalem",
+      "nameTelugu": "",
+      "lat": 17.8584832,
+      "lng": 83.3636069
+    },
+    {
+      "id": "boyapalem",
+      "name": "Boyapalem",
+      "nameTelugu": "",
+      "lat": 17.8694017,
+      "lng": 83.3680055
+    },
+    {
+      "id": "pyda_engineering_college",
+      "name": "Pyda Engineering College",
+      "nameTelugu": "",
+      "lat": 17.8728521,
+      "lng": 83.3709375
+    },
+    {
+      "id": "bheemili_x_road",
+      "name": "Bheemili X Road",
+      "nameTelugu": "",
+      "lat": 17.8823398,
+      "lng": 83.3759579
+    },
+    {
+      "id": "peddipalem",
+      "name": "Peddipalem",
+      "nameTelugu": "",
+      "lat": 17.9026532,
+      "lng": 83.3999171
+    },
+    {
+      "id": "tallavalasa",
+      "name": "Tallavalasa",
+      "nameTelugu": "",
+      "lat": 17.9103926,
+      "lng": 83.4119912
+    },
+    {
+      "id": "old_gwk",
+      "name": "Old GWK",
+      "nameTelugu": "",
+      "lat": 17.691108733886544,
+      "lng": 83.21908803257371
+    },
+    {
+      "id": "new_gwk",
+      "name": "New GWK",
+      "nameTelugu": "",
+      "lat": 17.691108733886544,
+      "lng": 83.22018803257372
+    },
+    {
+      "id": "sriharipuram_cg",
+      "name": "Sriharipuram/CG",
+      "nameTelugu": "",
+      "lat": 17.68811827821838,
+      "lng": 83.24630432025022
+    },
+    {
+      "id": "malkapuram_pq",
+      "name": "Malkapuram/PQ",
+      "nameTelugu": "",
+      "lat": 17.68371827821838,
+      "lng": 83.24960432025021
+    },
+    {
+      "id": "pipeline_k_gate",
+      "name": "Pipeline/K Gate",
+      "nameTelugu": "",
+      "lat": 17.68921827821838,
+      "lng": 83.25510432025021
+    },
+    {
+      "id": "dockyard_godowns",
+      "name": "Dockyard Godowns",
+      "nameTelugu": "",
+      "lat": 17.69141827821838,
+      "lng": 83.24520432025021
+    },
+    {
+      "id": "maruthi_circle",
+      "name": "Maruthi Circle",
+      "nameTelugu": "",
+      "lat": 17.69251827821838,
+      "lng": 83.24630432025022
+    },
+    {
+      "id": "ins_dega",
+      "name": "INS Dega",
+      "nameTelugu": "",
+      "lat": 17.68371827821838,
+      "lng": 83.25400432025022
+    },
+    {
+      "id": "solar_plant",
+      "name": "Solar Plant",
+      "nameTelugu": "",
+      "lat": 17.68921827821838,
+      "lng": 83.25290432025021
+    },
+    {
+      "id": "nadupuru_d_col",
+      "name": "Nadupuru D.Col",
+      "nameTelugu": "",
+      "lat": 17.69220873388654,
+      "lng": 83.22128803257371
+    },
+    {
+      "id": "gantyada",
+      "name": "Gantyada",
+      "nameTelugu": "",
+      "lat": 17.690008733886543,
+      "lng": 83.22898803257371
+    },
+    {
+      "id": "birla",
+      "name": "Birla",
+      "nameTelugu": "",
+      "lat": 17.68811827821838,
+      "lng": 83.24740432025021
+    },
+    {
+      "id": "tatichetlapalem",
+      "name": "Tatichetlapalem",
+      "nameTelugu": "",
+      "lat": 17.720744586973634,
+      "lng": 83.30267513638192
+    },
+    {
+      "id": "gantyada_hb_colony",
+      "name": "Gantyada HB Colony",
+      "nameTelugu": "",
+      "lat": 17.685608733886543,
+      "lng": 83.22568803257371
+    },
+    {
+      "id": "gangavaram_colony",
+      "name": "Gangavaram Colony",
+      "nameTelugu": "",
+      "lat": 17.69220873388654,
+      "lng": 83.22788803257372
+    },
+    {
+      "id": "venkannapalem_kranthingr",
+      "name": "Venkannapalem/Kranthingr",
+      "nameTelugu": "",
+      "lat": 17.718544586973632,
+      "lng": 83.30267513638192
+    },
+    {
+      "id": "gantyada_j_colony",
+      "name": "Gantyada/J.Colony",
+      "nameTelugu": "",
+      "lat": 17.688908733886542,
+      "lng": 83.22788803257372
+    },
+    {
+      "id": "port_qtrs",
+      "name": "Port Qtrs",
+      "nameTelugu": "",
+      "lat": 17.68811827821838,
+      "lng": 83.24740432025021
+    },
+    {
+      "id": "kranthi_nagar",
+      "name": "Kranthi Nagar",
+      "nameTelugu": "",
+      "lat": 17.724044586973633,
+      "lng": 83.30487513638192
+    },
+    {
+      "id": "janatha_colony",
+      "name": "Janatha Colony",
+      "nameTelugu": "",
+      "lat": 17.727344586973633,
+      "lng": 83.30377513638193
+    },
+    {
+      "id": "tathichetlapalem",
+      "name": "Tathichetlapalem",
+      "nameTelugu": "",
+      "lat": 17.726244586973632,
+      "lng": 83.31257513638192
+    },
+    {
+      "id": "gurudwar_cbs",
+      "name": "Gurudwar/CBS",
+      "nameTelugu": "",
+      "lat": 17.719644586973633,
+      "lng": 83.30927513638193
+    },
+    {
+      "id": "tadichettlapalem_conv_jn",
+      "name": "Tadichettlapalem/Conv.Jn",
+      "nameTelugu": "",
+      "lat": 17.718544586973632,
+      "lng": 83.31257513638192
+    },
+    {
+      "id": "kancharapalem_essar",
+      "name": "Kancharapalem/Essar",
+      "nameTelugu": "",
+      "lat": 17.69251827821838,
+      "lng": 83.24850432025022
+    },
+    {
+      "id": "birla_solar_plant",
+      "name": "Birla/Solar Plant",
+      "nameTelugu": "",
+      "lat": 17.690318278218378,
+      "lng": 83.25400432025022
+    },
+    {
+      "id": "rajakoduru",
+      "name": "Rajakoduru",
+      "nameTelugu": "",
+      "lat": 17.720744586973634,
+      "lng": 83.31257513638192
+    },
+    {
+      "id": "krishna_palem",
+      "name": "Krishna Palem",
+      "nameTelugu": "",
+      "lat": 17.729544586973635,
+      "lng": 83.30487513638192
+    },
+    {
+      "id": "appanna_palem",
+      "name": "Appanna Palem",
+      "nameTelugu": "",
+      "lat": 17.722944586973632,
+      "lng": 83.30377513638193
+    },
+    {
+      "id": "kondavarapalem",
+      "name": "Kondavarapalem",
+      "nameTelugu": "",
+      "lat": 17.722944586973632,
+      "lng": 83.30377513638193
+    },
+    {
+      "id": "duvvada_r_s",
+      "name": "Duvvada R/S",
+      "nameTelugu": "",
+      "lat": 17.684508733886542,
+      "lng": 83.22568803257371
+    },
+    {
+      "id": "fakeertakya",
+      "name": "Fakeertakya",
+      "nameTelugu": "",
+      "lat": 17.690008733886543,
+      "lng": 83.2245880325737
+    },
+    {
+      "id": "malkapuram_port_qtrs",
+      "name": "Malkapuram/Port Qtrs",
+      "nameTelugu": "",
+      "lat": 17.68371827821838,
+      "lng": 83.25510432025021
+    },
+    {
+      "id": "sriharipuram_coromandal",
+      "name": "Sriharipuram/Coromandal",
+      "nameTelugu": "",
+      "lat": 17.68371827821838,
+      "lng": 83.24740432025021
+    },
+    {
+      "id": "old_gajuwaka",
+      "name": "Old Gajuwaka",
+      "nameTelugu": "",
+      "lat": 17.687808733886545,
+      "lng": 83.22238803257372
+    },
+    {
+      "id": "sub_station",
+      "name": "Sub Station",
+      "nameTelugu": "",
+      "lat": 17.69220873388654,
+      "lng": 83.22788803257372
+    },
+    {
+      "id": "natayyapalem",
+      "name": "Natayyapalem",
+      "nameTelugu": "",
+      "lat": 17.695508733886545,
+      "lng": 83.2245880325737
+    },
+    {
+      "id": "jaggayyapalem",
+      "name": "Jaggayyapalem",
+      "nameTelugu": "",
+      "lat": 17.693308733886543,
+      "lng": 83.22128803257371
+    },
+    {
+      "id": "new_airport",
+      "name": "New Airport",
+      "nameTelugu": "",
+      "lat": 17.68921827821838,
+      "lng": 83.25400432025022
+    },
+    {
+      "id": "chandrayyapeta",
+      "name": "Chandrayyapeta",
+      "nameTelugu": "",
+      "lat": 17.719644586973633,
+      "lng": 83.30487513638192
+    },
+    {
+      "id": "santapalem",
+      "name": "Santapalem",
+      "nameTelugu": "",
+      "lat": 17.725144586973634,
+      "lng": 83.31037513638192
+    },
+    {
+      "id": "kothavalasa_jn",
+      "name": "Kothavalasa Jn",
+      "nameTelugu": "",
+      "lat": 17.821111272584936,
+      "lng": 83.20174116744741
+    },
+    {
+      "id": "rcpuram_pata_valasa",
+      "name": "RCPuram/Pata Valasa",
+      "nameTelugu": "",
+      "lat": 17.722944586973632,
+      "lng": 83.30817513638192
+    },
+    {
+      "id": "k_kotapadu",
+      "name": "K Kotapadu",
+      "nameTelugu": "",
+      "lat": 17.721844586973635,
+      "lng": 83.31037513638192
+    },
+    {
+      "id": "durga_temple",
+      "name": "Durga Temple",
+      "nameTelugu": "",
+      "lat": 17.727344586973633,
+      "lng": 83.30707513638193
+    },
+    {
+      "id": "hcc_company_gangavaram_colony",
+      "name": "HCC Company/Gangavaram Colony",
+      "nameTelugu": "",
+      "lat": 17.688908733886542,
+      "lng": 83.22018803257372
+    },
+    {
+      "id": "scindia_main_gate_gangavaram",
+      "name": "Scindia/Main Gate/Gangavaram",
+      "nameTelugu": "",
+      "lat": 17.68921827821838,
+      "lng": 83.25510432025021
+    },
+    {
+      "id": "malkapuram_port_qtrs_venkatapuram_jn",
+      "name": "Malkapuram/Port Qtrs/Venkatapuram Jn",
+      "nameTelugu": "",
+      "lat": 17.69141827821838,
+      "lng": 83.25510432025021
+    },
+    {
+      "id": "sriharipuram_coramandal_gantyada",
+      "name": "Sriharipuram/Coramandal/Gantyada",
+      "nameTelugu": "",
+      "lat": 17.69361827821838,
+      "lng": 83.25400432025022
+    },
+    {
+      "id": "substation",
+      "name": "Substation",
+      "nameTelugu": "",
+      "lat": 17.684508733886542,
+      "lng": 83.21908803257371
+    },
+    {
+      "id": "gopalapatnam_bunk",
+      "name": "Gopalapatnam/Bunk",
+      "nameTelugu": "",
+      "lat": 17.7527467,
+      "lng": 83.2177002
+    },
+    {
+      "id": "purushottapuram",
+      "name": "Purushotapuram",
+      "nameTelugu": "",
+      "lat": 17.79096,
+      "lng": 83.2127314
+    },
+    {
+      "id": "gajuwaka_depot",
+      "name": "Gajuwaka Depot",
+      "nameTelugu": "",
+      "lat": 17.688908733886542,
+      "lng": 83.22018803257372
+    },
+    {
+      "id": "dukkavanipalem",
+      "name": "Dukkavanipalem",
+      "nameTelugu": "",
+      "lat": 17.718544586973632,
+      "lng": 83.30487513638192
+    },
+    {
+      "id": "egalavanipalem",
+      "name": "Egalavanipalem",
+      "nameTelugu": "",
+      "lat": 17.718544586973632,
+      "lng": 83.30267513638192
+    },
+    {
+      "id": "appikonda_palavalasa",
+      "name": "Appikonda/Palavalasa",
+      "nameTelugu": "",
+      "lat": 17.68481827821838,
+      "lng": 83.24740432025021
+    },
+    {
+      "id": "dasaripeta_gollapeta",
+      "name": "Dasaripeta/Gollapeta",
+      "nameTelugu": "",
+      "lat": 17.62005568461084,
+      "lng": 83.08472889911707
+    },
+    {
+      "id": "nammidoddi_jn",
+      "name": "Nammidoddi Jn",
+      "nameTelugu": "",
+      "lat": 17.62335568461084,
+      "lng": 83.08252889911707
+    },
+    {
+      "id": "islampeta",
+      "name": "Islampeta",
+      "nameTelugu": "",
+      "lat": 17.68591827821838,
+      "lng": 83.25510432025021
+    },
+    {
+      "id": "essar",
+      "name": "Essar",
+      "nameTelugu": "",
+      "lat": 17.68591827821838,
+      "lng": 83.24960432025021
+    },
+    {
+      "id": "vangali",
+      "name": "Vangali",
+      "nameTelugu": "",
+      "lat": 17.685251085658205,
+      "lng": 82.9979607303745
+    },
+    {
+      "id": "nayanammapalem",
+      "name": "Nayanammapalem",
+      "nameTelugu": "",
+      "lat": 17.718544586973632,
+      "lng": 83.30377513638193
+    },
+    {
+      "id": "gorlavanipalem",
+      "name": "Gorlavanipalem",
+      "nameTelugu": "",
+      "lat": 17.724044586973633,
+      "lng": 83.30487513638192
+    },
+    {
+      "id": "sabbavaram_bus_station",
+      "name": "Sabbavaram/Bus Station",
+      "nameTelugu": "",
+      "lat": 17.826611272584937,
+      "lng": 83.20174116744741
+    },
+    {
+      "id": "asakapalli_x_road",
+      "name": "Asakapalli X Road",
+      "nameTelugu": "",
+      "lat": 17.722944586973632,
+      "lng": 83.30927513638193
+    },
+    {
+      "id": "askapalli",
+      "name": "Askapalli",
+      "nameTelugu": "",
+      "lat": 17.718544586973632,
+      "lng": 83.31147513638193
+    },
+    {
+      "id": "pydivada",
+      "name": "Pydivada",
+      "nameTelugu": "",
+      "lat": 17.721844586973635,
+      "lng": 83.30157513638193
+    },
+    {
+      "id": "gollapalem",
+      "name": "Gollapalem",
+      "nameTelugu": "",
+      "lat": 17.728444586973634,
+      "lng": 83.30927513638193
+    },
+    {
+      "id": "narapadu",
+      "name": "Narapadu",
+      "nameTelugu": "",
+      "lat": 17.727344586973633,
+      "lng": 83.31257513638192
+    },
+    {
+      "id": "palavalsa_kalapaka",
+      "name": "Palavalsa/Kalapaka",
+      "nameTelugu": "",
+      "lat": 17.62665568461084,
+      "lng": 83.08472889911707
+    },
+    {
+      "id": "gollapeta_pittavanipalem",
+      "name": "Gollapeta/Pittavanipalem",
+      "nameTelugu": "",
+      "lat": 17.62995568461084,
+      "lng": 83.08032889911706
+    },
+    {
+      "id": "nammidoddi_chinnapalem",
+      "name": "Nammidoddi/Chinnapalem",
+      "nameTelugu": "",
+      "lat": 17.62445568461084,
+      "lng": 83.09132889911706
+    },
+    {
+      "id": "islam_peta",
+      "name": "Islam Peta",
+      "nameTelugu": "",
+      "lat": 17.729544586973635,
+      "lng": 83.30927513638193
+    },
+    {
+      "id": "madeenabagh",
+      "name": "Madeenabagh",
+      "nameTelugu": "",
+      "lat": 17.62555568461084,
+      "lng": 83.08252889911707
+    },
+    {
+      "id": "steel_plant_gate",
+      "name": "Steel Plant Gate",
+      "nameTelugu": "",
+      "lat": 17.62775568461084,
+      "lng": 83.09132889911706
+    },
+    {
+      "id": "venkateswara_gudi",
+      "name": "Venkateswara Gudi",
+      "nameTelugu": "",
+      "lat": 17.62775568461084,
+      "lng": 83.09132889911706
+    },
+    {
+      "id": "ukku_nagaram_jn",
+      "name": "Ukku Nagaram Jn",
+      "nameTelugu": "",
+      "lat": 17.693308733886543,
+      "lng": 83.21798803257371
+    },
+    {
+      "id": "k_b_r_jn",
+      "name": "K.B.R.Jn",
+      "nameTelugu": "",
+      "lat": 17.725144586973634,
+      "lng": 83.31037513638192
+    },
+    {
+      "id": "srinagar",
+      "name": "Srinagar",
+      "nameTelugu": "",
+      "lat": 17.693308733886543,
+      "lng": 83.21798803257371
+    },
+    {
+      "id": "yathapalem_kothapeta",
+      "name": "Yathapalem/Kothapeta",
+      "nameTelugu": "",
+      "lat": 17.725144586973634,
+      "lng": 83.30707513638193
+    },
+    {
+      "id": "kothaptm_kg_palem",
+      "name": "Kothaptm/KG Palem",
+      "nameTelugu": "",
+      "lat": 17.725144586973634,
+      "lng": 83.31147513638193
+    },
+    {
+      "id": "amruthapuram",
+      "name": "Amruthapuram",
+      "nameTelugu": "",
+      "lat": 17.724044586973633,
+      "lng": 83.31037513638192
+    },
+    {
+      "id": "amarapinivanipalem_jn",
+      "name": "Amarapinivanipalem/Jn",
+      "nameTelugu": "",
+      "lat": 17.721844586973635,
+      "lng": 83.30487513638192
+    },
+    {
+      "id": "gowri_deg_col_chinthagatla_x_road",
+      "name": "Gowri Deg Col/Chinthagatla X Road",
+      "nameTelugu": "",
+      "lat": 17.722944586973632,
+      "lng": 83.30707513638193
+    },
+    {
+      "id": "jerupothulapalem",
+      "name": "Jerupothulapalem",
+      "nameTelugu": "",
+      "lat": 17.721844586973635,
+      "lng": 83.30487513638192
+    },
+    {
+      "id": "vt_agraharam_court",
+      "name": "VT Agraharam/Court",
+      "nameTelugu": "",
+      "lat": 17.729544586973635,
+      "lng": 83.31037513638192
+    },
+    {
+      "id": "inada_apsp_q_rtrs",
+      "name": "Inada/APSP Q Rtrs",
+      "nameTelugu": "",
+      "lat": 17.77672576103274,
+      "lng": 83.24779618949289
+    },
+    {
+      "id": "jonnada_lendi",
+      "name": "Jonnada/Lendi",
+      "nameTelugu": "",
+      "lat": 17.77562576103274,
+      "lng": 83.23899618949288
+    },
+    {
+      "id": "dakamarri_raghu",
+      "name": "Dakamarri/Raghu",
+      "nameTelugu": "",
+      "lat": 17.727344586973633,
+      "lng": 83.31257513638192
+    },
+    {
+      "id": "modavalasa",
+      "name": "Modavalasa",
+      "nameTelugu": "",
+      "lat": 17.722944586973632,
+      "lng": 83.30927513638193
+    },
+    {
+      "id": "thatichetlapalem",
+      "name": "Thatichetlapalem",
+      "nameTelugu": "",
+      "lat": 17.726244586973632,
+      "lng": 83.31257513638192
+    },
+    {
+      "id": "lagisettypalem",
+      "name": "Lagisettypalem",
+      "nameTelugu": "",
+      "lat": 17.818911272584938,
+      "lng": 83.2050411674474
+    },
+    {
+      "id": "aripaka_tekkalipalem",
+      "name": "Aripaka/Tekkalipalem",
+      "nameTelugu": "",
+      "lat": 17.818911272584938,
+      "lng": 83.2028411674474
+    },
+    {
+      "id": "chinayathapalem",
+      "name": "Chinayathapalem",
+      "nameTelugu": "",
+      "lat": 17.821111272584936,
+      "lng": 83.1995411674474
+    },
+    {
+      "id": "lingalatirugudu",
+      "name": "Lingalatirugudu",
+      "nameTelugu": "",
+      "lat": 17.816711272584936,
+      "lng": 83.20394116744741
+    },
+    {
+      "id": "madhurawada_depot",
+      "name": "Madhurawada Depot",
+      "nameTelugu": "",
+      "lat": 17.81537302589971,
+      "lng": 83.36004215777088
+    },
+    {
+      "id": "vbc",
+      "name": "VBC",
+      "nameTelugu": "",
+      "lat": 17.726244586973632,
+      "lng": 83.30817513638192
+    },
+    {
+      "id": "caeshed",
+      "name": "Caeshed",
+      "nameTelugu": "",
+      "lat": 17.720744586973634,
+      "lng": 83.31257513638192
+    },
+    {
+      "id": "law_college",
+      "name": "Law College",
+      "nameTelugu": "",
+      "lat": 17.817573025899712,
+      "lng": 83.35674215777088
+    },
+    {
+      "id": "yandada",
+      "name": "Yandada",
+      "nameTelugu": "",
+      "lat": 17.81867302589971,
+      "lng": 83.36224215777088
+    },
+    {
+      "id": "gurudawar_rl",
+      "name": "Gurudawar/RL",
+      "nameTelugu": "",
+      "lat": 17.727344586973633,
+      "lng": 83.30927513638193
+    },
+    {
+      "id": "thatichetulapalem",
+      "name": "Thatichetulapalem",
+      "nameTelugu": "",
+      "lat": 17.721844586973635,
+      "lng": 83.31257513638192
+    },
+    {
+      "id": "salavanipalem",
+      "name": "Salavanipalem",
+      "nameTelugu": "",
+      "lat": 17.695508733886545,
+      "lng": 83.22128803257371
+    },
+    {
+      "id": "sirasapalli",
+      "name": "Sirasapalli",
+      "nameTelugu": "",
+      "lat": 17.691851085658204,
+      "lng": 83.00456073037451
+    },
+    {
+      "id": "kotharu",
+      "name": "Kotharu",
+      "nameTelugu": "",
+      "lat": 17.62665568461084,
+      "lng": 83.08362889911706
+    },
+    {
+      "id": "koppaka",
+      "name": "Koppaka",
+      "nameTelugu": "",
+      "lat": 17.690751085658206,
+      "lng": 82.9979607303745
+    },
+    {
+      "id": "desapathrunipalem",
+      "name": "Desapathrunipalem",
+      "nameTelugu": "",
+      "lat": 17.684508733886542,
+      "lng": 83.21798803257371
+    },
+    {
+      "id": "jajulavanipalem",
+      "name": "Jajulavanipalem",
+      "nameTelugu": "",
+      "lat": 17.688908733886542,
+      "lng": 83.21908803257371
+    },
+    {
+      "id": "pudimadaka",
+      "name": "Pudimadaka",
+      "nameTelugu": "",
+      "lat": 17.691851085658204,
+      "lng": 83.0034607303745
+    },
+    {
+      "id": "ohpo_rk_beach",
+      "name": "OHPO / RK Beach",
+      "nameTelugu": "",
+      "lat": 17.712597390294235,
+      "lng": 83.31371820871287
+    },
+    {
+      "id": "purna_market_co_off",
+      "name": "Purna Market / Co.Off",
+      "nameTelugu": "",
+      "lat": 17.720744586973634,
+      "lng": 83.30817513638192
+    },
+    {
+      "id": "carshed_mvvcity",
+      "name": "Carshed/MVVCity",
+      "nameTelugu": "",
+      "lat": 17.81647302589971,
+      "lng": 83.35454215777088
+    },
+    {
+      "id": "vbc_mdwd_kmd",
+      "name": "VBC/MDWD/KMD",
+      "nameTelugu": "",
+      "lat": 17.725144586973634,
+      "lng": 83.30487513638192
+    },
+    {
+      "id": "ngrp_ss_nagar_ysr_amvt_clny",
+      "name": "NGRP/SS Nagar/YSR/AMVT Clny",
+      "nameTelugu": "",
+      "lat": 17.718544586973632,
+      "lng": 83.31257513638192
+    },
+    {
+      "id": "ohpo_tkr",
+      "name": "OHPO/TKR",
+      "nameTelugu": "",
+      "lat": 17.707097390294233,
+      "lng": 83.31481820871288
+    },
+    {
+      "id": "amaravathi_nagar",
+      "name": "Amaravathi Nagar",
+      "nameTelugu": "",
+      "lat": 17.82087302589971,
+      "lng": 83.36004215777088
+    },
+    {
+      "id": "sevanagar",
+      "name": "Sevanagar",
+      "nameTelugu": "",
+      "lat": 17.817573025899712,
+      "lng": 83.36114215777089
+    },
+    {
+      "id": "bakkannapalem",
+      "name": "Bakkannapalem",
+      "nameTelugu": "",
+      "lat": 17.81977302589971,
+      "lng": 83.35234215777088
+    },
+    {
+      "id": "ambtkr_clny_amvt_nagar",
+      "name": "AMBTKR Clny/AMVT Nagar",
+      "nameTelugu": "",
+      "lat": 17.722944586973632,
+      "lng": 83.30377513638193
+    },
+    {
+      "id": "marikavalsa",
+      "name": "Marikavalsa",
+      "nameTelugu": "",
+      "lat": 17.82087302589971,
+      "lng": 83.35784215777088
+    },
+    {
+      "id": "mdwd_kmd_jn",
+      "name": "MDWD/KMD Jn",
+      "nameTelugu": "",
+      "lat": 17.725144586973634,
+      "lng": 83.30707513638193
+    },
+    {
+      "id": "jagadamba_rlystation",
+      "name": "Jagadamba/Rlystation",
+      "nameTelugu": "",
+      "lat": 17.718544586973632,
+      "lng": 83.30707513638193
+    },
+    {
+      "id": "p_m_palem",
+      "name": "P.M.Palem",
+      "nameTelugu": "",
+      "lat": 17.721844586973635,
+      "lng": 83.31037513638192
+    },
+    {
+      "id": "r_k_beach_tkr",
+      "name": "R.K.Beach/TKR",
+      "nameTelugu": "",
+      "lat": 17.705997390294232,
+      "lng": 83.31371820871287
+    },
+    {
+      "id": "collector_office_prn_market",
+      "name": "Collector Office/PRN Market",
+      "nameTelugu": "",
+      "lat": 17.709297390294235,
+      "lng": 83.31921820871287
+    },
+    {
+      "id": "marikavalasa_colony",
+      "name": "Marikavalasa Colony",
+      "nameTelugu": "",
+      "lat": 17.814273025899713,
+      "lng": 83.35894215777088
+    },
+    {
+      "id": "kommadi_madhurawada",
+      "name": "Kommadi/Madhurawada",
+      "nameTelugu": "",
+      "lat": 17.81537302589971,
+      "lng": 83.35564215777089
+    },
+    {
+      "id": "vsp",
+      "name": "VSP",
+      "nameTelugu": "",
+      "lat": 17.722944586973632,
+      "lng": 83.31147513638193
+    },
+    {
+      "id": "vaddadi",
+      "name": "Vaddadi",
+      "nameTelugu": "",
+      "lat": 17.818911272584938,
+      "lng": 83.2105411674474
+    },
+    {
+      "id": "ghatroad_mdgl",
+      "name": "Ghatroad/MDGL",
+      "nameTelugu": "",
+      "lat": 17.722944586973632,
+      "lng": 83.30377513638193
+    },
+    {
+      "id": "kdr_kprm",
+      "name": "KDR/KPRM",
+      "nameTelugu": "",
+      "lat": 17.718544586973632,
+      "lng": 83.30267513638192
+    },
+    {
+      "id": "jolaput",
+      "name": "Jolaput",
+      "nameTelugu": "",
+      "lat": 17.935887899019125,
+      "lng": 83.42456591136784
+    },
+    {
+      "id": "mdwd_depot",
+      "name": "MDWD-Depot",
+      "nameTelugu": "",
+      "lat": 17.726244586973632,
+      "lng": 83.31037513638192
+    },
+    {
+      "id": "itsez_road_haritha_jn",
+      "name": "ITSEZ Road/Haritha Jn",
+      "nameTelugu": "",
+      "lat": 17.81977302589971,
+      "lng": 83.35454215777088
+    },
+    {
+      "id": "boravanipalem_mcv_clny",
+      "name": "Boravanipalem/MCV-Clny",
+      "nameTelugu": "",
+      "lat": 17.729544586973635,
+      "lng": 83.30377513638193
+    },
+    {
+      "id": "iim_anandapuram",
+      "name": "IIM/Anandapuram",
+      "nameTelugu": "",
+      "lat": 17.81207302589971,
+      "lng": 83.35124215777088
+    },
+    {
+      "id": "srinivanagar",
+      "name": "Srinivanagar",
+      "nameTelugu": "",
+      "lat": 17.77672576103274,
+      "lng": 83.24449618949288
+    },
+    {
+      "id": "marripalem",
+      "name": "Marripalem",
+      "nameTelugu": "",
+      "lat": 17.740433,
+      "lng": 83.2495589
+    },
+    {
+      "id": "industrial_estate",
+      "name": "Estate",
+      "nameTelugu": "",
+      "lat": 17.7368204,
+      "lng": 83.2638254
+    },
+    {
+      "id": "rly_newcolony",
+      "name": "Rly.Newcolony",
+      "nameTelugu": "",
+      "lat": 17.728444586973634,
+      "lng": 83.31037513638192
+    },
+    {
+      "id": "birla_jn",
+      "name": "Birla Jn",
+      "nameTelugu": "",
+      "lat": 17.69141827821838,
+      "lng": 83.25400432025022
+    },
+    {
+      "id": "kancharapalem_highway",
+      "name": "Kancharapalem Highway",
+      "nameTelugu": "",
+      "lat": 17.718544586973632,
+      "lng": 83.30377513638193
+    },
+    {
+      "id": "jagadamba_baraks",
+      "name": "Jagadamba/Baraks",
+      "nameTelugu": "",
+      "lat": 17.729544586973635,
+      "lng": 83.30597513638193
+    },
+    {
+      "id": "zillaparishad_rk_beach",
+      "name": "Zillaparishad/RK.Beach",
+      "nameTelugu": "",
+      "lat": 17.712597390294235,
+      "lng": 83.32361820871287
+    },
+    {
+      "id": "gnanapuram",
+      "name": "Gnanapuram",
+      "nameTelugu": "",
+      "lat": 17.7210917,
+      "lng": 83.2869877
+    },
+    {
+      "id": "urvasi",
+      "name": "Urvasi",
+      "nameTelugu": "",
+      "lat": 17.7350067,
+      "lng": 83.2709818
+    },
+    {
+      "id": "104_area",
+      "name": "104 Area",
+      "nameTelugu": "",
+      "lat": 17.7389487,
+      "lng": 83.2570021
+    },
+    {
+      "id": "karasa",
+      "name": "Karasa",
+      "nameTelugu": "",
+      "lat": 17.7409553,
+      "lng": 83.2439078
+    },
+    {
+      "id": "baji_junction",
+      "name": "Baji Junction",
+      "nameTelugu": "",
+      "lat": 17.7441257,
+      "lng": 83.2279861
+    },
+    {
+      "id": "simhachalam_railway_station",
+      "name": "Simhachalam Railway Station",
+      "nameTelugu": "",
+      "lat": 17.7466609,
+      "lng": 83.2215738
+    },
+    {
+      "id": "naidu_thota",
+      "name": "Naidu Thota",
+      "nameTelugu": "",
+      "lat": 17.7692577,
+      "lng": 83.2171472
+    },
+    {
+      "id": "sujatha_nagar",
+      "name": "Sujatha Nagar",
+      "nameTelugu": "",
+      "lat": 17.7986359,
+      "lng": 83.2107136
+    },
+    {
+      "id": "chinnamushidivada",
+      "name": "Chinnamushidivada",
+      "nameTelugu": "",
+      "lat": 17.8063886,
+      "lng": 83.2086317
+    },
+    {
+      "id": "pendurti_college",
+      "name": "Pendurti College",
+      "nameTelugu": "",
+      "lat": 17.8121652,
+      "lng": 83.207114
+    },
+    {
+      "id": "saripalli",
+      "name": "Saripalli",
+      "nameTelugu": "",
+      "lat": 17.8404629,
+      "lng": 83.1990301
+    },
+    {
+      "id": "chintalapalem",
+      "name": "Chintalapalem",
+      "nameTelugu": "",
+      "lat": 17.851132,
+      "lng": 83.19556
+    },
+    {
+      "id": "desapatrunipalem",
+      "name": "Desapatrunipalem",
+      "nameTelugu": "",
+      "lat": 17.8661634,
+      "lng": 83.1914891
+    },
+    {
+      "id": "mangalapalem",
+      "name": "Mangalapalem",
+      "nameTelugu": "",
+      "lat": 17.8765897,
+      "lng": 83.189386
+    },
+    {
+      "id": "kothavalasa_railway_station",
+      "name": "Kothavalasa Railway Station",
+      "nameTelugu": "",
+      "lat": 17.8909912,
+      "lng": 83.1864598
+    },
+    {
+      "id": "kothavalasa_junction",
+      "name": "Kothavalasa Junction",
+      "nameTelugu": "",
+      "lat": 17.8972996,
+      "lng": 83.185235
+    },
+    {
+      "id": "scindia_jn",
+      "name": "Scindia Jn",
+      "nameTelugu": "",
+      "lat": 17.69141827821838,
+      "lng": 83.25070432025021
+    },
+    {
+      "id": "sriharipuram",
+      "name": "Sriharipuram",
+      "nameTelugu": "",
+      "lat": 17.68811827821838,
+      "lng": 83.25290432025021
+    },
+    {
+      "id": "new_gajuwaka",
+      "name": "New Gajuwaka",
+      "nameTelugu": "",
+      "lat": 17.687808733886545,
+      "lng": 83.22348803257371
+    },
+    {
+      "id": "nathayyapalem",
+      "name": "Nathayyapalem",
+      "nameTelugu": "",
+      "lat": 17.688908733886542,
+      "lng": 83.22348803257371
+    },
+    {
+      "id": "simhachalam_sml_hill",
+      "name": "Simhachalam/SML Hill",
+      "nameTelugu": "",
+      "lat": 17.76792576103274,
+      "lng": 83.24119618949288
+    },
+    {
+      "id": "pipeline",
+      "name": "Pipeline",
+      "nameTelugu": "",
+      "lat": 17.690318278218378,
+      "lng": 83.24410432025022
+    },
+    {
+      "id": "solor_plant",
+      "name": "Solor Plant",
+      "nameTelugu": "",
+      "lat": 17.728444586973634,
+      "lng": 83.31147513638193
+    },
+    {
+      "id": "cwc_godowns",
+      "name": "CWC Godowns",
+      "nameTelugu": "",
+      "lat": 17.722944586973632,
+      "lng": 83.31037513638192
+    },
+    {
+      "id": "mov_jn",
+      "name": "MOV Jn.",
+      "nameTelugu": "",
+      "lat": 17.718544586973632,
+      "lng": 83.30597513638193
+    },
+    {
+      "id": "loco_shed_jn",
+      "name": "Loco Shed Jn",
+      "nameTelugu": "",
+      "lat": 17.719644586973633,
+      "lng": 83.30597513638193
+    },
+    {
+      "id": "jnnurm_colony",
+      "name": "JNNURM Colony",
+      "nameTelugu": "",
+      "lat": 17.720744586973634,
+      "lng": 83.31037513638192
+    },
+    {
+      "id": "pakeertakiya",
+      "name": "Pakeertakiya",
+      "nameTelugu": "",
+      "lat": 17.695508733886545,
+      "lng": 83.22348803257371
+    },
+    {
+      "id": "simhachalam_pendurthi",
+      "name": "Simhachalam/Pendurthi",
+      "nameTelugu": "",
+      "lat": 17.774525761032738,
+      "lng": 83.24119618949288
+    },
+    {
+      "id": "pendurthi_ss_ngr_vuda_colony_sujatha_nagar_c2_zone",
+      "name": "Pendurthi/SS.NGR/VUDA Colony/Sujatha Nagar C2 Zone",
+      "nameTelugu": "",
+      "lat": 17.774525761032738,
+      "lng": 83.24229618949289
+    },
+    {
+      "id": "dabbanda",
+      "name": "Dabbanda",
+      "nameTelugu": "",
+      "lat": 17.77232576103274,
+      "lng": 83.24449618949288
+    },
+    {
+      "id": "china_dabbanda_colony",
+      "name": "China Dabbanda/Colony",
+      "nameTelugu": "",
+      "lat": 17.77342576103274,
+      "lng": 83.24779618949289
+    },
+    {
+      "id": "dabbanda_x_road",
+      "name": "Dabbanda X Road",
+      "nameTelugu": "",
+      "lat": 17.766825761032738,
+      "lng": 83.24559618949289
+    },
+    {
+      "id": "sr_puram",
+      "name": "SR.Puram",
+      "nameTelugu": "",
+      "lat": 17.77122576103274,
+      "lng": 83.24009618949289
+    },
+    {
+      "id": "adivivaram",
+      "name": "Adivivaram",
+      "nameTelugu": "",
+      "lat": 17.722944586973632,
+      "lng": 83.31037513638192
+    },
+    {
+      "id": "srinivasanagar",
+      "name": "Srinivasanagar",
+      "nameTelugu": "",
+      "lat": 17.76792576103274,
+      "lng": 83.24229618949289
+    },
+    {
+      "id": "pineapple_colony",
+      "name": "Pineapple Colony",
+      "nameTelugu": "",
+      "lat": 17.77562576103274,
+      "lng": 83.23899618949288
+    },
+    {
+      "id": "sri_krishnapuram",
+      "name": "Sri Krishnapuram",
+      "nameTelugu": "",
+      "lat": 17.721844586973635,
+      "lng": 83.30487513638192
+    },
+    {
+      "id": "mudasarlova_park",
+      "name": "Mudasarlova Park",
+      "nameTelugu": "",
+      "lat": 17.814273025899713,
+      "lng": 83.35234215777088
+    },
+    {
+      "id": "pedagadili",
+      "name": "Pedagadili",
+      "nameTelugu": "",
+      "lat": 17.81647302589971,
+      "lng": 83.35674215777088
+    },
+    {
+      "id": "market_col_office",
+      "name": "Market/Col.Office",
+      "nameTelugu": "",
+      "lat": 17.719644586973633,
+      "lng": 83.30927513638193
+    },
+    {
+      "id": "r_k_beach_ohpo",
+      "name": "R.K.Beach/OHPO",
+      "nameTelugu": "",
+      "lat": 17.708197390294234,
+      "lng": 83.32361820871287
+    },
+    {
+      "id": "collector_office_vuda_park_p_m",
+      "name": "Collector Office/VUDA Park/P.M",
+      "nameTelugu": "",
+      "lat": 17.716997390294235,
+      "lng": 83.32361820871287
+    },
+    {
+      "id": "jagadamba_waltair_depot",
+      "name": "Jagadamba/Waltair Depot",
+      "nameTelugu": "",
+      "lat": 17.709297390294235,
+      "lng": 83.32141820871287
+    },
+    {
+      "id": "nallabilli_peda_gudipala",
+      "name": "Nallabilli/Peda Gudipala",
+      "nameTelugu": "",
+      "lat": 17.81977302589971,
+      "lng": 83.35674215777088
+    },
+    {
+      "id": "vayalapadu_jn",
+      "name": "Vayalapadu Jn.",
+      "nameTelugu": "",
+      "lat": 17.81097302589971,
+      "lng": 83.35564215777089
+    },
+    {
+      "id": "kasipuram",
+      "name": "Kasipuram",
+      "nameTelugu": "",
+      "lat": 17.724044586973633,
+      "lng": 83.30157513638193
+    },
+    {
+      "id": "patharoad",
+      "name": "Patharoad",
+      "nameTelugu": "",
+      "lat": 17.818911272584938,
+      "lng": 83.20944116744741
+    },
+    {
+      "id": "gottivada",
+      "name": "Gottivada",
+      "nameTelugu": "",
+      "lat": 17.823311272584938,
+      "lng": 83.2105411674474
+    },
+    {
+      "id": "km_stone_1",
+      "name": "KM Stone 1",
+      "nameTelugu": "",
+      "lat": 17.726244586973632,
+      "lng": 83.30487513638192
+    },
+    {
+      "id": "adduru",
+      "name": "Adduru",
+      "nameTelugu": "",
+      "lat": 17.726244586973632,
+      "lng": 83.30487513638192
+    },
+    {
+      "id": "km_stone_2",
+      "name": "KM Stone 2",
+      "nameTelugu": "",
+      "lat": 17.727344586973633,
+      "lng": 83.30487513638192
+    },
+    {
+      "id": "rly_newcolony_convent_jn",
+      "name": "Rly.Newcolony/Convent Jn",
+      "nameTelugu": "",
+      "lat": 17.721844586973635,
+      "lng": 83.30707513638193
+    },
+    {
+      "id": "vepagunta_srinivasanagar",
+      "name": "Vepagunta/Srinivasanagar",
+      "nameTelugu": "",
+      "lat": 17.766825761032738,
+      "lng": 83.24009618949289
+    },
+    {
+      "id": "simhachalam_depot_hill",
+      "name": "Simhachalam Depot/Hill",
+      "nameTelugu": "",
+      "lat": 17.766825761032738,
+      "lng": 83.23789618949289
+    },
+    {
+      "id": "s_r_puram",
+      "name": "S.R.Puram",
+      "nameTelugu": "",
+      "lat": 17.718544586973632,
+      "lng": 83.30157513638193
+    },
+    {
+      "id": "satrav_checkpost",
+      "name": "Satrav/Checkpost",
+      "nameTelugu": "",
+      "lat": 17.766825761032738,
+      "lng": 83.24009618949289
+    },
+    {
+      "id": "neelakundeelu",
+      "name": "Neelakundeelu",
+      "nameTelugu": "",
+      "lat": 17.82001127258494,
+      "lng": 83.20394116744741
+    },
+    {
+      "id": "padmanabham",
+      "name": "Padmanabham",
+      "nameTelugu": "",
+      "lat": 17.825511272584937,
+      "lng": 83.2028411674474
+    },
+    {
+      "id": "reddipalli",
+      "name": "Reddipalli",
+      "nameTelugu": "",
+      "lat": 17.822211272584937,
+      "lng": 83.2072411674474
+    },
+    {
+      "id": "chinnapuram",
+      "name": "Chinnapuram",
+      "nameTelugu": "",
+      "lat": 17.825511272584937,
+      "lng": 83.2072411674474
+    },
+    {
+      "id": "vsp_x_road",
+      "name": "VSP X Road",
+      "nameTelugu": "",
+      "lat": 17.82771127258494,
+      "lng": 83.20944116744741
+    },
+    {
+      "id": "vzm",
+      "name": "VZM",
+      "nameTelugu": "",
+      "lat": 17.825511272584937,
+      "lng": 83.20944116744741
+    },
+    {
+      "id": "pandragi",
+      "name": "Pandragi",
+      "nameTelugu": "",
+      "lat": 17.76902576103274,
+      "lng": 83.24889618949288
+    },
+    {
+      "id": "egalavanipalem_reganigudem",
+      "name": "Egalavanipalem/Reganigudem",
+      "nameTelugu": "",
+      "lat": 17.719644586973633,
+      "lng": 83.30707513638193
+    },
+    {
+      "id": "anandapuram_mukundapuram",
+      "name": "Anandapuram/Mukundapuram",
+      "nameTelugu": "",
+      "lat": 17.82087302589971,
+      "lng": 83.35234215777088
+    },
+    {
+      "id": "r_t_valasa_boni_vill",
+      "name": "R T.Valasa/Boni Vill",
+      "nameTelugu": "",
+      "lat": 17.722944586973632,
+      "lng": 83.30597513638193
+    },
+    {
+      "id": "autonagar",
+      "name": "Autonagar",
+      "nameTelugu": "",
+      "lat": 17.690008733886543,
+      "lng": 83.22898803257371
+    },
+    {
+      "id": "endeda",
+      "name": "Endeda",
+      "nameTelugu": "",
+      "lat": 17.722944586973632,
+      "lng": 83.30157513638193
+    },
+    {
+      "id": "madhurawada_kommadi",
+      "name": "Madhurawada/Kommadi",
+      "nameTelugu": "",
+      "lat": 17.81537302589971,
+      "lng": 83.35564215777089
+    },
+    {
+      "id": "pakheertakya",
+      "name": "Pakheertakya",
+      "nameTelugu": "",
+      "lat": 17.728444586973634,
+      "lng": 83.30707513638193
+    },
+    {
+      "id": "srinagr",
+      "name": "Srinagr",
+      "nameTelugu": "",
+      "lat": 17.729544586973635,
+      "lng": 83.30377513638193
+    },
+    {
+      "id": "old_gajuwka",
+      "name": "Old Gajuwka",
+      "nameTelugu": "",
+      "lat": 17.724044586973633,
+      "lng": 83.30817513638192
+    },
+    {
+      "id": "sector_5",
+      "name": "Sector-5",
+      "nameTelugu": "",
+      "lat": 17.685608733886543,
+      "lng": 83.22568803257371
+    },
+    {
+      "id": "kbr",
+      "name": "KBR",
+      "nameTelugu": "",
+      "lat": 17.684508733886542,
+      "lng": 83.22568803257371
+    },
+    {
+      "id": "duvvada_rly_station",
+      "name": "Duvvada Rly Station",
+      "nameTelugu": "",
+      "lat": 17.722944586973632,
+      "lng": 83.31257513638192
+    },
+    {
+      "id": "cbs",
+      "name": "CBS",
+      "nameTelugu": "",
+      "lat": 17.722944586973632,
+      "lng": 83.30817513638192
+    },
+    {
+      "id": "gwk",
+      "name": "GWK",
+      "nameTelugu": "",
+      "lat": 17.695508733886545,
+      "lng": 83.22568803257371
+    },
+    {
+      "id": "rajianagar_duvvada",
+      "name": "Rajianagar/Duvvada",
+      "nameTelugu": "",
+      "lat": 17.685608733886543,
+      "lng": 83.2245880325737
+    },
+    {
+      "id": "convent_gurudwara",
+      "name": "Convent/Gurudwara",
+      "nameTelugu": "",
+      "lat": 17.719644586973633,
+      "lng": 83.30377513638193
+    },
+    {
+      "id": "essar_tt_palem",
+      "name": "Essar/TT.Palem",
+      "nameTelugu": "",
+      "lat": 17.68921827821838,
+      "lng": 83.24740432025021
+    },
+    {
+      "id": "solar_plant_kancharapalem",
+      "name": "Solar Plant/Kancharapalem",
+      "nameTelugu": "",
+      "lat": 17.68371827821838,
+      "lng": 83.25290432025021
+    },
+    {
+      "id": "ins_dega_birla",
+      "name": "INS Dega/Birla",
+      "nameTelugu": "",
+      "lat": 17.68481827821838,
+      "lng": 83.25510432025021
+    },
+    {
+      "id": "vadacheepurapalli_mtypalem",
+      "name": "Vadacheepurapalli/MTYPalem",
+      "nameTelugu": "",
+      "lat": 18.106625706188016,
+      "lng": 83.39888591934815
+    },
+    {
+      "id": "lankelapalem",
+      "name": "Lankelapalem",
+      "nameTelugu": "",
+      "lat": 17.685608733886543,
+      "lng": 83.22238803257372
+    },
+    {
+      "id": "salapuvanipalem",
+      "name": "Salapuvanipalem",
+      "nameTelugu": "",
+      "lat": 17.693308733886543,
+      "lng": 83.22018803257372
+    },
+    {
+      "id": "atchutapuram",
+      "name": "Atchutapuram",
+      "nameTelugu": "",
+      "lat": 17.692951085658205,
+      "lng": 83.00456073037451
+    },
+    {
+      "id": "vzm_road",
+      "name": "VZM Road",
+      "nameTelugu": "",
+      "lat": 17.825511272584937,
+      "lng": 83.2006411674474
+    },
+    {
+      "id": "kotturu",
+      "name": "Kotturu",
+      "nameTelugu": "",
+      "lat": 17.690751085658206,
+      "lng": 83.0034607303745
+    },
+    {
+      "id": "em_palem_road",
+      "name": "EM Palem Road",
+      "nameTelugu": "",
+      "lat": 17.726244586973632,
+      "lng": 83.30267513638192
+    },
+    {
+      "id": "toll_gate",
+      "name": "Toll Gate",
+      "nameTelugu": "",
+      "lat": 17.694408733886544,
+      "lng": 83.22788803257372
+    },
+    {
+      "id": "srinagar_kbr",
+      "name": "Srinagar/KBR",
+      "nameTelugu": "",
+      "lat": 17.688908733886542,
+      "lng": 83.22348803257371
+    },
+    {
+      "id": "old_gajuwaka_ukkungaram",
+      "name": "Old Gajuwaka/Ukkungaram",
+      "nameTelugu": "",
+      "lat": 17.695508733886545,
+      "lng": 83.21798803257371
+    },
+    {
+      "id": "new_gajuwaka_smg",
+      "name": "New Gajuwaka/SMG",
+      "nameTelugu": "",
+      "lat": 17.69220873388654,
+      "lng": 83.22898803257371
+    },
+    {
+      "id": "new_gajuwaka_nad_jn_pipeline",
+      "name": "New Gajuwaka/NAD Jn/Pipeline",
+      "nameTelugu": "",
+      "lat": 17.68701827821838,
+      "lng": 83.24630432025022
+    },
+    {
+      "id": "sriharipuram_birla_jn_dockyard",
+      "name": "Sriharipuram/Birla Jn/Dockyard",
+      "nameTelugu": "",
+      "lat": 17.690318278218378,
+      "lng": 83.24630432025022
+    },
+    {
+      "id": "malkapuram_kancharapalem_maruthi_circle",
+      "name": "Malkapuram/Kancharapalem/Maruthi Circle",
+      "nameTelugu": "",
+      "lat": 17.682618278218378,
+      "lng": 83.25400432025022
+    },
+    {
+      "id": "scindia_tatichetlapalem_ins_dega",
+      "name": "Scindia/Tatichetlapalem/INS Dega",
+      "nameTelugu": "",
+      "lat": 17.682618278218378,
+      "lng": 83.25070432025021
+    },
+    {
+      "id": "steel_plant_schools_rtc_complex",
+      "name": "Steel Plant Schools/RTC Complex",
+      "nameTelugu": "",
+      "lat": 17.724044586973633,
+      "lng": 83.30597513638193
+    },
+    {
+      "id": "anakapalli_dosuru",
+      "name": "Anakapalli/Dosuru",
+      "nameTelugu": "",
+      "lat": 17.687451085658207,
+      "lng": 83.0078607303745
+    },
+    {
+      "id": "vzm_road_gandivanipalem",
+      "name": "VZM Road/Gandivanipalem",
+      "nameTelugu": "",
+      "lat": 17.818911272584938,
+      "lng": 83.2006411674474
+    },
+    {
+      "id": "koppaka_rajannapalem",
+      "name": "Koppaka/Rajannapalem",
+      "nameTelugu": "",
+      "lat": 17.690751085658206,
+      "lng": 83.0001607303745
+    },
+    {
+      "id": "kotturu_bandharupalem",
+      "name": "Kotturu/Bandharupalem",
+      "nameTelugu": "",
+      "lat": 17.686351085658206,
+      "lng": 83.00456073037451
+    },
+    {
+      "id": "sirasapalli_vadacheepurapalli",
+      "name": "Sirasapalli/Vadacheepurapalli",
+      "nameTelugu": "",
+      "lat": 17.692951085658205,
+      "lng": 82.99906073037451
+    },
+    {
+      "id": "tollgate_substation",
+      "name": "Tollgate/Substation",
+      "nameTelugu": "",
+      "lat": 17.694408733886544,
+      "lng": 83.22898803257371
+    },
+    {
+      "id": "kurmannapalem_jajulavanipalem",
+      "name": "Kurmannapalem/Jajulavanipalem",
+      "nameTelugu": "",
+      "lat": 17.686708733886544,
+      "lng": 83.22238803257372
+    },
+    {
+      "id": "srinagar_desapatrunipalem",
+      "name": "Srinagar/Desapatrunipalem",
+      "nameTelugu": "",
+      "lat": 17.695508733886545,
+      "lng": 83.22898803257371
+    },
+    {
+      "id": "old_gajuwaka_sector_8",
+      "name": "Old Gajuwaka/Sector-8",
+      "nameTelugu": "",
+      "lat": 17.687808733886545,
+      "lng": 83.22788803257372
+    },
+    {
+      "id": "new_gajuwaka_general_hospital",
+      "name": "New Gajuwaka/General Hospital",
+      "nameTelugu": "",
+      "lat": 17.686708733886544,
+      "lng": 83.22128803257371
+    },
+    {
+      "id": "kurmanpalem",
+      "name": "Kurmanpalem",
+      "nameTelugu": "",
+      "lat": 17.722944586973632,
+      "lng": 83.31037513638192
+    },
+    {
+      "id": "fakeertakiya_x_road",
+      "name": "Fakeertakiya X Road",
+      "nameTelugu": "",
+      "lat": 17.691108733886544,
+      "lng": 83.22348803257371
+    },
+    {
+      "id": "diddupalem",
+      "name": "Diddupalem",
+      "nameTelugu": "",
+      "lat": 17.722944586973632,
+      "lng": 83.30927513638193
+    },
+    {
+      "id": "venkannapalem",
+      "name": "Venkannapalem",
+      "nameTelugu": "",
+      "lat": 17.720744586973634,
+      "lng": 83.30597513638193
+    },
+    {
+      "id": "govada_s_factory",
+      "name": "Govada/S.Factory",
+      "nameTelugu": "",
+      "lat": 17.692951085658205,
+      "lng": 83.0078607303745
+    },
+    {
+      "id": "gajapathinagaram",
+      "name": "Gajapathinagaram",
+      "nameTelugu": "",
+      "lat": 18.104425706188017,
+      "lng": 83.39888591934815
+    },
+    {
+      "id": "visakhapatnam",
+      "name": "Visakhapatnam",
+      "nameTelugu": "",
+      "lat": 17.728444586973634,
+      "lng": 83.30597513638193
+    },
+    {
+      "id": "carshed_madhurawada",
+      "name": "Carshed/Madhurawada",
+      "nameTelugu": "",
+      "lat": 17.81867302589971,
+      "lng": 83.35454215777088
+    },
+    {
+      "id": "anadapuram",
+      "name": "Anadapuram",
+      "nameTelugu": "",
+      "lat": 17.81647302589971,
+      "lng": 83.35894215777088
+    },
+    {
+      "id": "bhogapuram",
+      "name": "Bhogapuram",
+      "nameTelugu": "",
+      "lat": 17.933687899019127,
+      "lng": 83.43006591136783
+    },
+    {
+      "id": "nathavalasa",
+      "name": "Nathavalasa",
+      "nameTelugu": "",
+      "lat": 17.928187899019125,
+      "lng": 83.42786591136783
+    },
+    {
+      "id": "pusapatirega",
+      "name": "Pusapatirega",
+      "nameTelugu": "",
+      "lat": 17.938087899019127,
+      "lng": 83.42786591136783
+    },
+    {
+      "id": "pydibheemavaram",
+      "name": "Pydibheemavaram",
+      "nameTelugu": "",
+      "lat": 17.938087899019127,
+      "lng": 83.42126591136784
+    },
+    {
+      "id": "ranastalam_obs",
+      "name": "Ranastalam/OBS",
+      "nameTelugu": "",
+      "lat": 17.711497390294234,
+      "lng": 83.31481820871288
+    },
+    {
+      "id": "chilakapalem",
+      "name": "Chilakapalem",
+      "nameTelugu": "",
+      "lat": 17.719644586973633,
+      "lng": 83.30487513638192
+    },
+    {
+      "id": "srikakulam",
+      "name": "Srikakulam",
+      "nameTelugu": "",
+      "lat": 17.936987899019126,
+      "lng": 83.43116591136784
+    },
+    {
+      "id": "narasannapeta",
+      "name": "Narasannapeta",
+      "nameTelugu": "",
+      "lat": 17.936987899019126,
+      "lng": 83.42456591136784
+    },
+    {
+      "id": "challapeta_jn",
+      "name": "Challapeta Jn",
+      "nameTelugu": "",
+      "lat": 17.935887899019125,
+      "lng": 83.42236591136783
+    },
+    {
+      "id": "saravakota",
+      "name": "Saravakota",
+      "nameTelugu": "",
+      "lat": 17.929287899019126,
+      "lng": 83.43116591136784
+    },
+    {
+      "id": "gunupur",
+      "name": "Gunupur",
+      "nameTelugu": "",
+      "lat": 17.936987899019126,
+      "lng": 83.42676591136784
+    },
+    {
+      "id": "kothavalasa_devarapalli",
+      "name": "Kothavalasa / Devarapalli",
+      "nameTelugu": "",
+      "lat": 17.82771127258494,
+      "lng": 83.2105411674474
+    },
+    {
+      "id": "obs_town_kotta_road_waltair_depot",
+      "name": "OBS/Town Kotta Road / Waltair Depot",
+      "nameTelugu": "",
+      "lat": 17.705997390294232,
+      "lng": 83.31371820871287
+    },
+    {
+      "id": "r_k_beach_mvp_r_b",
+      "name": "R.K.Beach/MVP R.B",
+      "nameTelugu": "",
+      "lat": 17.714797390294233,
+      "lng": 83.31701820871288
+    },
+    {
+      "id": "c_office_mdp_tkrd_r",
+      "name": "C.Office/MDP/TKRD-R",
+      "nameTelugu": "",
+      "lat": 17.720744586973634,
+      "lng": 83.30487513638192
+    },
+    {
+      "id": "ohpo_r_k_beach",
+      "name": "OHPO / R K Beach",
+      "nameTelugu": "",
+      "lat": 17.708197390294234,
+      "lng": 83.32361820871287
+    },
+    {
+      "id": "purna_market_c_office",
+      "name": "Purna Market / C.Office",
+      "nameTelugu": "",
+      "lat": 17.728444586973634,
+      "lng": 83.30267513638192
+    },
+    {
+      "id": "ravindra_nagar",
+      "name": "Ravindra Nagar",
+      "nameTelugu": "",
+      "lat": 17.81977302589971,
+      "lng": 83.35234215777088
+    },
+    {
+      "id": "ohpo_rkb",
+      "name": "OHPO/RKB",
+      "nameTelugu": "",
+      "lat": 17.711497390294234,
+      "lng": 83.31261820871288
+    },
+    {
+      "id": "purna_market_zp_c_office",
+      "name": "Purna Market / ZP/C.Office",
+      "nameTelugu": "",
+      "lat": 17.727344586973633,
+      "lng": 83.31147513638193
+    },
+    {
+      "id": "madhavadhara_vuda_colony_sml",
+      "name": "Madhavadhara VUDA Colony/SML",
+      "nameTelugu": "",
+      "lat": 17.77342576103274,
+      "lng": 83.24119618949288
+    },
+    {
+      "id": "appughar",
+      "name": "Appughar",
+      "nameTelugu": "",
+      "lat": 17.715897390294234,
+      "lng": 83.31261820871288
+    },
+    {
+      "id": "waltair_jn_depot",
+      "name": "Waltair Jn. (Depot)",
+      "nameTelugu": "",
+      "lat": 17.714797390294233,
+      "lng": 83.31261820871288
+    },
+    {
+      "id": "chinawaltair",
+      "name": "Chinawaltair",
+      "nameTelugu": "",
+      "lat": 17.712597390294235,
+      "lng": 83.31811820871287
+    },
+    {
+      "id": "maddilapalem_siripuram",
+      "name": "Maddilapalem/Siripuram",
+      "nameTelugu": "",
+      "lat": 17.711497390294234,
+      "lng": 83.31481820871288
+    },
+    {
+      "id": "boddapalem",
+      "name": "Boddapalem",
+      "nameTelugu": "",
+      "lat": 17.821973025899712,
+      "lng": 83.35674215777088
+    },
+    {
+      "id": "bheemili",
+      "name": "Bheemili",
+      "nameTelugu": "",
+      "lat": 17.817573025899712,
+      "lng": 83.36114215777089
+    },
+    {
+      "id": "obs_krd",
+      "name": "OBS/KRD",
+      "nameTelugu": "",
+      "lat": 17.709297390294235,
+      "lng": 83.31371820871287
+    },
+    {
+      "id": "rly_new_colony",
+      "name": "Rly New Colony",
+      "nameTelugu": "",
+      "lat": 17.724044586973633,
+      "lng": 83.30817513638192
+    },
+    {
+      "id": "nallabilli",
+      "name": "Nallabilli",
+      "nameTelugu": "",
+      "lat": 17.821973025899712,
+      "lng": 83.35784215777088
+    },
+    {
+      "id": "kgh_in_gate",
+      "name": "KGH In Gate",
+      "nameTelugu": "",
+      "lat": 17.721844586973635,
+      "lng": 83.30597513638193
+    },
+    {
+      "id": "kgh_out_gate",
+      "name": "KGH Out Gate",
+      "nameTelugu": "",
+      "lat": 17.718544586973632,
+      "lng": 83.30707513638193
+    },
+    {
+      "id": "gvmc",
+      "name": "GVMC",
+      "nameTelugu": "",
+      "lat": 17.718544586973632,
+      "lng": 83.30817513638192
+    },
+    {
+      "id": "appughar_bus_stop",
+      "name": "Appughar Bus Stop",
+      "nameTelugu": "",
+      "lat": 17.710397390294233,
+      "lng": 83.31371820871287
+    },
+    {
+      "id": "vavilapadu_junction",
+      "name": "Vavilapadu Junction",
+      "nameTelugu": "",
+      "lat": 17.721844586973635,
+      "lng": 83.31147513638193
+    },
+    {
+      "id": "jammadevi_peta",
+      "name": "Jammadevi Peta",
+      "nameTelugu": "",
+      "lat": 17.718544586973632,
+      "lng": 83.30267513638192
+    },
+    {
+      "id": "koruvada",
+      "name": "Koruvada",
+      "nameTelugu": "",
+      "lat": 17.721844586973635,
+      "lng": 83.30267513638192
+    },
+    {
+      "id": "kummapalli",
+      "name": "Kummapalli",
+      "nameTelugu": "",
+      "lat": 17.720744586973634,
+      "lng": 83.31147513638193
+    },
+    {
+      "id": "lankavanipalem",
+      "name": "Lankavanipalem",
+      "nameTelugu": "",
+      "lat": 17.720744586973634,
+      "lng": 83.30377513638193
+    },
+    {
+      "id": "musiram",
+      "name": "Musiram",
+      "nameTelugu": "",
+      "lat": 17.726244586973632,
+      "lng": 83.30487513638192
+    },
+    {
+      "id": "devada",
+      "name": "Devada",
+      "nameTelugu": "",
+      "lat": 17.727344586973633,
+      "lng": 83.30157513638193
+    },
+    {
+      "id": "viyyampeta",
+      "name": "Viyyampeta",
+      "nameTelugu": "",
+      "lat": 17.727344586973633,
+      "lng": 83.30157513638193
+    },
+    {
+      "id": "dasaravanipalem",
+      "name": "Dasaravanipalem",
+      "nameTelugu": "",
+      "lat": 17.722944586973632,
+      "lng": 83.30157513638193
+    },
+    {
+      "id": "tummikapalli",
+      "name": "Tummikapalli",
+      "nameTelugu": "",
+      "lat": 17.721844586973635,
+      "lng": 83.30927513638193
+    },
+    {
+      "id": "y_junction",
+      "name": "Y Junction",
+      "nameTelugu": "",
+      "lat": 17.719644586973633,
+      "lng": 83.30157513638193
+    },
+    {
+      "id": "chinnapuram_junction_bus_stop",
+      "name": "Chinnapuram Junction Bus Stop",
+      "nameTelugu": "",
+      "lat": 17.821111272584936,
+      "lng": 83.2083411674474
+    },
+    {
+      "id": "sainik_school",
+      "name": "Sainik School",
+      "nameTelugu": "",
+      "lat": 17.726244586973632,
+      "lng": 83.30597513638193
+    },
+    {
+      "id": "sugar_factory_bus_stop",
+      "name": "Sugar Factory Bus Stop",
+      "nameTelugu": "",
+      "lat": 17.695151085658207,
+      "lng": 83.0034607303745
+    },
+    {
+      "id": "pata_bhimasingi",
+      "name": "Pata Bhimasingi",
+      "nameTelugu": "",
+      "lat": 17.725144586973634,
+      "lng": 83.31257513638192
+    },
+    {
+      "id": "amanda_santa",
+      "name": "Amanda Santa",
+      "nameTelugu": "",
+      "lat": 17.727344586973633,
+      "lng": 83.30377513638193
+    },
+    {
+      "id": "alamanda",
+      "name": "Alamanda",
+      "nameTelugu": "",
+      "lat": 17.719644586973633,
+      "lng": 83.31037513638192
+    },
+    {
+      "id": "chinnaraopalli",
+      "name": "Chinnaraopalli",
+      "nameTelugu": "",
+      "lat": 17.721844586973635,
+      "lng": 83.30377513638193
+    },
+    {
+      "id": "kantakapalli",
+      "name": "Kantakapalli",
+      "nameTelugu": "",
+      "lat": 17.726244586973632,
+      "lng": 83.30597513638193
+    },
+    {
+      "id": "sarada_factory",
+      "name": "Sarada Factory",
+      "nameTelugu": "",
+      "lat": 17.685251085658205,
+      "lng": 82.99906073037451
+    },
+    {
+      "id": "kotta_sunkarapalem",
+      "name": "Kotta Sunkarapalem",
+      "nameTelugu": "",
+      "lat": 17.719644586973633,
+      "lng": 83.31257513638192
+    },
+    {
+      "id": "baligattam",
+      "name": "Baligattam",
+      "nameTelugu": "",
+      "lat": 17.719644586973633,
+      "lng": 83.30927513638193
+    },
+    {
+      "id": "model_school",
+      "name": "Model School",
+      "nameTelugu": "",
+      "lat": 17.726244586973632,
+      "lng": 83.30707513638193
+    },
+    {
+      "id": "pinagadi_junction_bus_stop",
+      "name": "Pinagadi Junction Bus Stop",
+      "nameTelugu": "",
+      "lat": 17.718544586973632,
+      "lng": 83.31257513638192
+    },
+    {
+      "id": "jodugundu",
+      "name": "Jodugundu",
+      "nameTelugu": "",
+      "lat": 17.720744586973634,
+      "lng": 83.30267513638192
+    },
+    {
+      "id": "ammulapalli",
+      "name": "Ammulapalli",
+      "nameTelugu": "",
+      "lat": 17.719644586973633,
+      "lng": 83.30927513638193
+    },
+    {
+      "id": "banjari_junction",
+      "name": "Banjari Junction",
+      "nameTelugu": "",
+      "lat": 17.720744586973634,
+      "lng": 83.30157513638193
+    },
+    {
+      "id": "koduru",
+      "name": "Koduru",
+      "nameTelugu": "",
+      "lat": 17.725144586973634,
+      "lng": 83.30707513638193
+    },
+    {
+      "id": "gas_company",
+      "name": "Gas Company",
+      "nameTelugu": "",
+      "lat": 17.721844586973635,
+      "lng": 83.30927513638193
+    },
+    {
+      "id": "rebaka",
+      "name": "Rebaka",
+      "nameTelugu": "",
+      "lat": 17.728444586973634,
+      "lng": 83.30157513638193
+    },
+    {
+      "id": "bangala_junction",
+      "name": "Bangala Junction",
+      "nameTelugu": "",
+      "lat": 17.726244586973632,
+      "lng": 83.31147513638193
+    },
+    {
+      "id": "ring_road",
+      "name": "Ring Road",
+      "nameTelugu": "",
+      "lat": 17.721844586973635,
+      "lng": 83.31147513638193
+    },
+    {
+      "id": "perugu_bazaar",
+      "name": "Perugu Bazaar",
+      "nameTelugu": "",
+      "lat": 17.728444586973634,
+      "lng": 83.30597513638193
+    },
+    {
+      "id": "nalugu_road_junction",
+      "name": "Nalugu Road Junction",
+      "nameTelugu": "",
+      "lat": 17.722944586973632,
+      "lng": 83.30927513638193
+    },
+    {
+      "id": "yendada",
+      "name": "Yendada",
+      "nameTelugu": "",
+      "lat": 17.81097302589971,
+      "lng": 83.35124215777088
+    },
+    {
+      "id": "ayinada",
+      "name": "Ayinada",
+      "nameTelugu": "",
+      "lat": 17.76792576103274,
+      "lng": 83.23789618949289
+    },
+    {
+      "id": "bullayya_college",
+      "name": "Bullayya College",
+      "nameTelugu": "",
+      "lat": 17.729544586973635,
+      "lng": 83.31257513638192
+    },
+    {
+      "id": "amrutapuram",
+      "name": "Amrutapuram",
+      "nameTelugu": "",
+      "lat": 17.718544586973632,
+      "lng": 83.31257513638192
+    },
+    {
+      "id": "m_e_s_pump_house",
+      "name": "M.E.S. Pump House",
+      "nameTelugu": "",
+      "lat": 17.728444586973634,
+      "lng": 83.30157513638193
+    },
+    {
+      "id": "bhagat_singh_nagar_junction",
+      "name": "Bhagat Singh Nagar Junction",
+      "nameTelugu": "",
+      "lat": 17.724044586973633,
+      "lng": 83.30597513638193
+    },
+    {
+      "id": "old_gopalapatnam",
+      "name": "Old Gopalapatnam",
+      "nameTelugu": "",
+      "lat": 17.766825761032738,
+      "lng": 83.24889618949288
+    },
+    {
+      "id": "jerripotulapalem",
+      "name": "Jerripotulapalem",
+      "nameTelugu": "",
+      "lat": 17.719644586973633,
+      "lng": 83.30487513638192
+    },
+    {
+      "id": "kothapalem_junction",
+      "name": "Kothapalem Junction",
+      "nameTelugu": "",
+      "lat": 17.726244586973632,
+      "lng": 83.31037513638192
+    },
+    {
+      "id": "port_quarters_bus_stop",
+      "name": "Port Quarters Bus Stop",
+      "nameTelugu": "",
+      "lat": 17.682618278218378,
+      "lng": 83.25510432025021
+    },
+    {
+      "id": "rajiv_nagar_bridge",
+      "name": "Rajiv Nagar Bridge",
+      "nameTelugu": "",
+      "lat": 17.720744586973634,
+      "lng": 83.30707513638193
+    },
+    {
+      "id": "gollalapalem",
+      "name": "Gollalapalem",
+      "nameTelugu": "",
+      "lat": 17.724044586973633,
+      "lng": 83.30597513638193
+    },
+    {
+      "id": "jagannathapuram",
+      "name": "Jagannathapuram",
+      "nameTelugu": "",
+      "lat": 17.720744586973634,
+      "lng": 83.30267513638192
+    },
+    {
+      "id": "paidivada",
+      "name": "Paidivada",
+      "nameTelugu": "",
+      "lat": 17.726244586973632,
+      "lng": 83.30927513638193
+    },
+    {
+      "id": "asakapalli",
+      "name": "Asakapalli",
+      "nameTelugu": "",
+      "lat": 17.728444586973634,
+      "lng": 83.30817513638192
+    },
+    {
+      "id": "akkireddy_palem",
+      "name": "Akkireddy palem",
+      "nameTelugu": "",
+      "lat": 17.719644586973633,
+      "lng": 83.30157513638193
+    },
+    {
+      "id": "auto_nagar",
+      "name": "Auto Nagar",
+      "nameTelugu": "",
+      "lat": 17.719644586973633,
+      "lng": 83.31037513638192
+    },
+    {
+      "id": "old_head_post_office_area",
+      "name": "Old Head Post Office Area",
+      "nameTelugu": "",
+      "lat": 17.729544586973635,
+      "lng": 83.30487513638192
+    },
+    {
+      "id": "kakani_nagar",
+      "name": "Kakani Nagar",
+      "nameTelugu": "",
+      "lat": 17.726244586973632,
+      "lng": 83.30377513638193
+    },
+    {
+      "id": "nsrit",
+      "name": "NSRIT",
+      "nameTelugu": "",
+      "lat": 17.729544586973635,
+      "lng": 83.30817513638192
+    },
+    {
+      "id": "neelakundilu",
+      "name": "Neelakundilu",
+      "nameTelugu": "",
+      "lat": 17.724044586973633,
+      "lng": 83.30817513638192
+    },
+    {
+      "id": "nehru_chowk",
+      "name": "Nehru Chowk",
+      "nameTelugu": "",
+      "lat": 17.722944586973632,
+      "lng": 83.31037513638192
+    },
+    {
+      "id": "gowri_nagar",
+      "name": "Gowri Nagar",
+      "nameTelugu": "",
+      "lat": 17.720744586973634,
+      "lng": 83.30927513638193
+    },
+    {
+      "id": "pedda_gadhili",
+      "name": "Pedda Gadhili",
+      "nameTelugu": "",
+      "lat": 17.726244586973632,
+      "lng": 83.31257513638192
+    },
+    {
+      "id": "sai_baba_temple",
+      "name": "Sai Baba Temple",
+      "nameTelugu": "",
+      "lat": 17.722944586973632,
+      "lng": 83.31037513638192
+    },
+    {
+      "id": "netaji_nagar",
+      "name": "Netaji Nagar",
+      "nameTelugu": "",
+      "lat": 17.727344586973633,
+      "lng": 83.30487513638192
+    },
+    {
+      "id": "adavivaram_junction",
+      "name": "Adavivaram Junction",
+      "nameTelugu": "",
+      "lat": 17.77562576103274,
+      "lng": 83.24559618949289
+    },
+    {
+      "id": "srinivasa_nagar",
+      "name": "Srinivasa Nagar",
+      "nameTelugu": "",
+      "lat": 17.727344586973633,
+      "lng": 83.30267513638192
+    },
+    {
+      "id": "peda_rushikonda",
+      "name": "Peda Rushikonda",
+      "nameTelugu": "",
+      "lat": 17.719644586973633,
+      "lng": 83.30267513638192
+    },
+    {
+      "id": "gitam",
+      "name": "GITAM",
+      "nameTelugu": "",
+      "lat": 17.720744586973634,
+      "lng": 83.30597513638193
+    },
+    {
+      "id": "lumbini_park",
+      "name": "Lumbini Park",
+      "nameTelugu": "",
+      "lat": 17.719644586973633,
+      "lng": 83.30817513638192
+    },
+    {
+      "id": "visakha_eye_hospital",
+      "name": "Visakha Eye Hospital",
+      "nameTelugu": "",
+      "lat": 17.719644586973633,
+      "lng": 83.30817513638192
+    },
+    {
+      "id": "andhra_university",
+      "name": "Andhra University",
+      "nameTelugu": "",
+      "lat": 17.720744586973634,
+      "lng": 83.30377513638193
+    }
+  ],
+  "routes": [
+    {
+      "number": "10K",
+      "busType": "greenCity",
+      "frequencyMins": 20
+    },
+    {
+      "number": "68K",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "38Y",
+      "busType": "redOrdinary",
+      "frequencyMins": 15
+    },
+    {
+      "number": "38",
+      "busType": "redOrdinary",
+      "frequencyMins": 15
+    },
+    {
+      "number": "38A",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "38B",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "38C",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "38D",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "38H",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "38IT",
+      "busType": "greenCity",
+      "frequencyMins": 20
+    },
+    {
+      "number": "38J",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "38K",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "38M",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "38N",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "38R",
+      "busType": "redOrdinary",
+      "frequencyMins": 30
+    },
+    {
+      "number": "38T",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "55",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "55K",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "55T",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "55V",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "99",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "99A",
+      "busType": "redOrdinary",
+      "frequencyMins": 30
+    },
+    {
+      "number": "99K",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "400",
+      "busType": "blueExpress",
+      "frequencyMins": 15
+    },
+    {
+      "number": "400H",
+      "busType": "blueExpress",
+      "frequencyMins": 20
+    },
+    {
+      "number": "400K",
+      "busType": "blueExpress",
+      "frequencyMins": 20
+    },
+    {
+      "number": "400N",
+      "busType": "blueExpress",
+      "frequencyMins": 30
+    },
+    {
+      "number": "400S",
+      "busType": "blueExpress",
+      "frequencyMins": 25
+    },
+    {
+      "number": "400Y",
+      "busType": "blueExpress",
+      "frequencyMins": 25
+    },
+    {
+      "number": "500",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "500A",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "500A/C",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "500P",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "500Y",
+      "busType": "redOrdinary",
+      "frequencyMins": 30
+    },
+    {
+      "number": "541",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "541P",
+      "busType": "redOrdinary",
+      "frequencyMins": 30
+    },
+    {
+      "number": "600",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "600C",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "900",
+      "busType": "blueExpress",
+      "frequencyMins": 15
+    },
+    {
+      "number": "900K",
+      "busType": "blueExpress",
+      "frequencyMins": 20
+    },
+    {
+      "number": "900R",
+      "busType": "greenCity",
+      "frequencyMins": 25
+    },
+    {
+      "number": "900T",
+      "busType": "blueExpress",
+      "frequencyMins": 20
+    },
+    {
+      "number": "222V",
+      "busType": "ultraDeluxe",
+      "frequencyMins": 30
+    },
+    {
+      "number": "999",
+      "busType": "blueExpress",
+      "frequencyMins": 20
+    },
+    {
+      "number": "25D/M",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "25E",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "25G",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "25IT",
+      "busType": "greenCity",
+      "frequencyMins": 20
+    },
+    {
+      "number": "25K",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "25M",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "25S",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "25P",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "25J",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "25R",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "52D",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "52E",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "52S/52V",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "60",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "60C",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "60R",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "12D",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "12K",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "28",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "28C",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "28J",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "28P",
+      "busType": "redOrdinary",
+      "frequencyMins": 30
+    },
+    {
+      "number": "28A/D",
+      "busType": "redOrdinary",
+      "frequencyMins": 30
+    },
+    {
+      "number": "28A/P",
+      "busType": "redOrdinary",
+      "frequencyMins": 30
+    },
+    {
+      "number": "28R",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "28Z",
+      "busType": "redOrdinary",
+      "frequencyMins": 30
+    },
+    {
+      "number": "5D",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "6",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "6A",
+      "busType": "greenCity",
+      "frequencyMins": 20
+    },
+    {
+      "number": "6B",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "6H",
+      "busType": "greenCity",
+      "frequencyMins": 20
+    },
+    {
+      "number": "14",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "14A",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "48",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "48A",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "300C",
+      "busType": "redOrdinary",
+      "frequencyMins": 30
+    },
+    {
+      "number": "300M",
+      "busType": "redOrdinary",
+      "frequencyMins": 35
+    },
+    {
+      "number": "300N",
+      "busType": "redOrdinary",
+      "frequencyMins": 30
+    },
+    {
+      "number": "333",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "333K",
+      "busType": "redOrdinary",
+      "frequencyMins": 30
+    },
+    {
+      "number": "328",
+      "busType": "redOrdinary",
+      "frequencyMins": 30
+    },
+    {
+      "number": "205",
+      "busType": "blueExpress",
+      "frequencyMins": 30
+    },
+    {
+      "number": "201",
+      "busType": "redOrdinary",
+      "frequencyMins": 30
+    },
+    {
+      "number": "211",
+      "busType": "ultraDeluxe",
+      "frequencyMins": 30
+    },
+    {
+      "number": "888",
+      "busType": "redOrdinary",
+      "frequencyMins": 30
+    },
+    {
+      "number": "1T",
+      "busType": "greenCity",
+      "frequencyMins": 30
+    },
+    {
+      "number": "10A",
+      "busType": "greenCity",
+      "frequencyMins": 30
+    },
+    {
+      "number": "16",
+      "busType": "redOrdinary",
+      "frequencyMins": 30
+    },
+    {
+      "number": "20A",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "36",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "63",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "64A",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "65F",
+      "busType": "redOrdinary",
+      "frequencyMins": 30
+    },
+    {
+      "number": "69",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "77",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "77T",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "111",
+      "busType": "blueExpress",
+      "frequencyMins": 20
+    },
+    {
+      "number": "311",
+      "busType": "redOrdinary",
+      "frequencyMins": 30
+    },
+    {
+      "number": "400-C",
+      "busType": "blueExpress",
+      "frequencyMins": 20
+    },
+    {
+      "number": "505",
+      "busType": "redOrdinary",
+      "frequencyMins": 25
+    },
+    {
+      "number": "540",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "540M",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "555",
+      "busType": "redOrdinary",
+      "frequencyMins": 30
+    },
+    {
+      "number": "700",
+      "busType": "ultraDeluxe",
+      "frequencyMins": 30
+    },
+    {
+      "number": "744",
+      "busType": "redOrdinary",
+      "frequencyMins": 30
+    },
+    {
+      "number": "844",
+      "busType": "redOrdinary",
+      "frequencyMins": 30
+    },
+    {
+      "number": "222",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "222R",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "38G/65",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "55D & 55D/V",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "63A",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "66V/99",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "67",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "400P",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "400R",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "400S/400Y",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "411V",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "25D/V",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "25V",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "JP01",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "28 / 28H",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "28Z/H",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "28K",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "55Y",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "6 / 6H",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "6D",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "300S",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "700 / 700H",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "55S",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "111V",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "38R/Y",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "600 / 600S",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "400L/P/500",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "GUNUPUR",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "68K / 68D",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    },
+    {
+      "number": "48A/48S",
+      "busType": "redOrdinary",
+      "frequencyMins": 20
+    }
+  ]
+}

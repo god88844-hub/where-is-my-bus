@@ -1,0 +1,550 @@
+{
+  "KURSURA": [
+    17.7172973,
+    83.3301853
+  ],
+  "ROPEWAY": [
+    17.7464415,
+    83.3449307
+  ],
+  "CHANDRAMPALEM": null,
+  "BORRAVANIPALEM": [
+    18.1037097,
+    83.5165573
+  ],
+  "PYDAHCOLLEGECOLLEGE": [
+    17.7186788,
+    83.3070284
+  ],
+  "MAHARAJUPETA": [
+    17.9526507,
+    83.4177343
+  ],
+  "MODHAVALASA": null,
+  "KONDARAJUPETA": [
+    17.9890878,
+    83.4252166
+  ],
+  "MOPADA": [
+    18.0041297,
+    83.4315562
+  ],
+  "GADDAPETA": [
+    18.2495879,
+    83.3977391
+  ],
+  "BODDAVALASA": [
+    18.0396151,
+    83.4086201
+  ],
+  "CHELLAVURU": null,
+  "DONDAPARTHI": [
+    17.7253254,
+    83.2989215
+  ],
+  "TCPALEM": null,
+  "ITI": [
+    18.0888796,
+    82.6659771
+  ],
+  "KRPURAM": [
+    18.2869124,
+    83.3622358
+  ],
+  "DASARIVANIPALEM": [
+    17.9099102,
+    83.1751951
+  ],
+  "KROAD": [
+    17.8113071,
+    83.1696023
+  ],
+  "KUMPALLI": null,
+  "DAGRAHARAM": [
+    17.7858187,
+    83.1915344
+  ],
+  "KORUWADA": null,
+  "NKRPRM": null,
+  "VAYILAPADUJN": null,
+  "BARTHAVANIPALEM": null,
+  "VEPADA": [
+    18.0163803,
+    83.0703399
+  ],
+  "MUSIDIPALLI": [
+    18.3817475,
+    83.3488477
+  ],
+  "AKOTHAPALLI": null,
+  "ACHAYYAPALEM": null,
+  "CHINANANDIPALLI": null,
+  "PEDANANDIPALLI": null,
+  "PNPALLICOLONY": [
+    18.1170172,
+    83.4003653
+  ],
+  "TARUVA": [
+    17.9367399,
+    82.9750244
+  ],
+  "TIMIRAM": [
+    17.9247536,
+    82.9631449
+  ],
+  "VAKAPALLI": null,
+  "TKROAD": [
+    17.8113071,
+    83.1696023
+  ],
+  "1TOWN": [
+    17.6954003,
+    83.2933059
+  ],
+  "KMARKET": [
+    17.7287038,
+    83.3021847
+  ],
+  "READINGROOM": null,
+  "BARAX": null,
+  "CMR": [
+    17.7483892,
+    83.2190016
+  ],
+  "JAILROAD": null,
+  "SAIRAMCOLONY": [
+    17.7245815,
+    83.3056231
+  ],
+  "CHAITANYAENGCLG": null,
+  "NARAYANAHOSTEL": null,
+  "GADDAPETAJUNCTION": null,
+  "BODDAVALASAJUNCTION": null,
+  "APSPQUARTERS": null,
+  "RTALKIES": null,
+  "MIGCOLONY": [
+    17.6973398,
+    83.1946664
+  ],
+  "RAMALAYAM": [
+    17.7683494,
+    83.2515592
+  ],
+  "SAIPRIYAGARDENS": null,
+  "KURUPAMMARKET": [
+    17.6986945,
+    83.2943835
+  ],
+  "BARRACKS": [
+    18.1135133,
+    83.3872873
+  ],
+  "BVKCOLLEGE": null,
+  "JODUGULLAPALEM": [
+    17.7522343,
+    83.3492742
+  ],
+  "ALLIPURAM": [
+    17.7198234,
+    83.2947779
+  ],
+  "DURGABAZAR": null,
+  "PSTN": [
+    17.7996523,
+    83.3526684
+  ],
+  "TICPOINT": null,
+  "AMBEDKARCLY": null,
+  "BALAJINAGAR": [
+    17.7654478,
+    83.319071
+  ],
+  "THOTAGARUVU": null,
+  "SANJEEVNAGARCLY": null,
+  "HWAKAHTEMPLE": null,
+  "MMTC": [
+    17.7462497,
+    83.3181571
+  ],
+  "SEETHAMMADARA": [
+    17.7433159,
+    83.3063183
+  ],
+  "SEETHAMMAPETA": null,
+  "LIC": null,
+  "VALANDUPETA": [
+    17.9172505,
+    83.4134315
+  ],
+  "OLDCHERUKUPALLI": null,
+  "CITYNAGARAM": [
+    18.2956513,
+    83.8977287
+  ],
+  "DIVIS": [
+    17.9265565,
+    83.4909067
+  ],
+  "THUDEMJUNCTION": null,
+  "BASAVAPALEM": null,
+  "MAJJIVALASA": [
+    17.9492962,
+    83.3927994
+  ],
+  "REVIDI": [
+    17.9641784,
+    83.3728604
+  ],
+  "KURAPALLI": null,
+  "PADMANABAMQUERRY": null,
+  "PADMANABAM": null,
+  "OLDKOVVADA": null,
+  "NEWKOVVADA": null,
+  "KASULUVADA": null,
+  "CHMWADA": null,
+  "JRCOLLEGE": [
+    17.7218602,
+    83.3104309
+  ],
+  "NTRSTATUE": null,
+  "LAGISETTIPALEM": [
+    17.7943301,
+    83.0860066
+  ],
+  "VIJAYARAMARAJUPETA": null,
+  "MADUGULA": [
+    17.9183224,
+    82.8185393
+  ],
+  "PUNJABHOTEL": null,
+  "PANJABHOTEL": null,
+  "CHINTHALADIMMA": null,
+  "RAYAPALLIGATE": null,
+  "CHINARAOPALLI": [
+    17.9667395,
+    83.2281307
+  ],
+  "PEDARAOPALLIGATE": null,
+  "KGPETA": [
+    17.7260559,
+    83.3059629
+  ],
+  "ROTARY": [
+    17.831088,
+    83.202451
+  ],
+  "VASANTHVIHAR": [
+    18.09472,
+    83.4091182
+  ],
+  "CHINNAMUSIDIWADA": null,
+  "CHINARAOPALLE": null,
+  "PEDARAOPALLE": [
+    17.9626115,
+    83.2511937
+  ],
+  "BHEEMALI": [
+    17.9796734,
+    83.2228145
+  ],
+  "THIMMAPURAM": [
+    18.0015409,
+    83.2740717
+  ],
+  "BATTIJUNCTION": null,
+  "GANDAVARAM": null,
+  "DUKKIVANIPALEM": null,
+  "GUDILOVA": [
+    17.8824611,
+    83.3291875
+  ],
+  "NEELLAKUNDILU": null,
+  "GANDIGUNDAM": null,
+  "DEVIPURAM": [
+    17.7629916,
+    83.0904773
+  ],
+  "VELLANKI": [
+    17.8943602,
+    83.3883966
+  ],
+  "VALANDAPETA": null,
+  "AVANTI": null,
+  "CHELLURU": [
+    18.0571417,
+    83.3971313
+  ],
+  "BHODAVALASA": null,
+  "GEDDPATA": null,
+  "DHAKAMARRI": null,
+  "MRPETA": [
+    17.7242582,
+    83.3270186
+  ],
+  "RAJULATALAVALASA": null,
+  "BORAYANIPALEM": null,
+  "SANIKALUVA": null,
+  "RAMANNAPALEM": null,
+  "RAMBILLI": [
+    17.4654942,
+    82.9285851
+  ],
+  "GOVINDAPALEM": null,
+  "FAKEERTAKIYAROAD": null,
+  "COVENTJN": null,
+  "SECTOR11": null,
+  "MUTYALAMMAPALEM": [
+    17.5382065,
+    83.085457
+  ],
+  "NUNAPARTI": null,
+  "REKHAVANIPALEM": [
+    17.377366,
+    82.5425866
+  ],
+  "DHARMARAYUDUPETA": null,
+  "PARWADA": null,
+  "DPPALEM": null,
+  "VUTAGEDDAPALEM": null,
+  "DIBBALAPALEM": [
+    17.7579244,
+    82.7547855
+  ],
+  "GANDIVANIAPLAEM": null,
+  "VCPALLI": null,
+  "KMPM": null,
+  "LEMARTJN": null,
+  "TANAMJN": null,
+  "IOC": null,
+  "MARUTHIJUNCTION": [
+    17.7260195,
+    83.3220972
+  ],
+  "UTAGEDDAPALEM": null,
+  "SIRISAPALLI": null,
+  "SANIAVADAJN": null,
+  "12THSECTOR": [
+    17.7417256,
+    83.3375849
+  ],
+  "SRINIVASNAGAR": null,
+  "CWSGODOWNS": null,
+  "KOTHAPALEMJN": null,
+  "BHAGATSINGHNAGAR": null,
+  "MESWATERWORKS": null,
+  "CHINTAGATLA": [
+    17.7820894,
+    83.1624446
+  ],
+  "AMARAPINNIVANIPALEM": null,
+  "KONDAPALLIPALEM": null,
+  "RAMAVARAMXROAD": null,
+  "RAMAVARAM": [
+    17.866398,
+    83.2441595
+  ],
+  "YERRAPUVANIPALEM": null,
+  "BEEMANDORAPALEM": null,
+  "RELLIJN": null,
+  "KONEMPALEM": null,
+  "DUPPUTURU": null,
+  "BRANDEX": null,
+  "MSME": [
+    17.9264064,
+    83.1937055
+  ],
+  "VAYALAPUDIJN": null,
+  "CHINNAYYAPALEM": null,
+  "DAMUNAPALLE": [
+    17.8616646,
+    82.9251311
+  ],
+  "VARAHAPURAM": null,
+  "CHINAGOGADA": [
+    17.8977128,
+    82.9061451
+  ],
+  "CHEEDIKADA": [
+    17.927342,
+    82.8931162
+  ],
+  "MANCHALA": null,
+  "MUTCHARLAROAD": null,
+  "SIRLAPALEM": [
+    17.9591936,
+    83.3206607
+  ],
+  "ZOO": [
+    17.7607169,
+    83.3550508
+  ],
+  "KHUSIJN": null,
+  "ITHILLROAD": null,
+  "CHIMALAPALLI": null,
+  "PAATHAROAD": null,
+  "NAGARAPALEM": [
+    17.9362558,
+    83.4163316
+  ],
+  "LAWCOLLAGE": null,
+  "BAKKANAPALEM": [
+    17.8151655,
+    83.3412942
+  ],
+  "AMEBTHEKARCOLONY": null,
+  "RATNAGIRICOLONY": [
+    17.8169913,
+    83.2067511
+  ],
+  "25D": [
+    17.6935526,
+    83.2921297
+  ],
+  "V": [
+    17.7372911,
+    83.3085433
+  ],
+  "VAMBAYCOLONY": [
+    17.8146938,
+    83.3639053
+  ],
+  "52E": [
+    17.6935526,
+    83.2921297
+  ],
+  "25E": [
+    17.6935526,
+    83.2921297
+  ],
+  "25P": [
+    17.6935526,
+    83.2921297
+  ],
+  "52V": [
+    17.6935526,
+    83.2921297
+  ],
+  "G": [
+    17.744782,
+    83.2705428
+  ],
+  "BVLCOLLEGE": null,
+  "KMS": [
+    17.933364,
+    83.4786296
+  ],
+  "SHILANAGAR": null,
+  "NATHAYAPALEM": null,
+  "VUTTAGADA": null,
+  "SANIKLUVA": null,
+  "RAMANAPALEM": null,
+  "ATCHUTHAPURAM": null,
+  "PAKHEERTHAKYA": null,
+  "DOLPHINCOVE": [
+    17.6669731,
+    83.2824811
+  ],
+  "GULLEPALLI": [
+    17.8536405,
+    83.0176322
+  ],
+  "AYYANNAPALEM": [
+    17.8113071,
+    83.1696023
+  ],
+  "VARADA": [
+    17.935816,
+    83.0397856
+  ],
+  "BARATHAVANIPALEM": null,
+  "GUMMIDIVANIPALEM": null,
+  "SWAYAMVARAM": null,
+  "TOOFANSHELTER": null,
+  "CISFBARAX": null,
+  "PEDAMUSHIDIVADA": null,
+  "KANNURU": [
+    17.7035717,
+    83.0988726
+  ],
+  "KURAMANAPALEM": null,
+  "NAMMIDOODI": null,
+  "JERRUPOTHULAPALEM": null,
+  "SATHIVANIPALEM": null,
+  "VUTEGEDDA": null,
+  "PANCHADARLA": [
+    18.3336097,
+    83.3686772
+  ],
+  "KOTHURU": null,
+  "NARAYANAPURAM": [
+    17.9814014,
+    83.2610075
+  ],
+  "KOTHAPALEM": [
+    17.7431192,
+    83.2170071
+  ],
+  "SITRAUPETAJN": null,
+  "KASIMKOTA": [
+    17.6710382,
+    82.967
+  ],
+  "BAYYAVARAM": [
+    17.6631375,
+    82.9422895
+  ],
+  "THALLAPALEM": null,
+  "NARSINGABILLI": null,
+  "MDVCOLONY": null,
+  "GULLEPALI": null,
+  "AYYANAPALEM": null,
+  "SINGAMDORAPALEM": null,
+  "NALLABILI": null,
+  "USHODAYAJN": null,
+  "AMMAVARIGUDI": null,
+  "DAYADEEPTHIVISRANTHIVANAM": null,
+  "BANKCOLONY": [
+    17.7426196,
+    83.3281991
+  ],
+  "TVLS": null,
+  "DORATHOTA": null,
+  "GOLALAPALEM": null,
+  "VIJAYRAMRAJUPETA": null,
+  "LOPUDI": [
+    17.8230488,
+    82.8468855
+  ],
+  "POTTIDORAPALEM": [
+    17.8154947,
+    82.8302976
+  ],
+  "RAVIKAMATHAM": [
+    17.7623683,
+    82.7492293
+  ],
+  "MEDIWADA": null,
+  "KOTTAKOTA": [
+    18.1072214,
+    83.1999093
+  ],
+  "KANDAPALLI": null,
+  "ARJUNAGIRI": [
+    17.9103558,
+    82.9350662
+  ],
+  "TURUVOLU": [
+    17.9259654,
+    82.92452
+  ],
+  "CHEEDIPALLI": null,
+  "KJPURAM": [
+    17.9609253,
+    83.3987519
+  ],
+  "SATYAVARAM": null,
+  "KINTHALI": [
+    17.856841,
+    82.745772
+  ]
+}

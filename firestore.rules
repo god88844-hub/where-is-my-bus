@@ -115,5 +115,18 @@ service cloud.firestore {
       allow read: if isConductor();
       allow update, delete: if false;
     }
+
+    match /complaints/{complaintId} {
+      allow create: if isSignedIn()
+          && request.resource.data.type is string
+          && request.resource.data.type.size() > 0
+          && request.resource.data.route is string
+          && request.resource.data.stop_id is string
+          && request.resource.data.bus_id is string
+          && request.resource.data.note is string
+          && request.resource.data.reporter_uid == request.auth.uid;
+      allow read: if isConductor();
+      allow update, delete: if false;
+    }
   }
 }

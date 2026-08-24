@@ -16,11 +16,12 @@ class AppConstants {
   static const double vizagLng = 83.30707513638193;
 
   // ── Nearby radius (km) for "buses near me" ──
-  static const double nearbyRadiusKm = 1.0;
-  // Treat a bus as having reached a stop once it is within 1 km of the
-  // configured stop/junction coordinate.
-  static const int stopReachRadiusMeters = 1000;
-  static const double stopReachRadiusKm = stopReachRadiusMeters / 1000;
+  // 2 km so major junctions with several stops nearby (e.g. Pendurthi +
+  // Pendurthi Junior College) all appear together.
+  static const double nearbyRadiusKm = 2.0;
+  // Stop arrival geofencing is adaptive: RouteProgressService scales each
+  // stop's arrival radius with the spacing of its neighbouring stops, so no
+  // single global radius is configured here.
 
   // ── Staleness / service hours ──
   /// Buses not updated within this many minutes are hidden from passengers.

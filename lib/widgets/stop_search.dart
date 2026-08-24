@@ -63,10 +63,10 @@ class _StopSearchFieldState extends State<StopSearchField> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Container(
-          height: 44,
+          height: 54,
           decoration: BoxDecoration(
             color: AppTheme.card,
-            borderRadius: BorderRadius.circular(10),
+            borderRadius: BorderRadius.circular(12),
               border: Border.all(
                 color: _focus.hasFocus
                     ? AppTheme.green.withValues(alpha: 0.5)
@@ -76,23 +76,23 @@ class _StopSearchFieldState extends State<StopSearchField> {
             ),
             child: Row(
               children: [
-                const SizedBox(width: 12),
+                const SizedBox(width: 14),
                 const Icon(
                   Icons.search,
-                  size: 16,
+                  size: 20,
                   color: AppTheme.textSecondary,
                 ),
-                const SizedBox(width: 8),
+                const SizedBox(width: 10),
                 Expanded(
                   child: TextField(
                   controller: _ctrl,
                   focusNode: _focus,
                   style: const TextStyle(
-                      fontSize: 14, color: AppTheme.textPrimary),
+                      fontSize: 16, color: AppTheme.textPrimary),
                   decoration: InputDecoration(
                     hintText: widget.hint,
                     hintStyle: const TextStyle(
-                        fontSize: 13, color: AppTheme.textMuted),
+                        fontSize: 15, color: AppTheme.textMuted),
                     border: InputBorder.none,
                     isDense: true,
                     contentPadding: EdgeInsets.zero,
@@ -107,8 +107,8 @@ class _StopSearchFieldState extends State<StopSearchField> {
                     setState(() { _results = []; _open = false; });
                   },
                   child: const Padding(
-                    padding: EdgeInsets.symmetric(horizontal: 10),
-                    child: Icon(Icons.close, size: 14,
+                    padding: EdgeInsets.symmetric(horizontal: 12),
+                    child: Icon(Icons.close, size: 18,
                         color: AppTheme.textSecondary),
                   ),
                 ),
@@ -138,7 +138,7 @@ class _StopSearchFieldState extends State<StopSearchField> {
                   },
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                        horizontal: 14, vertical: 11),
+                        horizontal: 14, vertical: 13),
                     decoration: BoxDecoration(
                       border: last
                           ? null
@@ -153,22 +153,23 @@ class _StopSearchFieldState extends State<StopSearchField> {
                       children: [
                         const Icon(
                           Icons.place_outlined,
-                          size: 14,
+                          size: 18,
                           color: AppTheme.textMuted,
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 10),
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(stop.name,
                                 style: const TextStyle(
-                                    fontSize: 13,
+                                    fontSize: 15,
                                     color: AppTheme.textPrimary,
-                                    fontWeight: FontWeight.w500)),
-                            Text(stop.nameTelugu,
-                                style: const TextStyle(
-                                    fontSize: 11,
-                                    color: AppTheme.textSecondary)),
+                                    fontWeight: FontWeight.w600)),
+                            if (stop.nameTelugu.isNotEmpty)
+                              Text(stop.nameTelugu,
+                                  style: const TextStyle(
+                                      fontSize: 12,
+                                      color: AppTheme.textSecondary)),
                           ],
                         ),
                       ],

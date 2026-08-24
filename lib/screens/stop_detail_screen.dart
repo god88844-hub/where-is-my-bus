@@ -4,7 +4,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../services/app_provider.dart';
 import '../data/vizag_data.dart';
+import '../utils/app_language.dart';
 import '../utils/app_theme.dart';
+import '../widgets/complaint_sheet.dart';
 import '../widgets/shared_widgets.dart';
 import 'bus_journey_screen.dart';
 
@@ -14,6 +16,7 @@ class StopDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final lang    = AppLanguage.instance;
     final p       = context.watch<AppProvider>();
     final buses   = p.busesAtStop(stop);
     final routes  = VizagRoutes.servingStop(stop.id);
@@ -21,6 +24,16 @@ class StopDetailScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: AppTheme.bg,
       appBar: AppBar(
+        actions: [
+          IconButton(
+            tooltip: 'Report a problem',
+            icon: const Icon(Icons.report_problem_outlined, size: 20),
+            onPressed: () => ComplaintSheet.show(
+              context,
+              stopId: stop.id,
+            ),
+          ),
+        ],
         backgroundColor: AppTheme.surface,
         leading: IconButton(
           icon: const Icon(Icons.arrow_back,
@@ -47,16 +60,16 @@ class StopDetailScreen extends StatelessWidget {
 
           // ── Incoming buses ──
           SectionHeader(
-            'Buses on the way',
+            lang.t('Buses on the way', 'బయలు వచ్చే బస్సులు'),
             subtitle: buses.isEmpty
-                ? 'No live bus data for this stop'
-                : '${buses.length} buses incoming',
+                ? lang.t('No live bus data for this stop', 'ఈ స్టాప్ కి లైవ్ బస్సు సమాచారం లేదు')
+                : '${buses.length} ${lang.t('buses incoming', 'బస్సులు వస్తున్నాయి')}',
           ),
 
           if (buses.isEmpty)
-            const EmptyState(
-              'No buses tracked right now',
-              sub: 'Scheduled routes are shown below',
+            EmptyState(
+              lang.t('No buses tracked right now', 'ప్రస్తుతంలో బస్సులు లేవు'),
+              sub: lang.t('Scheduled routes are shown below', 'కాలగడు రూట్లు క్రింద చూపబడతాయి'),
               icon: Icons.directions_bus_outlined,
             )
           else
@@ -99,7 +112,7 @@ class StopDetailScreen extends StatelessWidget {
             ),
 
           // ── Routes serving this stop ──
-          SectionHeader('All routes here',
+          SectionHeader(lang.t('All routes here', 'ఈ స్టాప్ నుండి రూట్లు'),
               subtitle: '${routes.length} routes serve this stop'),
 
           Padding(
@@ -135,9 +148,11 @@ class _StopStatsRow extends StatelessWidget {
       border: Border.all(color: AppTheme.border, width: 0.5),
     ),
     child: Row(children: [
-      _Stat('$busCount', 'buses incoming', AppTheme.green),
+      _Stat('$busCount',
+          AppLanguage.instance.t('buses incoming', 'బస్సులు వస్తున్నాయి'), AppTheme.green),
       _Divider(),
-      _Stat('$routeCount', 'routes', AppTheme.blue),
+      _Stat('$routeCount',
+          AppLanguage.instance.t('routes', 'రూట్లు'), AppTheme.blue),
     ]),
   );
 }

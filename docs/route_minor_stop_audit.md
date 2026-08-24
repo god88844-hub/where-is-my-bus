@@ -2,6 +2,15 @@
 
 Date: 2026-04-25
 
+## Additional manual source
+
+- A secondary manual route-family reference from 2026-04-27 is now stored in
+  [manual_route_source_2026-04-27.md](./manual_route_source_2026-04-27.md).
+- Use that file to reconcile public route labels, branch families, and major
+  stop anchors before editing `manual_route_enrichment_data.dart`.
+- Do not promote names from that file into live route data until each stop has
+  been mapped to an internal stop id and validated with exact coordinates.
+
 ## APSRTC verification status
 
 - Confirmed from APSRTC's official backend service documents:

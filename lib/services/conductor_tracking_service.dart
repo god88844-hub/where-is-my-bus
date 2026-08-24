@@ -11,6 +11,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../dev/mock_coordinate_scenarios.dart';
 import '../data/vizag_data.dart';
 import '../models/bus.dart';
+import '../utils/app_language.dart';
 import 'location_service.dart';
 import 'firestore_service.dart';
 import 'route_progress_service.dart';
@@ -32,6 +33,9 @@ class ConductorTrackingService extends ChangeNotifier {
   static const prefsKeySpeed = 'conductor_last_speed';
   static const prefsKeyUpdateMs = 'conductor_last_update_ms';
   static const prefsKeyAutoStop = 'conductor_auto_stop';
+  static const prefsKeyTripFrom = 'conductor_trip_from';
+  static const prefsKeyTripTo = 'conductor_trip_to';
+  static const prefsKeyRouteHint = 'conductor_route_hint';
 
   final FirestoreService _fs = FirestoreService();
 
@@ -56,6 +60,9 @@ class ConductorTrackingService extends ChangeNotifier {
   double? lastLng;
   double? lastSpeed;
   DateTime? lastUpdate;
+  String? tripFromStopId;
+  String? tripToStopId;
+  String? draftRouteHint;
   String? _segmentStartStopId;
   String? _segmentEndStopId;
   double? _segmentProgress;
@@ -66,6 +73,9 @@ class ConductorTrackingService extends ChangeNotifier {
   double? _effectiveSpeedKmh;
   bool _lastCloudSyncSucceeded = true;
   String? _lastCloudSyncError;
+
+  String _t(String english, String telugu) =>
+      AppLanguage.instance.t(english, telugu);
 
   BusRoute? get activeRoute {
     if (selectedRoute == null) return null;
@@ -112,25 +122,134 @@ class ConductorTrackingService extends ChangeNotifier {
     }
   }
 
+  /// Resolves the route that will carry this trip.
+  ///
+  /// An explicit route hint (typed route id) wins — it must serve the
+  /// From -> To range in order. Without a hint, the route with the MOST stops
+  /// between From and To across the whole network is chosen (the corridor
+  /// that serves both stops most directly).
+  BusRoute? resolveTripRoute() {
+    final from = tripFromStopId;
+    final to = tripToStopId;
+    if (from == null || to == null) return null;
+
+    final hint = draftRouteHint?.trim();
+    if (hint != null && hint.isNotEmpty) {
+      final hinted =
+          VizagRoutes.byRouteId(hint) ?? VizagRoutes.byNumber(hint);
+      if (hinted == null) return null;
+      final fi = hinted.stopIds.indexOf(from);
+      final ti = hinted.stopIds.indexOf(to);
+      if (fi < 0 || ti <= fi) return null;
+      return hinted;
+    }
+
+    BusRoute? best;
+    var bestSpan = -1;
+    for (final r in VizagRoutes.all) {
+      final fi = r.stopIds.indexOf(from);
+      final ti = r.stopIds.indexOf(to);
+      if (fi < 0 || ti <= fi) continue;
+      final span = ti - fi;
+      if (span > bestSpan) {
+        best = r;
+        bestSpan = span;
+      }
+    }
+    return best;
+  }
+
+  /// Optional route id/number typed by the conductor. When empty, the route
+  /// is derived from the From -> To stops alone.
+  Future<void> setDraftRouteHint(String? hint) async {
+    if (tracking) {
+      throw StateError('Stop tracking before changing the route');
+    }
+    final trimmed = hint?.trim() ?? '';
+    draftRouteHint = trimmed.isEmpty ? null : trimmed;
+    _reresolveSelectedRoute();
+    statusMessage = draftRouteHint == null
+        ? 'Route id cleared — route will be found from From -> To'
+        : 'Route id saved';
+    await _persistSession();
+    notifyListeners();
+  }
+
+  void _reresolveSelectedRoute() {
+    final route = resolveTripRoute();
+    selectedRoute = route?.routeId;
+    if (route == null) {
+      _clearProgressState();
+    }
+  }
+
+  /// Selecting a route from the picker pins the hint and defaults the trip
+  /// range to the full route.
   Future<void> setDraftRoute(BusRoute route) async {
     if (tracking) {
       throw StateError('Stop tracking before changing the route');
     }
+    draftRouteHint = route.routeId;
     selectedRoute = route.routeId;
     if (selectedStopId != null && !route.stopIds.contains(selectedStopId)) {
       selectedStopId = null;
     }
-    statusMessage ??= 'Trip details saved';
+    // A new route resets the trip range to the full route; the conductor can
+    // then customise From / To in the stops section.
+    tripFromStopId = route.stopIds.isEmpty ? null : route.stopIds.first;
+    tripToStopId = route.stopIds.length < 2 ? null : route.stopIds.last;
+    statusMessage ??= _t('Trip details saved', 'ట్రిప్ వివరాలు సేవ్ అయ్యాయి');
     await _persistSession();
     notifyListeners();
+  }
+
+  /// Customise the trip range. From and To are REQUIRED; the route is derived
+  /// from them (optionally narrowed by the route id hint). The From stop must
+  /// come before the To stop on the resolved route.
+  Future<bool> setDraftTripStops({
+    required String fromStopId,
+    required String toStopId,
+  }) async {
+    if (tracking) {
+      throw StateError('Stop tracking before changing the trip stops');
+    }
+    if (fromStopId == toStopId) return false;
+
+    tripFromStopId = fromStopId;
+    tripToStopId = toStopId;
+    _reresolveSelectedRoute();
+
+    final route = activeRoute;
+    if (route != null && selectedStopId != null) {
+      final fromIndex = route.stopIds.indexOf(fromStopId);
+      final toIndex = route.stopIds.indexOf(toStopId);
+      final currentIndex = route.stopIds.indexOf(selectedStopId!);
+      if (fromIndex >= 0 &&
+          toIndex > fromIndex &&
+          (currentIndex < fromIndex || currentIndex > toIndex)) {
+        selectedStopId = fromStopId;
+        _resetManualProgressForSelectedStop();
+      }
+    }
+    statusMessage =
+        '${_t('Trip', 'ట్రిప్')}: '
+        '${VizagStops.get(fromStopId)?.name ?? fromStopId} '
+        '${_t('to', 'నుండి')} '
+        '${VizagStops.get(toStopId)?.name ?? toStopId}';
+    await _persistSession();
+    notifyListeners();
+    return true;
   }
 
   Future<void> clearDraftRoute() async {
     if (tracking) return;
     selectedRoute = null;
     selectedStopId = null;
+    draftRouteHint = null;
     _clearProgressState();
-    statusMessage = 'Route selection cleared';
+    statusMessage = _t(
+        'Route selection cleared',
+        'రూట్ ఎంపిక తీసివేయబడింది');
     await _persistSession();
     notifyListeners();
   }
@@ -155,8 +274,11 @@ class ConductorTrackingService extends ChangeNotifier {
 
   Future<void> setAutoStopEnabled(bool value) async {
     autoStopEnabled = value;
-    statusMessage =
-        value ? 'Auto stop detection is on' : 'Auto stop detection is off';
+    statusMessage = value
+        ? _t('Auto stop detection is on',
+            'గ్పస్ స్టాప్ గుర్తింపు పని చేస్తోంది')
+        : _t('Auto stop detection is off',
+            'గ్పస్ స్టాప్ గుర్తింపు ఆపివేయబడింది');
     if (!value) {
       _ensureManualStopSelected();
     } else if (lastLat != null && lastLng != null) {
@@ -166,15 +288,66 @@ class ConductorTrackingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<bool> startTracking() async {
-    if (_starting) return tracking;
+  /// Starts live tracking with GPS validation.
+  ///
+  /// The conductor's real position is snapped to the resolved route: starting
+  /// mid-route continues the trip to the To stop; a position that does not
+  /// match the route at all returns a structured failure (with the detected
+  /// nearest stop) so the UI can explain the wrong From - To.
+  Future<StartTrackingResult> startTracking() async {
+    if (_starting) {
+      return const StartTrackingResult.failure(
+        title: 'Please wait',
+        message: 'Starting is already in progress.',
+      );
+    }
     _starting = true;
     try {
-      if (activeRoute == null) {
-        statusMessage = 'Missing trip details';
+      final fromId = tripFromStopId;
+      final toId = tripToStopId;
+      if (fromId == null || toId == null) {
+        statusMessage = 'Pick the From and To stops first';
         await _persistSession();
         notifyListeners();
-        return false;
+        return const StartTrackingResult.failure(
+          title: 'From - To required',
+          message: 'Pick the From and To stops before starting. The route id '
+              'is optional.',
+        );
+      }
+
+      var route = resolveTripRoute();
+      if (route == null) {
+        final hint = draftRouteHint?.trim();
+        if (hint != null && hint.isNotEmpty) {
+          final hinted =
+              VizagRoutes.byRouteId(hint) ?? VizagRoutes.byNumber(hint);
+          statusMessage = hinted == null
+              ? 'Route $hint not found'
+              : 'Route $hint does not run between the picked From and To stops';
+          await _persistSession();
+          notifyListeners();
+          return StartTrackingResult.failure(
+            title: 'Route id does not match',
+            message: hinted == null
+                ? 'Route "$hint" was not found. Clear it or correct it.'
+                : 'Route "$hint" does not run between '
+                    '${VizagStops.get(fromId)?.name ?? fromId} and '
+                    '${VizagStops.get(toId)?.name ?? toId}. '
+                    'Check the From - To stops or clear the route id.',
+            route: hinted,
+          );
+        }
+        statusMessage = 'No route found between the picked stops';
+        await _persistSession();
+        notifyListeners();
+        return StartTrackingResult.failure(
+          title: 'No route path found',
+          message: 'No bus route in the network runs from '
+              '${VizagStops.get(fromId)?.name ?? fromId} to '
+              '${VizagStops.get(toId)?.name ?? toId} in that direction. '
+              'Check the From - To stops.',
+        );
       }
 
       final permission = await _ensurePermission();
@@ -183,25 +356,187 @@ class ConductorTrackingService extends ChangeNotifier {
         statusMessage = 'Location permission is required for live tracking';
         await _persistSession();
         notifyListeners();
-        return false;
+        return const StartTrackingResult.failure(
+          title: 'Location permission needed',
+          message: 'Allow location access so passengers can see the bus.',
+        );
       }
 
-      selectedBusType ??= activeRoute!.busType;
-      busId ??= _buildBusId(activeRoute!.routeId);
+      selectedBusType ??= route.busType;
+      busId ??= _buildBusId(route.routeId);
+      statusMessage = 'Detecting your location...';
+      notifyListeners();
+
+      // ── GPS validation: the conductor's real position must lie on (or very
+      // near) the chosen route corridor. Starting mid-route is fine — the
+      // detection continues the trip to the To stop.
+      Position? fix;
+      try {
+        final sampleTime = DateTime.now();
+        fix = await Geolocator.getCurrentPosition(
+          desiredAccuracy: LocationAccuracy.high,
+          timeLimit: const Duration(seconds: 20),
+        );
+        lastLat = fix.latitude;
+        lastLng = fix.longitude;
+        lastSpeed = _normalizedSpeedKmh(
+          rawSpeedKmh: fix.speed * 3.6,
+          lat: fix.latitude,
+          lng: fix.longitude,
+          sampleTime: sampleTime,
+        );
+        lastUpdate = sampleTime;
+      } catch (e) {
+        debugPrint('ConductorTrackingService: start GPS fix failed: $e');
+      }
+
+      if (fix == null) {
+        tracking = false;
+        statusMessage = 'Could not get a GPS fix. Go outside and retry.';
+        await _persistSession();
+        notifyListeners();
+        return StartTrackingResult.failure(
+          title: 'No GPS signal',
+          message: 'Could not get your location. Move to an open area and '
+              'try Start Tracking again.',
+          route: route,
+        );
+      }
+
+      var snapshot = RouteProgressService.snapToRoute(
+        route: route,
+        lat: fix.latitude,
+        lng: fix.longitude,
+      );
+
+      // ── Auto-detect the trip start ──
+      // "Wrong" is shown ONLY when the conductor's live location is not near
+      // ANY stop in the entered route's stop list. Otherwise the trip
+      // continues from the detected place, with every earlier stop marked
+      // completed.
+      //
+      // Match order:
+      //   1. On the route corridor between stops (mid-segment start) -> exact.
+      //   2. Within 1 km of any stop in the route's stop list -> that stop.
+      //   3. Otherwise -> wrong From-To (with the nearest real stop shown).
+      var currentIndex = -1;
+      var onDetectedPosition = false;
+
+      // nearest stop in THIS route's stop list
+      ({int index, double distanceKm})? nearestOnRoute;
+      for (var i = 0; i < route.stopIds.length; i++) {
+        final s = VizagStops.get(route.stopIds[i]);
+        if (s == null || !s.hasCoordinates) continue;
+        final d = LocationService.distanceKm(
+            fix.latitude, fix.longitude, s.lat, s.lng);
+        if (nearestOnRoute == null || d < nearestOnRoute.distanceKm) {
+          nearestOnRoute = (index: i, distanceKm: d);
+        }
+      }
+
+      if (snapshot != null && snapshot.distanceFromRouteKm <= 1.0) {
+        currentIndex = snapshot.currentStopIndex;
+        onDetectedPosition = true;
+      } else if (nearestOnRoute != null &&
+          nearestOnRoute.distanceKm <= 1.0) {
+        currentIndex = nearestOnRoute.index;
+        snapshot = null;
+      } else {
+        final detected = _nearestStopTo(fix.latitude, fix.longitude);
+        tracking = false;
+        statusMessage = _t(
+          'Your location is not on this route',
+          '\u0c2e\u0c40 \u0c38\u0c4d\u0c25\u0c3e\u0c28\u0c02 \u0c08 \u0c30\u0c42\u0c1f\u0c4d \u0c38\u0c4d\u0c1f\u0c3e\u0c2a\u0c4d\u0c32 \u0c1c\u0c3e\u0c2c\u0c3f\u0c24\u0c3e\u0c32\u0c4b \u0c32\u0c47\u0c26\u0c41',
+        );
+        await _persistSession();
+        notifyListeners();
+        return StartTrackingResult.failure(
+          title: _t('Location does not match this route',
+              '\u0c2e\u0c40 \u0c38\u0c4d\u0c25\u0c3e\u0c28\u0c02 \u0c08 \u0c30\u0c42\u0c1f\u0c4d \u0c15\u0c3f \u0c38\u0c30\u0c3f\u0c17\u0c3e \u0c32\u0c47\u0c26\u0c41'),
+          message: _t(
+            'Your GPS location is near '
+                '${detected?.name ?? 'an unknown stop'}'
+                '${detected != null ? ' (${detected.distanceKm.toStringAsFixed(1)} km away)' : ''}'
+                ', which is not in the stop list of '
+                '${route.number}: ${route.from} -> ${route.to}. '
+                'Pick the From - To that matches where the bus actually is.',
+            '\u0c2e\u0c40 GPS \u0c38\u0c4d\u0c25\u0c3e\u0c28\u0c02 '
+                '${detected?.name ?? '\u0c24\u0c46\u0c32\u0c3f\u0c2f\u0c28\u0c3f \u0c38\u0c4d\u0c1f\u0c3e\u0c2a\u0c4d'}'
+                '${detected != null ? ' (${detected.distanceKm.toStringAsFixed(1)} \u0c15\u0c3f.\u0c2e\u0c40 \u0c26\u0c42\u0c30\u0c02\u0c32\u0c4b)' : ''}'
+                ' \u0c26\u0c17\u0c4d\u0c17\u0c30 \u0c09\u0c02\u0c26\u0c3f, \u0c07\u0c26\u0c3f '
+                '${route.number}: ${route.from} -> ${route.to} '
+                '\u0c38\u0c4d\u0c1f\u0c3e\u0c2a\u0c4d \u0c1c\u0c3e\u0c2c\u0c3f\u0c24\u0c3e\u0c32\u0c4b \u0c32\u0c47\u0c26\u0c41. '
+                '\u0c2c\u0c38\u0c4d\u0c38\u0c41 \u0c28\u0c3f\u0c1c\u0c02\u0c17\u0c3e \u0c09\u0c28\u0c4d\u0c28 \u0c2a\u0c4d\u0c30\u0c15\u0c3e\u0c30\u0c2e\u0c41 From - To \u0c0e\u0c02\u0c1a\u0c41\u0c15\u0c4b\u0c02\u0c21\u0c3f.',
+          ),
+          route: route,
+          detectedStopName: detected?.name,
+          detectedDistanceKm: detected?.distanceKm,
+        );
+      }
+
+      final toIndex = route.stopIds.indexOf(toId);
+      if (currentIndex > toIndex) {
+        tracking = false;
+        statusMessage = _t('You are already past the To stop',
+            '\u0c2e\u0c40\u0c30\u0c41 \u0c07\u0c2a\u0c4d\u0c2a\u0c1f\u0c3f\u0c15\u0c47 To \u0c38\u0c4d\u0c1f\u0c3e\u0c2a\u0c4d \u0c26\u0c3e\u0c1f\u0c3f\u0c2a\u0c4b\u0c2f\u0c3e\u0c30\u0c41');
+        await _persistSession();
+        notifyListeners();
+        return StartTrackingResult.failure(
+          title: _t('Beyond the destination', '\u0c17\u0c2e\u0c4d\u0c2f\u0c02 \u0c26\u0c3e\u0c1f\u0c3f\u0c2a\u0c4b\u0c2f\u0c3f\u0c02\u0c26\u0c3f'),
+          message: _t(
+              'You are past ${VizagStops.get(toId)?.name ?? toId} already. '
+              'Reverse the direction or pick a different From - To.',
+              '${VizagStops.get(toId)?.name ?? toId} '
+              '\u0c15\u0c3f \u0c2e\u0c40\u0c30\u0c41 \u0c07\u0c2a\u0c4d\u0c2a\u0c1f\u0c3f\u0c15\u0c47 \u0c26\u0c3e\u0c1f\u0c3f\u0c2a\u0c4b\u0c2f\u0c3e\u0c30\u0c41. '
+              '\u0c26\u0c3f\u0c36 \u0c2e\u0c3e\u0c30\u0c4d\u0c1a\u0c02\u0c21\u0c3f \u0c32\u0c47\u0c26\u0c3e From - To \u0c2e\u0c3e\u0c30\u0c4d\u0c1a\u0c02\u0c21\u0c3f.'),
+          route: route,
+        );
+      }
+
+      selectedRoute = route.routeId;
+      // The trip now really starts from the detected position — every stop
+      // before it counts as completed.
+      tripFromStopId = route.stopIds[currentIndex];
+      tripToStopId = toId;
       tracking = true;
       _lastCloudSyncSucceeded = true;
       _lastCloudSyncError = null;
-      statusMessage = 'Starting live tracking...';
-      await _resolveCurrentStopFromLocation();
+
+      selectedStopId = route.stopIds[currentIndex];
+      if (onDetectedPosition && snapshot != null) {
+        // snapped mid-segment: keep the exact progress
+        _applyProgressSnapshot(snapshot);
+      } else {
+        // started at a stop: progress begins at 0, previous stops completed
+        _resetManualProgressForSelectedStop();
+      }
+      final startName =
+          VizagStops.get(selectedStopId!)?.name ?? selectedStopId!;
+      statusMessage =
+          '${_t('Tracking from', 'ట్రాకింగ్ ప్రారంభము')} $startName';
       await _persistSession();
       notifyListeners();
 
       await _startPositionStream();
       await syncNow();
-      return true;
+      return const StartTrackingResult.ok();
     } finally {
       _starting = false;
     }
+  }
+
+  /// Nearest coordinate-bearing stop to a raw GPS fix — used to tell the
+  /// conductor where they actually are when the From-To doesn't match.
+  ({String name, double distanceKm})? _nearestStopTo(double lat, double lng) {
+    ({String name, double distanceKm})? best;
+    for (final stop in VizagStops.list) {
+      if (!stop.hasCoordinates) continue;
+      final d = LocationService.distanceKm(lat, lng, stop.lat, stop.lng);
+      if (best == null || d < best.distanceKm) {
+        best = (name: stop.name, distanceKm: d);
+      }
+    }
+    return best;
   }
 
   Future<void> syncNow() async {
@@ -273,6 +608,25 @@ class ConductorTrackingService extends ChangeNotifier {
             returnRoute.stopIds.contains(currentStop)
         ? currentStop
         : (returnRoute.stopIds.isNotEmpty ? returnRoute.stopIds.first : null);
+
+    // Mirror the custom trip range onto the return direction: the old To
+    // becomes the new From (and vice versa) when both stops exist on the
+    // return route, otherwise fall back to the return route's full range.
+    final mirroredFrom = tripToStopId != null &&
+            returnRoute.stopIds.contains(tripToStopId!)
+        ? tripToStopId!
+        : (returnRoute.stopIds.isNotEmpty ? returnRoute.stopIds.first : null);
+    final mirroredTo = tripFromStopId != null &&
+            returnRoute.stopIds.contains(tripFromStopId!)
+        ? tripFromStopId!
+        : (returnRoute.stopIds.length >= 2
+            ? returnRoute.stopIds.last
+            : null);
+    tripFromStopId = mirroredFrom;
+    tripToStopId = mirroredTo;
+    if (selectedStopId == null && mirroredFrom != null) {
+      selectedStopId = mirroredFrom;
+    }
 
     if (lastLat != null && lastLng != null) {
       final snapshot = RouteProgressService.snapToRoute(
@@ -551,6 +905,7 @@ class ConductorTrackingService extends ChangeNotifier {
         effectiveSpeedKmh: _effectiveSpeedKmh,
         etaToNextStopMins: nextStopEtaMins,
         busType: resolvedBusType,
+        tripToStopId: tripToStopId,
       );
     } catch (e) {
       cloudSyncFailed = true;
@@ -916,8 +1271,19 @@ class ConductorTrackingService extends ChangeNotifier {
 
     final currentName =
         VizagStops.get(selectedStopId!)?.name ?? selectedStopId!;
+    final reachedTripEnd = tripToStopId != null &&
+        selectedStopId == tripToStopId &&
+        (nextId == null || nextId.isEmpty || nextId == tripToStopId) &&
+        (_segmentProgress ?? 0) >= 0.98;
+    if (reachedTripEnd) {
+      return '${_t('Reached', 'చేరుకుంది')} $currentName · '
+          '${_t('trip complete', 'ట్రిప్ పూర్తయింది')} · '
+          '${_t('updated', 'అప్డేట్')} ${_timeAgo(updateTime)}';
+    }
+
     if (nextId == null || nextId.isEmpty) {
-      return 'Reached $currentName · updated ${_timeAgo(updateTime)}';
+      return '${_t('Reached', 'చేరుకుంది')} $currentName · '
+          '${_t('updated', 'అప్డేట్')} ${_timeAgo(updateTime)}';
     }
 
     final nextName = VizagStops.get(nextId)?.name ?? nextId;
@@ -926,7 +1292,9 @@ class ConductorTrackingService extends ChangeNotifier {
     final distanceLabel = _distanceToNextStopKm == null
         ? ''
         : ' · ${_distanceToNextStopKm!.toStringAsFixed(2)} km left';
-    return 'Passed $currentName · $progressPct% to $nextName$distanceLabel · updated ${_timeAgo(updateTime)}';
+    return '${_t('Passed', 'దాటింది')} $currentName · '
+        '$progressPct% ${_t('to', 'కఁ')} $nextName$distanceLabel · '
+        '${_t('updated', 'అప్డేట్')} ${_timeAgo(updateTime)}';
   }
 
   void _ensureManualStopSelected() {
@@ -1023,6 +1391,23 @@ class ConductorTrackingService extends ChangeNotifier {
       await permission_handler.Permission.locationAlways.request();
     }
 
+    // Battery-optimization exemption: without it, aggressive battery savers
+    // (Doze/Vivo/Oppo/Realme etc.) can silently kill the background location
+    // stream mid-trip. The system dialog is only shown once; skipping the
+    // request never blocks tracking.
+    try {
+      final batteryStatus =
+          await permission_handler.Permission.ignoreBatteryOptimizations.status;
+      if (!batteryStatus.isGranted) {
+        await permission_handler.Permission.ignoreBatteryOptimizations
+            .request();
+      }
+    } catch (e) {
+      debugPrint(
+        'ConductorTrackingService: battery optimization request skipped: $e',
+      );
+    }
+
     final finalPermission = await Geolocator.checkPermission();
     return finalPermission == LocationPermission.whileInUse ||
         finalPermission == LocationPermission.always;
@@ -1055,6 +1440,38 @@ class ConductorTrackingService extends ChangeNotifier {
     lastLat = prefs.getDouble(prefsKeyLat);
     lastLng = prefs.getDouble(prefsKeyLng);
     lastSpeed = prefs.getDouble(prefsKeySpeed);
+
+    tripFromStopId = prefs.getString(prefsKeyTripFrom);
+    tripToStopId = prefs.getString(prefsKeyTripTo);
+    draftRouteHint = prefs.getString(prefsKeyRouteHint);
+    final restoredRoute = activeRoute;
+    if (restoredRoute == null) {
+      tripFromStopId = null;
+      tripToStopId = null;
+    } else {
+      if (tripFromStopId == null ||
+          !restoredRoute.stopIds.contains(tripFromStopId!)) {
+        tripFromStopId = restoredRoute.stopIds.isEmpty
+            ? null
+            : restoredRoute.stopIds.first;
+      }
+      if (tripToStopId == null ||
+          !restoredRoute.stopIds.contains(tripToStopId!)) {
+        tripToStopId = restoredRoute.stopIds.length < 2
+            ? null
+            : restoredRoute.stopIds.last;
+      }
+      final fromIdx = restoredRoute.stopIds.indexOf(tripFromStopId!);
+      final toIdx = restoredRoute.stopIds.indexOf(tripToStopId!);
+      if (fromIdx < 0 || toIdx < 0 || fromIdx >= toIdx) {
+        tripFromStopId = restoredRoute.stopIds.isEmpty
+            ? null
+            : restoredRoute.stopIds.first;
+        tripToStopId = restoredRoute.stopIds.length < 2
+            ? null
+            : restoredRoute.stopIds.last;
+      }
+    }
 
     final updateMs = prefs.getInt(prefsKeyUpdateMs);
     lastUpdate =
@@ -1113,6 +1530,24 @@ class ConductorTrackingService extends ChangeNotifier {
       await prefs.setString(prefsKeyStopId, selectedStopId!);
     } else {
       await prefs.remove(prefsKeyStopId);
+    }
+
+    if (tripFromStopId != null) {
+      await prefs.setString(prefsKeyTripFrom, tripFromStopId!);
+    } else {
+      await prefs.remove(prefsKeyTripFrom);
+    }
+
+    if (tripToStopId != null) {
+      await prefs.setString(prefsKeyTripTo, tripToStopId!);
+    } else {
+      await prefs.remove(prefsKeyTripTo);
+    }
+
+    if (draftRouteHint != null) {
+      await prefs.setString(prefsKeyRouteHint, draftRouteHint!);
+    } else {
+      await prefs.remove(prefsKeyRouteHint);
     }
 
     if (selectedBusType != null) {
@@ -1175,6 +1610,9 @@ class ConductorTrackingService extends ChangeNotifier {
     await prefs.remove(prefsKeySpeed);
     await prefs.remove(prefsKeyUpdateMs);
     await prefs.remove(prefsKeyAutoStop);
+    await prefs.remove(prefsKeyTripFrom);
+    await prefs.remove(prefsKeyTripTo);
+    await prefs.remove(prefsKeyRouteHint);
   }
 
   String _timeAgo(DateTime t) {
@@ -1183,4 +1621,30 @@ class ConductorTrackingService extends ChangeNotifier {
     if (diff < 60) return '${diff}s ago';
     return '${diff ~/ 60}m ago';
   }
+}
+
+/// Result of [ConductorTrackingService.startTracking].
+class StartTrackingResult {
+  final bool ok;
+  final String? title;
+  final String? message;
+  final BusRoute? route;
+  final String? detectedStopName;
+  final double? detectedDistanceKm;
+
+  const StartTrackingResult.ok()
+      : ok = true,
+        title = null,
+        message = null,
+        route = null,
+        detectedStopName = null,
+        detectedDistanceKm = null;
+
+  const StartTrackingResult.failure({
+    required this.title,
+    required this.message,
+    this.route,
+    this.detectedStopName,
+    this.detectedDistanceKm,
+  }) : ok = false;
 }

@@ -1,131 +1,164 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../data/vizag_data.dart';
+import '../models/bus.dart';
 import '../services/app_provider.dart';
+import '../services/location_service.dart';
+import '../utils/app_language.dart';
 import '../utils/app_theme.dart';
 import '../widgets/shared_widgets.dart';
 import '../widgets/staff_mode_access.dart';
 import '../widgets/stop_search.dart';
+import 'bus_journey_screen.dart';
 import 'route_results_screen.dart';
 import 'stop_detail_screen.dart';
-import 'beacon_screen.dart';
+
+/// The nearby stop this bus will reach next (if any), with its ETA.
+({BusStop stop, int eta})? _nearestApproach(AppProvider p, LiveBus bus) {
+  for (final stop in p.nearbyStops) {
+    if (!bus.canBoardAtStop(stop.id)) continue;
+    return (stop: stop, eta: p.etaToStopMins(bus, stop.id));
+  }
+  return null;
+}
+
+String _crowdTelugu(LiveBus bus) {
+  switch (bus.crowd) {
+    case BusCrowd.empty:
+      return 'ఖాళీ';
+    case BusCrowd.moderate:
+      return 'మధ్యస్థము';
+    case BusCrowd.full:
+      return 'నిండిపోయింది';
+  }
+}
+
+double? _busDistanceKm(AppProvider p, LiveBus bus) {
+  final pos = p.userPos;
+  if (pos == null) return null;
+  return LocationService.distanceKm(pos.latitude, pos.longitude, bus.lat, bus.lng);
+}
+
+/// Live buses sorted closest -> farthest from the user; buses without a
+/// usable position go last, freshest first.
+List<LiveBus> _busesByDistance(AppProvider p) {
+  final list = [...p.buses];
+  list.sort((a, b) {
+    final da = _busDistanceKm(p, a);
+    final db = _busDistanceKm(p, b);
+    if (da == null && db == null) {
+      return b.lastUpdated.compareTo(a.lastUpdated);
+    }
+    if (da == null) return 1;
+    if (db == null) return -1;
+    return da.compareTo(db);
+  });
+  return list;
+}
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<AppProvider>(builder: (context, p, _) {
-      return Scaffold(
-        backgroundColor: AppTheme.bg,
-        body: SafeArea(
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: _TopBar(p: p),
-              ),
-              SliverToBoxAdapter(
-                child: _SearchPanel(p: p),
-              ),
-              if (p.nearbyStops.isNotEmpty)
-                SliverToBoxAdapter(
-                  child: _NearbyStopChips(stops: p.nearbyStops),
-                ),
-              SliverToBoxAdapter(
-                child: SectionHeader(
-                  'Buses near you',
-                  subtitle: p.hasLocation
-                      ? '${p.nearbyBuses.length} buses incoming'
-                      : 'Enable location for live buses',
-                  action: p.busLoading
-                      ? const SizedBox(
-                          width: 14,
-                          height: 14,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 1.5,
-                            color: AppTheme.green,
-                          ),
-                        )
-                      : null,
-                ),
-              ),
-              if (!p.hasLocation && !p.locLoading)
-                const SliverToBoxAdapter(
-                  child: EmptyState(
-                    'Location not available',
-                    sub: 'Allow location access to see nearby buses',
-                    icon: Icons.location_off_outlined,
+    return AnimatedBuilder(
+      animation: AppLanguage.instance,
+      builder: (context, _) => Consumer<AppProvider>(
+        builder: (context, p, _) {
+          final lang = AppLanguage.instance;
+          return Scaffold(
+            backgroundColor: AppTheme.bg,
+            body: SafeArea(
+              child: CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: _TopBar(p: p, lang: lang),
                   ),
-                )
-              else if (p.locLoading)
-                const SliverToBoxAdapter(
-                  child: Padding(
-                    padding: EdgeInsets.all(32),
-                    child: Center(
-                      child: CircularProgressIndicator(
-                        color: AppTheme.green,
-                        strokeWidth: 1.5,
-                      ),
+                  SliverToBoxAdapter(
+                    child: _SearchPanel(p: p, lang: lang),
+                  ),
+                  if (p.nearbyStops.isNotEmpty)
+                    SliverToBoxAdapter(
+                      child: _NearbyStopChips(stops: p.nearbyStops),
+                    ),
+                  SliverToBoxAdapter(
+                    child: SectionHeader(
+                      lang.t('Live buses', 'లైవ్ బస్సులు'),
+                      subtitle: p.hasLocation
+                          ? lang.t(
+                              '${p.buses.length} on the road · ${p.nearbyBuses.length} near you',
+                              'రోడ్డుపై ${p.buses.length} · మీ దగ్గర ${p.nearbyBuses.length}')
+                          : lang.t(
+                              '${p.buses.length} on the road',
+                              'రోడ్డుపై ${p.buses.length}'),
+                      action: p.busLoading
+                          ? const SizedBox(
+                              width: 14,
+                              height: 14,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 1.5,
+                                color: AppTheme.green,
+                              ),
+                            )
+                          : null,
                     ),
                   ),
-                )
-              else if (p.nearbyBuses.isEmpty)
-                const SliverToBoxAdapter(
-                  child: EmptyState(
-                    'No buses nearby right now',
-                    sub: 'Try searching FROM -> TO to find routes',
-                  ),
-                )
-              else
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (_, i) => IncomingBusCard(
-                        p.nearbyBuses[i],
-                        onTap: () => Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) =>
-                                StopDetailScreen(stop: p.nearbyBuses[i].stop),
-                          ),
+                  if (p.buses.isEmpty)
+                    SliverToBoxAdapter(
+                      child: EmptyState(
+                        lang.t(
+                            'No buses running right now',
+                            'ప్రస్తుతం బస్సులు లేవు'),
+                        sub: lang.t(
+                            'Buses appear here the moment a conductor starts a trip',
+                            'కండక్టర్ ట్రిప్ ప్రారంభించగానే బస్సులు ఇక్కడ కనిపిస్తాయి'),
+                      ),
+                    )
+                  else
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16),
+                      sliver: SliverList(
+                        delegate: SliverChildBuilderDelegate(
+                          (context, i) {
+                            final bus = _busesByDistance(p)[i];
+                            final nearby = _nearestApproach(p, bus);
+                            return _LiveBusCard(
+                              bus: bus,
+                              approachStop: nearby?.stop,
+                              etaMins: nearby?.eta,
+                              distanceKm: _busDistanceKm(p, bus),
+                              onTap: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (_) => BusJourneyScreen(
+                                    bus: bus,
+                                    stop: nearby?.stop ??
+                                        VizagStops.resolve(bus.currentStopId),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                          childCount: p.buses.length,
                         ),
                       ),
-                      childCount: p.nearbyBuses.length,
                     ),
-                  ),
-                ),
-              const SliverToBoxAdapter(child: SizedBox(height: 100)),
-            ],
-          ),
-        ),
-        floatingActionButton: FloatingActionButton.extended(
-          onPressed: () => Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => const BeaconScreen()),
-          ),
-          backgroundColor: AppTheme.green,
-          foregroundColor: Colors.white,
-          icon: Icon(
-            p.beacon.isActive ? Icons.wifi_tethering : Icons.wifi_tethering_off,
-            size: 18,
-          ),
-          label: Text(
-            p.beacon.isActive ? 'Beacon ON' : 'Beacon',
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 13,
+                  const SliverToBoxAdapter(child: SizedBox(height: 100)),
+                ],
+              ),
             ),
-          ),
-        ),
-      );
-    });
+
+          );
+        },
+      ),
+    );
   }
 }
 
 class _TopBar extends StatelessWidget {
   final AppProvider p;
-  const _TopBar({required this.p});
+  final AppLanguage lang;
+  const _TopBar({required this.p, required this.lang});
 
   @override
   Widget build(BuildContext context) {
@@ -154,47 +187,27 @@ class _TopBar extends StatelessWidget {
                       color: AppTheme.green.withValues(alpha: 0.8),
                     ),
                   ),
-                  const SizedBox(height: 2),
-                  const Text(
-                    'v2.0 live',
-                    style: TextStyle(
-                      fontSize: 10,
-                      color: AppTheme.textMuted,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
                 ],
               ),
               const Spacer(),
+              // Language toggle: English / తెలుగు
               Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                 decoration: BoxDecoration(
-                  color: AppTheme.greenDim,
+                  color: AppTheme.card,
                   borderRadius: BorderRadius.circular(999),
-                  border: Border.all(
-                    color: AppTheme.green.withValues(alpha: 0.3),
-                    width: 0.5,
-                  ),
+                  border: Border.all(color: AppTheme.border, width: 0.5),
                 ),
                 child: Row(
                   children: [
-                    Container(
-                      width: 6,
-                      height: 6,
-                      decoration: const BoxDecoration(
-                        color: AppTheme.green,
-                        shape: BoxShape.circle,
-                      ),
+                    _LangChip(
+                      label: 'English',
+                      selected: !lang.isTelugu,
+                      onTap: () => AppLanguage.instance.setTelugu(false),
                     ),
-                    const SizedBox(width: 5),
-                    Text(
-                      '${p.buses.length} live',
-                      style: const TextStyle(
-                        fontSize: 11,
-                        color: AppTheme.green,
-                        fontWeight: FontWeight.w600,
-                      ),
+                    _LangChip(
+                      label: 'తెలుగు',
+                      selected: lang.isTelugu,
+                      onTap: () => AppLanguage.instance.setTelugu(true),
                     ),
                   ],
                 ),
@@ -204,11 +217,13 @@ class _TopBar extends StatelessWidget {
           const SizedBox(height: 14),
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: _ModeCard(
                   icon: Icons.people_alt_outlined,
-                  title: 'Passenger Mode',
-                  subtitle: 'Search routes and live buses',
+                  title: lang.t('Passenger Mode', 'ప్రయాణికుల మోడ్'),
+                  subtitle: lang.t(
+                    'Search routes and live buses',
+                    'రూట్లు, లైవ్ బస్సుల వెతకండి'),
                   color: AppTheme.blue,
                   active: true,
                 ),
@@ -217,8 +232,10 @@ class _TopBar extends StatelessWidget {
               Expanded(
                 child: _ModeCard(
                   icon: Icons.badge_outlined,
-                  title: 'Staff Mode',
-                  subtitle: 'Enter password for conductor tracking',
+                  title: lang.t('Staff Mode', 'స్టాఫ్ మోడ్'),
+                  subtitle: lang.t(
+                    'Enter password for conductor tracking',
+                    'కండక్టర్ ట్రాకింగ్ కోసం పాస్‌వర్డ్ నిల్లండండి'),
                   color: AppTheme.green,
                   onTap: () => showStaffModeAccessSheet(context),
                 ),
@@ -226,6 +243,41 @@ class _TopBar extends StatelessWidget {
             ],
           ),
         ],
+      ),
+    );
+  }
+}
+
+class _LangChip extends StatelessWidget {
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  const _LangChip({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 150),
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: selected ? AppTheme.green : Colors.transparent,
+          borderRadius: BorderRadius.circular(999),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            color: selected ? Colors.white : AppTheme.textSecondary,
+            fontSize: 12,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
       ),
     );
   }
@@ -322,7 +374,15 @@ class _ModeCard extends StatelessWidget {
 
 class _SearchPanel extends StatelessWidget {
   final AppProvider p;
-  const _SearchPanel({required this.p});
+  final AppLanguage lang;
+  const _SearchPanel({required this.p, required this.lang});
+
+  void _swapStops() {
+    final from = p.fromStop;
+    final to = p.toStop;
+    p.setFromStop(to);
+    p.setToStop(from);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -337,22 +397,27 @@ class _SearchPanel extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Find a route',
-            style: TextStyle(
-              fontSize: 13,
-              fontWeight: FontWeight.w600,
-              color: AppTheme.textPrimary,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text(
+                lang.t('Find a route', 'మార్గం వెతకండి'),
+                style: const TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w700,
+                  color: AppTheme.textPrimary,
+                ),
+              ),
+            ],
           ),
-          const SizedBox(height: 10),
+          const SizedBox(height: 12),
           Row(
             children: [
               const _DotLine(color: AppTheme.green),
               const SizedBox(width: 10),
               Expanded(
                 child: StopSearchField(
-                  hint: 'From stop',
+                  hint: lang.t('From stop', 'ఎక్కడ నుండి'),
                   value: p.fromStop,
                   exclude: p.toStop,
                   onSelected: p.setFromStop,
@@ -370,19 +435,43 @@ class _SearchPanel extends StatelessWidget {
               const SizedBox(width: 10),
               Expanded(
                 child: StopSearchField(
-                  hint: 'To stop',
+                  hint: lang.t('To stop', 'ఎక్కడికి'),
                   value: p.toStop,
                   exclude: p.fromStop,
                   onSelected: p.setToStop,
                 ),
               ),
+              const SizedBox(width: 10),
+              // Swap From <-> To (AbhiBus-style helper for common mistakes).
+              SizedBox(
+                width: 54,
+                height: 54,
+                child: OutlinedButton(
+                  onPressed: (p.fromStop != null || p.toStop != null)
+                      ? _swapStops
+                      : null,
+                  style: OutlinedButton.styleFrom(
+                    padding: EdgeInsets.zero,
+                    side: const BorderSide(color: AppTheme.border, width: 0.5),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                  child: const Icon(
+                    Icons.swap_vert,
+                    size: 22,
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+              ),
             ],
           ),
           if (p.fromStop != null && p.toStop != null) ...[
-            const SizedBox(height: 12),
+            const SizedBox(height: 14),
             SizedBox(
               width: double.infinity,
-              child: ElevatedButton(
+              height: 52,
+              child: ElevatedButton.icon(
                 onPressed: () => Navigator.push(
                   context,
                   MaterialPageRoute(
@@ -397,22 +486,172 @@ class _SearchPanel extends StatelessWidget {
                   foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   elevation: 0,
                 ),
-                child: const Text(
-                  'Search buses',
-                  style: TextStyle(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w600,
+                icon: const Icon(Icons.search, size: 20),
+                label: Text(
+                  lang.t('Search buses', 'బస్సులు వెతకండి'),
+                  style: const TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
               ),
             ),
           ],
+          const SizedBox(height: 14),
+          const _RouteNumberQuickSearch(),
         ],
       ),
+    );
+  }
+}
+
+class _RouteNumberQuickSearch extends StatefulWidget {
+  const _RouteNumberQuickSearch();
+
+  @override
+  State<_RouteNumberQuickSearch> createState() =>
+      _RouteNumberQuickSearchState();
+}
+
+class _RouteNumberQuickSearchState extends State<_RouteNumberQuickSearch> {
+  final _ctrl = TextEditingController();
+
+  void _openRoute() {
+    final raw = _ctrl.text.trim().toUpperCase();
+    if (raw.isEmpty) return;
+    final query = raw.endsWith('-R') ? raw.substring(0, raw.length - 2) : raw;
+    final route = VizagRoutes.byNumber(query);
+    FocusScope.of(context).unfocus();
+
+    if (route == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: AppTheme.card,
+          content: Text(
+            'Route $query not found. Try the route number on the bus.',
+            style: const TextStyle(color: AppTheme.textPrimary),
+          ),
+        ),
+      );
+      return;
+    }
+
+    // Live buses on this route number: open the live journey directly —
+    // that is what "where is my bus right now" means.
+    final provider = context.read<AppProvider>();
+    final liveBuses = provider.buses
+        .where((b) => b.routeNumber == route.number)
+        .toList()
+      ..sort((a, b) => b.lastUpdated.compareTo(a.lastUpdated));
+
+    if (liveBuses.isNotEmpty) {
+      final bus = liveBuses.first;
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (_) => BusJourneyScreen(
+            bus: bus,
+            stop: VizagStops.resolve(bus.currentStopId),
+          ),
+        ),
+      );
+      return;
+    }
+
+    final origin = VizagStops.resolve(route.origin);
+    final terminus = VizagStops.resolve(route.terminus);
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (_) => RouteResultsScreen(from: origin, to: terminus),
+      ),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          crossAxisAlignment: CrossAxisAlignment.end,
+          children: [
+            Text(
+              AppLanguage.instance.t(
+                  'Know the route number?', 'బస్సు నంబర్ తెలుసా?'),
+              style: const TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.w600,
+                color: AppTheme.textSecondary,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          height: 50,
+          decoration: BoxDecoration(
+            color: AppTheme.card,
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: AppTheme.border, width: 0.5),
+          ),
+          child: Row(
+            children: [
+              const SizedBox(width: 14),
+              const Icon(
+                Icons.directions_bus_outlined,
+                size: 20,
+                color: AppTheme.textSecondary,
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: TextField(
+                  controller: _ctrl,
+                  textCapitalization: TextCapitalization.characters,
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: AppTheme.textPrimary,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  decoration: const InputDecoration(
+                    hintText: 'e.g. 28K, 10K, 300C',
+                    hintStyle: TextStyle(
+                      fontSize: 15,
+                      color: AppTheme.textMuted,
+                      fontWeight: FontWeight.w400,
+                    ),
+                    border: InputBorder.none,
+                    isDense: true,
+                    contentPadding: EdgeInsets.zero,
+                  ),
+                  onSubmitted: (_) => _openRoute(),
+                ),
+              ),
+              TextButton(
+                onPressed: _openRoute,
+                style: TextButton.styleFrom(
+                  foregroundColor: AppTheme.green,
+                  textStyle: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                child: const Text('GO'),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }
@@ -449,6 +688,186 @@ class _VLine extends StatelessWidget {
   }
 }
 
+/// Compact live card: route, where the bus is right now, and (when the bus
+/// serves a stop near the user) the ETA to that stop. Tap opens the journey.
+class _LiveBusCard extends StatelessWidget {
+  final LiveBus bus;
+  final BusStop? approachStop;
+  final int? etaMins;
+  final double? distanceKm;
+  final VoidCallback onTap;
+
+  const _LiveBusCard({
+    required this.bus,
+    required this.onTap,
+    this.approachStop,
+    this.etaMins,
+    this.distanceKm,
+  });
+
+  String _timeAgo(DateTime t) {
+    final diff = DateTime.now().difference(t).inSeconds;
+    if (diff < 10) return 'just now';
+    if (diff < 60) return '${diff}s ago';
+    return '${diff ~/ 60}m ago';
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final lang = AppLanguage.instance;
+    final dist = distanceKm;
+    final currentName =
+        VizagStops.resolve(bus.segmentStartIdResolved).name;
+    final nextId = bus.segmentEndIdResolved;
+    final nextName = nextId.isEmpty ? '' : VizagStops.resolve(nextId).name;
+    final progressPct = (bus.segmentProgressResolved * 100).round();
+    final stale = bus.isStale;
+
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: AppTheme.surface,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: stale
+                ? const Color(0xFFBA7517).withValues(alpha: 0.4)
+                : AppTheme.border,
+            width: 0.5,
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                RouteBadge(bus.routeNumber),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    bus.displayBusIdentity,
+                    style: const TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 14,
+                      fontWeight: FontWeight.w700,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                if (approachStop != null && etaMins != null)
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 10,
+                      vertical: 5,
+                    ),
+                    decoration: BoxDecoration(
+                      color: AppTheme.green.withValues(alpha: 0.14),
+                      borderRadius: BorderRadius.circular(999),
+                      border: Border.all(
+                        color: AppTheme.green.withValues(alpha: 0.4),
+                        width: 0.5,
+                      ),
+                    ),
+                    child: Text(
+                      '$etaMins min to ${approachStop!.name}',
+                      style: const TextStyle(
+                        color: AppTheme.green,
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: AppTheme.green,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 6),
+                Expanded(
+                  child: Text(
+                    nextName.isEmpty
+                        ? lang.t('At', 'వద్ద') + ' $currentName'
+                        : lang.t('Passed', 'దాటింది') + ' $currentName -> '
+                            + lang.t('Next', 'తదుపరి') + ': $nextName',
+                    style: const TextStyle(
+                      color: AppTheme.textPrimary,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                Text(
+                  '$progressPct%',
+                  style: const TextStyle(
+                    color: AppTheme.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 6),
+            Row(
+              children: [
+                if (dist != null) ...[
+                  const Icon(
+                    Icons.near_me_outlined,
+                    size: 12,
+                    color: AppTheme.textMuted,
+                  ),
+                  const SizedBox(width: 4),
+                  Text(
+                    dist < 1
+                        ? '${(dist * 1000).round()} ${lang.t('m away', 'మీ దూరంలో')}'
+                        : '${dist.toStringAsFixed(1)} ${lang.t('km away', 'కి.మీ దూరంలో')}',
+                    style: const TextStyle(
+                      color: AppTheme.textSecondary,
+                      fontSize: 11,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                ],
+                Text(
+                  stale
+                      ? lang.t('Last seen', 'చివరిగా కనిపించింది')
+                      : lang.t('Updated', 'అప్డేట్'),
+                  style: const TextStyle(
+                    color: AppTheme.textMuted,
+                    fontSize: 11,
+                  ),
+                ),
+                Text(
+                  ' ${_timeAgo(bus.lastUpdated)}'
+                  ' · ${lang.t(bus.crowdLabel, _crowdTelugu(bus))}'
+                  ' · ' + lang.t('tap for live journey', 'లైవ్ జర్నీ కోసం నొక్కండి'),
+                  style: const TextStyle(
+                    color: AppTheme.textMuted,
+                    fontSize: 11,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 class _NearbyStopChips extends StatelessWidget {
   final List<BusStop> stops;
   const _NearbyStopChips({required this.stops});
@@ -458,10 +877,10 @@ class _NearbyStopChips extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Padding(
-          padding: EdgeInsets.fromLTRB(16, 4, 16, 8),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 8),
           child: Text(
-            'Nearby stops',
+            AppLanguage.instance.t('Nearby stops', 'సమీపం స్టాప్లు'),
             style: TextStyle(
               fontSize: 12,
               color: AppTheme.textSecondary,
@@ -470,7 +889,7 @@ class _NearbyStopChips extends StatelessWidget {
           ),
         ),
         SizedBox(
-          height: 34,
+          height: 44,
           child: ListView.separated(
             scrollDirection: Axis.horizontal,
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -487,7 +906,7 @@ class _NearbyStopChips extends StatelessWidget {
                 ),
                 child: Container(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                   decoration: BoxDecoration(
                     color: AppTheme.card,
                     borderRadius: BorderRadius.circular(999),
@@ -497,16 +916,16 @@ class _NearbyStopChips extends StatelessWidget {
                     children: [
                       const Icon(
                         Icons.place_outlined,
-                        size: 12,
+                        size: 16,
                         color: AppTheme.textSecondary,
                       ),
-                      const SizedBox(width: 4),
+                      const SizedBox(width: 6),
                       Text(
                         stop.name,
                         style: const TextStyle(
-                          fontSize: 12,
+                          fontSize: 14,
                           color: AppTheme.textPrimary,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
                     ],

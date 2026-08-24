@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../screens/conductor_screen.dart';
+import '../utils/app_language.dart';
 import '../utils/app_theme.dart';
 
 const String staffAccessPassword = 'vizag2026';
@@ -50,12 +51,15 @@ class _StaffModeAccessSheet extends StatefulWidget {
 
 class _StaffModeAccessSheetState extends State<_StaffModeAccessSheet> {
   final TextEditingController _controller = TextEditingController();
+  final FocusNode _passwordFocus = FocusNode();
   bool _submitting = false;
+  bool _obscure = true;
   String? _error;
 
   @override
   void dispose() {
     _controller.dispose();
+    _passwordFocus.dispose();
     super.dispose();
   }
 
@@ -77,6 +81,7 @@ class _StaffModeAccessSheetState extends State<_StaffModeAccessSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final lang = AppLanguage.instance;
     final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
 
     return SafeArea(
@@ -91,7 +96,7 @@ class _StaffModeAccessSheetState extends State<_StaffModeAccessSheet> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                widget.title,
+                lang.t(widget.title, 'స్టాఫ్ మోడ్'),
                 style: const TextStyle(
                   color: AppTheme.textPrimary,
                   fontSize: 18,
@@ -100,7 +105,10 @@ class _StaffModeAccessSheetState extends State<_StaffModeAccessSheet> {
               ),
               const SizedBox(height: 6),
               Text(
-                widget.subtitle,
+                lang.t(
+                  'Enter the staff password to open conductor tracking.',
+                  'కండక్టర్ ట్రాకింగ్ తెరవడానికి స్టాఫ్ పాస్‌వర్డ్ నిల్లండండి.',
+                ),
                 style: const TextStyle(
                   color: AppTheme.textSecondary,
                   fontSize: 13,
@@ -109,17 +117,30 @@ class _StaffModeAccessSheetState extends State<_StaffModeAccessSheet> {
               const SizedBox(height: 16),
               TextField(
                 controller: _controller,
+                focusNode: _passwordFocus,
                 autofocus: true,
-                obscureText: true,
+                obscureText: _obscure,
+                enableSuggestions: false,
+                autocorrect: false,
                 enabled: !_submitting,
                 textInputAction: TextInputAction.done,
                 style: const TextStyle(color: AppTheme.textPrimary),
                 decoration: InputDecoration(
-                  hintText: 'Staff password',
+                  hintText: lang.t('Staff password', 'స్టాఫ్ పాస్‌వర్డ్'),
                   hintStyle: const TextStyle(color: AppTheme.textMuted),
                   filled: true,
                   fillColor: AppTheme.card,
                   errorText: _error,
+                  suffixIcon: IconButton(
+                    onPressed: () => setState(() => _obscure = !_obscure),
+                    icon: Icon(
+                      _obscure
+                          ? Icons.visibility_outlined
+                          : Icons.visibility_off_outlined,
+                      size: 20,
+                      color: AppTheme.textSecondary,
+                    ),
+                  ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide: const BorderSide(color: AppTheme.border),
@@ -162,7 +183,7 @@ class _StaffModeAccessSheetState extends State<_StaffModeAccessSheet> {
                           ),
                         )
                       : Text(
-                          widget.buttonLabel,
+                          lang.t('Open Staff Mode', 'స్టాఫ్ మోడ్ తెరవండి'),
                           style: const TextStyle(fontWeight: FontWeight.w700),
                         ),
                 ),

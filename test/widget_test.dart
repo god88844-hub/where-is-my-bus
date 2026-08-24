@@ -22,10 +22,12 @@ void main() {
     expect(outboundReverse!.returnRouteNumber, '28K');
     expect(inbound.returnRouteNumber, '68K-R');
     expect(inboundReverse!.returnRouteNumber, '68K');
-    expect(outboundReverse.from, 'Kothavalasa');
+    expect(outboundReverse.from, 'Kothavalasa JN');
     expect(outboundReverse.to, 'RK Beach');
-    expect(inboundReverse.from, 'RK Beach');
-    expect(inboundReverse.to, 'Kothavalasa');
+    // In the Excel both 28K and 68K run RK Beach -> Kothavalasa JN, so both
+    // reverses head back to RK Beach.
+    expect(inboundReverse.from, 'Kothavalasa JN');
+    expect(inboundReverse.to, 'RK Beach');
   });
 
   test(
@@ -80,15 +82,15 @@ void main() {
       id: 'demo',
       routeKey: '28K',
       routeNumber: '28K',
-      currentStopId: 'nad_junction',
-      nextStopId: 'gopalapatnam',
+      currentStopId: 'nad',
+      nextStopId: 'baji_jn',
       lat: 17.7,
       lng: 83.3,
       lastUpdated: DateTime.now(),
     );
 
-    expect(bus.isApproachingStop('gopalapatnam'), isTrue);
-    expect(bus.isApproachingStop('rtc_complex'), isFalse);
+    expect(bus.isApproachingStop('baji_jn'), isTrue);
+    expect(bus.isApproachingStop('rk_beach'), isFalse);
   });
 
   testWidgets('route badge renders the public route number',
@@ -107,15 +109,15 @@ void main() {
   testWidgets('reverse 28K journey screen keeps timeline rows visible',
       (WidgetTester tester) async {
     final route = VizagRoutes.byRouteId('28K-R')!;
-    final stop = VizagStops.resolve('chinnamushidivada');
+    final stop = VizagStops.resolve('chinnamusidivada');
     final bus = LiveBus(
       id: 'demo_reverse_28k',
       routeKey: route.routeId,
       routeNumber: '28K',
       currentStopId: stop.id,
-      nextStopId: 'sujatha_nagar',
+      nextStopId: 'sujathanagar',
       segmentStartStopId: stop.id,
-      segmentEndStopId: 'sujatha_nagar',
+      segmentEndStopId: 'sujathanagar',
       segmentProgress: 0,
       etaToNextStopMins: 5,
       remainingRouteKm: 22.9,
@@ -139,40 +141,30 @@ void main() {
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 500));
 
-    expect(find.text('Kothavalasa -> RK Beach'), findsWidgets);
-    expect(find.textContaining('Tap this live card to reveal'), findsOneWidget);
-    expect(find.text('Chinnamushidivada'), findsOneWidget);
-    expect(find.text('Kothavalasa Junction'), findsNothing);
-
-    await tester.tap(find.textContaining('Tap this live card to reveal'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
-
-    expect(find.textContaining('Showing all stops. Tap to return'),
-        findsOneWidget);
+    // All Excel stops are owner-curated, so the full timeline is always
+    // visible — no expand-to-reveal step. The list is lazy, so assert the
+    // stops around the bus position.
+    expect(find.text('Kothavalasa JN -> RK Beach'), findsWidgets);
+    expect(find.text('Chinnamusidivada'), findsOneWidget);
+    expect(find.text('Sujathanagar', skipOffstage: false), findsOneWidget);
     expect(
-      find.text('Kothavalasa Junction', skipOffstage: false),
-      findsOneWidget,
+      find.textContaining('Tap this live card to reveal'),
+      findsNothing,
     );
-    expect(
-      find.text('Kothavalasa Railway Station', skipOffstage: false),
-      findsOneWidget,
-    );
-    expect(find.text('Mangalapalem', skipOffstage: false), findsOneWidget);
   });
 
   testWidgets('reverse 300C journey screen keeps corridor stops visible',
       (WidgetTester tester) async {
     final route = VizagRoutes.byRouteId('300C-R')!;
-    final stop = VizagStops.resolve('pendurti_college');
+    final stop = VizagStops.resolve('pendurthi');
     final bus = LiveBus(
       id: 'demo_reverse_300c',
       routeKey: route.routeId,
       routeNumber: '300C',
       currentStopId: 'gopalapatnam',
-      nextStopId: 'vepagunta',
+      nextStopId: 'simhachalam_railway_station',
       segmentStartStopId: 'gopalapatnam',
-      segmentEndStopId: 'vepagunta',
+      segmentEndStopId: 'simhachalam_railway_station',
       segmentProgress: 0.3,
       etaToNextStopMins: 4,
       remainingRouteKm: 18.2,
@@ -196,13 +188,14 @@ void main() {
     await tester.pump(const Duration(milliseconds: 500));
 
     expect(find.text('Chodavaram -> RTC Complex'), findsWidgets);
-    expect(find.textContaining('Tap this live card to reveal'), findsOneWidget);
-
-    await tester.tap(find.textContaining('Tap this live card to reveal'));
-    await tester.pump();
-    await tester.pump(const Duration(milliseconds: 500));
-
-    expect(find.textContaining('Showing all stops. Tap to return'),
-        findsOneWidget);
+    expect(find.text('Gopalapatnam', skipOffstage: false), findsOneWidget);
+    expect(
+      find.text('Simhachalam Railway Station', skipOffstage: false),
+      findsOneWidget,
+    );
+    expect(
+      find.textContaining('Tap this live card to reveal'),
+      findsNothing,
+    );
   });
 }

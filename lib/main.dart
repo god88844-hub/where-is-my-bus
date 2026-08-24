@@ -6,10 +6,12 @@ import 'firebase_options.dart';
 import 'screens/home_screen.dart';
 import 'services/app_provider.dart';
 import 'services/conductor_tracking_service.dart';
+import 'utils/app_language.dart';
 import 'utils/app_theme.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await AppLanguage.instance.load();
 
   SystemChrome.setSystemUIOverlayStyle(const SystemUiOverlayStyle(
     statusBarColor: Colors.transparent,
