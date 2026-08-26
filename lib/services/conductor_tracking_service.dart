@@ -122,12 +122,23 @@ class ConductorTrackingService extends ChangeNotifier {
     }
   }
 
+  /// True when [route] contains both stops and [from] comes before [to].
+  bool _servesInOrder(BusRoute route, String from, String to) {
+    final fi = route.stopIds.indexOf(from);
+    final ti = route.stopIds.indexOf(to);
+    return fi >= 0 && ti > fi;
+  }
+
   /// Resolves the route that will carry this trip.
   ///
-  /// An explicit route hint (typed route id) wins — it must serve the
-  /// From -> To range in order. Without a hint, the route with the MOST stops
-  /// between From and To across the whole network is chosen (the corridor
-  /// that serves both stops most directly).
+  /// An explicit route hint (typed route id) wins when it serves the
+  /// From -> To range in order. When the hint points at the OPPOSITE
+  /// direction of the picked range — the normal "trip finished, bus turns
+  /// around" case — its return route is used automatically so reversing
+  /// never dead-ends in a "route id does not match" error. As a last
+  /// resort (route id is optional; From - To defines the trip) the route
+  /// with the MOST stops between From and To across the whole network is
+  /// chosen.
   BusRoute? resolveTripRoute() {
     final from = tripFromStopId;
     final to = tripToStopId;
@@ -137,20 +148,29 @@ class ConductorTrackingService extends ChangeNotifier {
     if (hint != null && hint.isNotEmpty) {
       final hinted =
           VizagRoutes.byRouteId(hint) ?? VizagRoutes.byNumber(hint);
-      if (hinted == null) return null;
-      final fi = hinted.stopIds.indexOf(from);
-      final ti = hinted.stopIds.indexOf(to);
-      if (fi < 0 || ti <= fi) return null;
-      return hinted;
+      if (hinted != null) {
+        if (_servesInOrder(hinted, from, to)) {
+          return hinted;
+        }
+        // The conductor reversed direction: accept the hinted route's
+        // return trip when it serves From -> To.
+        final returnId = hinted.returnRouteNumber;
+        final back =
+            returnId == null ? null : VizagRoutes.byRouteId(returnId);
+        if (back != null && _servesInOrder(back, from, to)) {
+          return back;
+        }
+      }
+      // Hint unusable for this pair — fall through to the network search
+      // instead of hard-failing; Start Tracking reports only when nothing
+      // at all can carry From -> To.
     }
 
     BusRoute? best;
     var bestSpan = -1;
     for (final r in VizagRoutes.all) {
-      final fi = r.stopIds.indexOf(from);
-      final ti = r.stopIds.indexOf(to);
-      if (fi < 0 || ti <= fi) continue;
-      final span = ti - fi;
+      if (!_servesInOrder(r, from, to)) continue;
+      final span = r.stopIds.indexOf(to) - r.stopIds.indexOf(from);
       if (span > bestSpan) {
         best = r;
         bestSpan = span;
@@ -175,21 +195,39 @@ class ConductorTrackingService extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _reresolveSelectedRoute() {
-    final route = resolveTripRoute();
-    selectedRoute = route?.routeId;
-    if (route == null) {
-      _clearProgressState();
-    }
+  /// The route number passengers will see: exactly what the conductor
+  /// typed in the route id field — free text, so brand-new numbers work
+  /// without a data update. Null when the trip should display only its
+  /// From -> To (the field is optional).
+  String? get publishedRouteNumber {
+    final t = draftRouteHint?.trim();
+    return (t == null || t.isEmpty) ? null : t;
   }
 
-  /// Selecting a route from the picker pins the hint and defaults the trip
-  /// range to the full route.
+  void _reresolveSelectedRoute() {
+    final route = resolveTripRoute();
+    if (route != null) {
+      // The resolved route is only the internal geometry corridor (stop
+      // order, geofencing, ETA). The typed route id is never rewritten —
+      // it is the display label passengers see.
+      selectedRoute = route.routeId;
+    } else if (draftRouteHint == null || draftRouteHint!.isEmpty) {
+      // No hint and no valid From - To yet — clear the route.
+      selectedRoute = null;
+      _clearProgressState();
+    }
+    // With a hint that fails to resolve, keep the last selected route so the
+    // UI (reverse button, stop lists) stays intact; Start Tracking surfaces
+    // the mismatch error.
+  }
+
+  /// Selecting a route from the picker pins its number as the display
+  /// label and defaults the trip range to the full route.
   Future<void> setDraftRoute(BusRoute route) async {
     if (tracking) {
       throw StateError('Stop tracking before changing the route');
     }
-    draftRouteHint = route.routeId;
+    draftRouteHint = route.number;
     selectedRoute = route.routeId;
     if (selectedStopId != null && !route.stopIds.contains(selectedStopId)) {
       selectedStopId = null;
@@ -318,27 +356,13 @@ class ConductorTrackingService extends ChangeNotifier {
 
       var route = resolveTripRoute();
       if (route == null) {
+        // Nothing in the network carries From -> To in this direction.
         final hint = draftRouteHint?.trim();
-        if (hint != null && hint.isNotEmpty) {
-          final hinted =
-              VizagRoutes.byRouteId(hint) ?? VizagRoutes.byNumber(hint);
-          statusMessage = hinted == null
-              ? 'Route $hint not found'
-              : 'Route $hint does not run between the picked From and To stops';
-          await _persistSession();
-          notifyListeners();
-          return StartTrackingResult.failure(
-            title: 'Route id does not match',
-            message: hinted == null
-                ? 'Route "$hint" was not found. Clear it or correct it.'
-                : 'Route "$hint" does not run between '
-                    '${VizagStops.get(fromId)?.name ?? fromId} and '
-                    '${VizagStops.get(toId)?.name ?? toId}. '
-                    'Check the From - To stops or clear the route id.',
-            route: hinted,
-          );
-        }
-        statusMessage = 'No route found between the picked stops';
+        final hintMentioned = hint == null || hint.isEmpty
+            ? ''
+            : ' Route id "$hint" does not serve these stops either.';
+        statusMessage =
+            'No route found between the picked stops';
         await _persistSession();
         notifyListeners();
         return StartTrackingResult.failure(
@@ -346,9 +370,14 @@ class ConductorTrackingService extends ChangeNotifier {
           message: 'No bus route in the network runs from '
               '${VizagStops.get(fromId)?.name ?? fromId} to '
               '${VizagStops.get(toId)?.name ?? toId} in that direction. '
-              'Check the From - To stops.',
+              'Check the From - To stops.$hintMentioned',
         );
       }
+
+      // The resolved route is only the internal geometry corridor; the
+      // number passengers see stays exactly what the conductor typed
+      // (empty when they left the route id blank).
+      selectedRoute = route.routeId;
 
       final permission = await _ensurePermission();
       if (!permission) {
@@ -573,8 +602,9 @@ class ConductorTrackingService extends ChangeNotifier {
         sampleTime: sampleTime,
       );
       _advanceStopFromLocation(lat: lat, lng: lng);
-    } catch (_) {
+    } catch (e) {
       // Keep fallback stop coordinates when the live fix fails.
+      debugPrint('ConductorTrackingService: sync GPS fix failed: $e');
     }
 
     _ensureManualStopSelected();
@@ -603,6 +633,10 @@ class ConductorTrackingService extends ChangeNotifier {
     await stopDebugSimulation(resumeGps: false);
     final currentStop = selectedStopId;
     selectedRoute = returnRoute.routeId;
+    // The typed route number is the bus's public number — it does NOT
+    // change on the return trip (28K back from Kothavalasa is still 28K),
+    // so draftRouteHint is left untouched. Only the internal geometry
+    // corridor flips to the return direction.
     _clearProgressState();
     selectedStopId = currentStop != null &&
             returnRoute.stopIds.contains(currentStop)
@@ -612,16 +646,38 @@ class ConductorTrackingService extends ChangeNotifier {
     // Mirror the custom trip range onto the return direction: the old To
     // becomes the new From (and vice versa) when both stops exist on the
     // return route, otherwise fall back to the return route's full range.
-    final mirroredFrom = tripToStopId != null &&
+    var mirroredFrom = tripToStopId != null &&
             returnRoute.stopIds.contains(tripToStopId!)
         ? tripToStopId!
         : (returnRoute.stopIds.isNotEmpty ? returnRoute.stopIds.first : null);
-    final mirroredTo = tripFromStopId != null &&
+    var mirroredTo = tripFromStopId != null &&
             returnRoute.stopIds.contains(tripFromStopId!)
         ? tripFromStopId!
         : (returnRoute.stopIds.length >= 2
             ? returnRoute.stopIds.last
             : null);
+    // Guard against inconsistent data: on the return route From must come
+    // before To, otherwise the next Start Tracking would fail validation.
+    if (mirroredFrom != null && mirroredTo != null) {
+      final fi = returnRoute.stopIds.indexOf(mirroredFrom);
+      final ti = returnRoute.stopIds.indexOf(mirroredTo);
+      if (fi < 0 || ti <= fi) {
+        debugPrint(
+          'ConductorTrackingService: return route ${returnRoute.routeId} '
+          'does not order $mirroredFrom -> $mirroredTo; using full range',
+        );
+        mirroredFrom =
+            returnRoute.stopIds.isNotEmpty ? returnRoute.stopIds.first : null;
+        mirroredTo = returnRoute.stopIds.length >= 2
+            ? returnRoute.stopIds.last
+            : null;
+      }
+    }
+    if (mirroredFrom != null && mirroredFrom == mirroredTo) {
+      mirroredTo = returnRoute.stopIds.length >= 2
+          ? returnRoute.stopIds.last
+          : null;
+    }
     tripFromStopId = mirroredFrom;
     tripToStopId = mirroredTo;
     if (selectedStopId == null && mirroredFrom != null) {
@@ -724,7 +780,8 @@ class ConductorTrackingService extends ChangeNotifier {
     if (busId != null) {
       try {
         await _fs.deactivateBus(busId!);
-      } catch (_) {
+      } catch (e) {
+        debugPrint('ConductorTrackingService: deactivateBus failed: $e');
         cloudDeactivateFailed = true;
       }
     }
@@ -887,7 +944,7 @@ class ConductorTrackingService extends ChangeNotifier {
       await _fs.pushConductorLocation(
         busId: busId!,
         routeKey: activeRoute!.routeId,
-        routeNumber: activeRoute!.number,
+        routeNumber: publishedRouteNumber ?? '',
         busPlateNumber: '',
         lat: lat,
         lng: lng,
@@ -905,11 +962,19 @@ class ConductorTrackingService extends ChangeNotifier {
         effectiveSpeedKmh: _effectiveSpeedKmh,
         etaToNextStopMins: nextStopEtaMins,
         busType: resolvedBusType,
+        tripFromStopId: tripFromStopId,
         tripToStopId: tripToStopId,
       );
     } catch (e) {
       cloudSyncFailed = true;
       cloudSyncError = e.toString();
+      if (e.toString().contains('permission-denied')) {
+        // The device's Firebase user is not registered as a conductor.
+        debugPrint(
+          'ConductorTrackingService: permission-denied — register users/{uid}'
+          '.role = conductor in the Firebase console',
+        );
+      }
     }
 
     final updateTime = DateTime.now();
@@ -921,7 +986,8 @@ class ConductorTrackingService extends ChangeNotifier {
     _lastCloudSyncError = cloudSyncError;
     final progressMessage = _progressStatusMessage(updateTime);
     statusMessage = cloudSyncFailed
-        ? '$progressMessage · cloud sync failed'
+        ? '$progressMessage · '
+            '${AppLanguage.instance.t('cloud sync failed', 'క్లౌడ్‌కి పంపడం విఫలమైంది')}'
         : progressMessage;
     await _persistSession();
     notifyListeners();
@@ -1507,7 +1573,9 @@ class ConductorTrackingService extends ChangeNotifier {
         if (busId != null) {
           try {
             await _fs.deactivateBus(busId!);
-          } catch (_) {}
+          } catch (e) {
+            debugPrint('ConductorTrackingService: expiry deactivate failed: $e');
+          }
           busId = null;
         }
         await _clearPersistedSession();

@@ -1,10 +1,11 @@
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../data/vizag_data.dart';
 import '../screens/conductor_screen.dart';
+import '../services/firestore_service.dart';
 import '../utils/app_language.dart';
 import '../utils/app_theme.dart';
-
-const String staffAccessPassword = 'vizag2026';
 
 Future<void> showStaffModeAccessSheet(
   BuildContext context, {
@@ -64,11 +65,8 @@ class _StaffModeAccessSheetState extends State<_StaffModeAccessSheet> {
   }
 
   Future<void> _submit() async {
+    final lang = AppLanguage.instance;
     final value = _controller.text.trim();
-    if (value != staffAccessPassword) {
-      setState(() => _error = 'Invalid password');
-      return;
-    }
 
     FocusScope.of(context).unfocus();
     setState(() {
@@ -76,7 +74,132 @@ class _StaffModeAccessSheetState extends State<_StaffModeAccessSheet> {
       _error = null;
     });
 
+    // The entered password IS the shared staff account's Firebase Auth
+    // password. Verification, brute-force lockout and revocation (rotate
+    // the password in the console) are handled by Firebase Auth — nothing
+    // secret lives in the app binary and no per-device approval is needed.
+    final firestore = FirestoreService();
+    StaffAccessStatus status;
+    try {
+      status = await firestore.signInAsStaff(value);
+    } on FirebaseAuthException catch (e) {
+      await Future<void>.delayed(const Duration(milliseconds: 800));
+      if (!mounted) return;
+      setState(() {
+        _submitting = false;
+        if (e.code == 'network-requested' ||
+            e.code == 'network-request-failed') {
+          _error = lang.t(
+            'Could not verify right now — check internet and retry.',
+            'ఇప్పుడు సరిచూడలేం — ఇంటర్నెట్ తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.',
+          );
+        } else if (e.code == 'too-many-requests') {
+          _error = lang.t(
+            'Too many attempts — try again in a few minutes.',
+            'చాలా ప్రయత్నాలు — కొన్ని నిమిషాల్లో ప్రయత్నించండి.',
+          );
+        } else if (e.code == 'user-not-found' || e.code == 'operation-not-allowed') {
+          _error = 'Staff account not set up yet — create '
+              '${FirestoreService.staffEmail} in Firebase Authentication.';
+        } else {
+          _error = lang.t('Invalid password', 'తప్పు పాస్‌వర్డ్');
+        }
+      });
+      return;
+    } catch (e) {
+      debugPrint('StaffModeAccess: staff sign-in unavailable: $e');
+      if (!mounted) return;
+      final detail = e.toString();
+      final short =
+          detail.length > 160 ? '${detail.substring(0, 160)}…' : detail;
+      setState(() {
+        _submitting = false;
+        _error = lang.t(
+              'Could not verify right now — check internet and retry.',
+              'ఇప్పుడు సరిచూడలేం — ఇంటర్నెట్ తనిఖీ చేసి మళ్లీ ప్రయత్నించండి.',
+            ) +
+            ' ($short)';
+      });
+      return;
+    }
+
+    if (!mounted) return;
+
+    if (!status.isConductor) {
+      setState(() => _submitting = false);
+      // One-time setup: the shared staff account exists but the depot admin
+      // has not granted it the conductor role yet.
+      await _showConductorRegistrationDialog(context, status.uid);
+      return;
+    }
+
     Navigator.pop(context, true);
+  }
+
+  Future<void> _showConductorRegistrationDialog(
+    BuildContext dialogContext,
+    String uid,
+  ) {
+    final lang = AppLanguage.instance;
+    return showDialog<void>(
+      context: dialogContext,
+      builder: (dialogBuilder) => AlertDialog(
+        backgroundColor: AppTheme.surface,
+        title: Text(
+          lang.t('Conductor approval needed', 'కండక్టర్ ఆమోదం అవసరం'),
+          style: const TextStyle(
+            color: Color(0xFFBA7517),
+            fontSize: 17,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              lang.t(
+                'This device is not approved to publish live buses yet. '
+                'Send this code to the depot admin:',
+                '\u0c08 \u0c2b\u0c4b\u0c28\u0c4d \u0c07\u0c02\u0c15\u0c3e \u0c32\u0c48\u0c35\u0c4d \u0c2c\u0c38\u0c4d\u0c38\u0c41\u0c32 \u0c15\u0c4b\u0c38\u0c02 \u0c06\u0c2e\u0c4b\u0c26\u0c3f\u0c02\u0c1a\u0c2c\u0c21\u0c32\u0c47\u0c26\u0c41. '
+                    '\u0c08 \u0c15\u0c4b\u0c21\u0c4d \u0c21\u0c3f\u0c2a\u0c4b \u0c05\u0c2d\u0c4d\u0c2f\u0c02\u0c24\u0c4d\u0c30\u0c2f\u0c3f\u0c15\u0c41 \u0c2a\u0c02\u0c2a\u0c02\u0c21\u0c3f:'),
+              style:  TextStyle(
+                color: AppTheme.textSecondary,
+                fontSize: 13,
+                height: 1.4,
+              ),
+            ),
+            const SizedBox(height: 10),
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: AppTheme.card,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppTheme.border),
+              ),
+              child: SelectableText(
+                uid,
+                style:  TextStyle(
+                  color: AppTheme.textPrimary,
+                  fontSize: 13,
+                  fontWeight: FontWeight.w800,
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: Text(
+              lang.t('OK', '\u0c38\u0c30\u0c47'),
+              style:  TextStyle(color: AppTheme.green),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -97,7 +220,7 @@ class _StaffModeAccessSheetState extends State<_StaffModeAccessSheet> {
             children: [
               Text(
                 lang.t(widget.title, 'స్టాఫ్ మోడ్'),
-                style: const TextStyle(
+                style:  TextStyle(
                   color: AppTheme.textPrimary,
                   fontSize: 18,
                   fontWeight: FontWeight.w700,
@@ -109,7 +232,7 @@ class _StaffModeAccessSheetState extends State<_StaffModeAccessSheet> {
                   'Enter the staff password to open conductor tracking.',
                   'కండక్టర్ ట్రాకింగ్ తెరవడానికి స్టాఫ్ పాస్‌వర్డ్ నిల్లండండి.',
                 ),
-                style: const TextStyle(
+                style:  TextStyle(
                   color: AppTheme.textSecondary,
                   fontSize: 13,
                 ),
@@ -124,10 +247,10 @@ class _StaffModeAccessSheetState extends State<_StaffModeAccessSheet> {
                 autocorrect: false,
                 enabled: !_submitting,
                 textInputAction: TextInputAction.done,
-                style: const TextStyle(color: AppTheme.textPrimary),
+                style:  TextStyle(color: AppTheme.textPrimary),
                 decoration: InputDecoration(
                   hintText: lang.t('Staff password', 'స్టాఫ్ పాస్‌వర్డ్'),
-                  hintStyle: const TextStyle(color: AppTheme.textMuted),
+                  hintStyle:  TextStyle(color: AppTheme.textMuted),
                   filled: true,
                   fillColor: AppTheme.card,
                   errorText: _error,
@@ -143,15 +266,15 @@ class _StaffModeAccessSheetState extends State<_StaffModeAccessSheet> {
                   ),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppTheme.border),
+                    borderSide:  BorderSide(color: AppTheme.border),
                   ),
                   enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppTheme.border),
+                    borderSide:  BorderSide(color: AppTheme.border),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppTheme.green),
+                    borderSide:  BorderSide(color: AppTheme.green),
                   ),
                 ),
                 onSubmitted: (_) {

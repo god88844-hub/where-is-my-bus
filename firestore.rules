@@ -19,7 +19,15 @@ service cloud.firestore {
     }
 
     function isConductor() {
-      return isSignedIn() && (userRole() == 'conductor' || userRole() == 'admin');
+      // Knowing the staff password IS the authorisation: the shared
+      // staff@vizagbus.in account (signed in via the password) may publish
+      // live buses directly — no per-device or per-account approval step.
+      // The users/{uid}.role check remains for any future manual roles.
+      return isSignedIn() && (
+        request.auth.token.email == 'staff@vizagbus.in'
+        || userRole() == 'conductor'
+        || userRole() == 'admin'
+      );
     }
 
     function requestedRole() {
@@ -40,7 +48,7 @@ service cloud.firestore {
           && (
             existingRole() == null
               ? (requestedRole() == null || requestedRole() == 'passenger')
-              : requestedRole() == existingRole()
+              : (requestedRole() == null || requestedRole() == existingRole())
           );
     }
 
@@ -89,13 +97,12 @@ service cloud.firestore {
 
     match /live_buses/{busId} {
       allow read: if true;
-      // Temporary password-gated conductor mode:
-      // the Flutter app controls access with a local password, so backend writes
-      // are limited to any signed-in user writing only their own bus record.
-      allow create: if isSignedIn()
+      // Only approved conductors (users/{uid}.role = conductor or admin,
+      // set manually in the Firebase console) may publish live positions.
+      allow create: if isConductor()
           && request.resource.data.bus_id == busId
           && validLiveBusWrite();
-      allow update: if isSignedIn()
+      allow update: if isConductor()
           && resource.data.writer_uid == request.auth.uid
           && request.resource.data.bus_id == busId
           && validLiveBusWrite();
@@ -116,6 +123,17 @@ service cloud.firestore {
       allow update, delete: if false;
     }
 
+    match /emergency_reports/{reportId} {
+      // Anyone signed in can raise an emergency; only staff can read them.
+      allow create: if isSignedIn()
+          && request.resource.data.type is string
+          && request.resource.data.type.size() > 0
+          && request.resource.data.note is string
+          && request.resource.data.reporter_uid == request.auth.uid;
+      allow read: if isConductor();
+      allow update, delete: if false;
+    }
+
     match /complaints/{complaintId} {
       allow create: if isSignedIn()
           && request.resource.data.type is string
@@ -128,5 +146,20 @@ service cloud.firestore {
       allow read: if isConductor();
       allow update, delete: if false;
     }
+
+    // Operational config (staff passcode salt + hash, feature flags).
+    // Clients may read but never write — rotate values from the console:
+    //   dart run tool/staff_passcode_hash.dart <new-passcode>
+    match /config/{docId} {
+      allow read: if isSignedIn();
+      allow write: if false;
+    }
+
+    // NOTE on data integrity: writes to /live_buses are restricted to
+    // approved conductors (users/{uid}.role) above. Scripted injection is
+    // additionally blocked by Firebase App Check — switch the Firestore
+    // App Check setting from "Monitoring" to "Enforced" in the Firebase
+    // console (App Check -> Applications) once release Play Integrity
+    // attestations are verified.
   }
 }

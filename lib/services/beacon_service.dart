@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import '../utils/constants.dart';
 import 'firestore_service.dart';
@@ -63,7 +64,8 @@ class BeaconService {
           speedKmh: speed,
         );
       }
-    } catch (_) {
+    } catch (e) {
+      debugPrint('BeaconService: heartbeat push failed: $e');
       if (_lastPos != null) {
         await _fs.updatePassengerHeartbeat(
           sessionId: _sessionId!,

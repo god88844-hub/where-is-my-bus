@@ -1,6 +1,7 @@
 // lib/services/location_service.dart
 
 import 'dart:math';
+import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 
 class LocationService {
@@ -22,6 +23,9 @@ class LocationService {
       if (p == LocationPermission.denied || p == LocationPermission.deniedForever) return null;
       return await Geolocator.getCurrentPosition(
           desiredAccuracy: LocationAccuracy.medium);
-    } catch (_) { return null; }
+    } catch (e) {
+      debugPrint('LocationService.getCurrentPosition failed: $e');
+      return null;
+    }
   }
 }

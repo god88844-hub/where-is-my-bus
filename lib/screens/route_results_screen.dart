@@ -31,21 +31,21 @@ class RouteResultsScreen extends StatelessWidget {
       appBar: AppBar(
         backgroundColor: AppTheme.surface,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back,
+          icon:  Icon(Icons.arrow_back,
               size: 20, color: AppTheme.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text('${from.name} → ${to.name}',
-              style: const TextStyle(
+              style:  TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w600,
                   color: AppTheme.textPrimary)),
           Text('${from.nameTelugu} → ${to.nameTelugu}',
               style:
-                  const TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
+                   TextStyle(fontSize: 11, color: AppTheme.textSecondary)),
         ]),
-        bottom: const PreferredSize(
+        bottom:  PreferredSize(
           preferredSize: Size.fromHeight(0.5),
           child: Divider(height: 0.5, color: AppTheme.divider),
         ),
@@ -108,7 +108,7 @@ class _ResultsHeader extends StatelessWidget {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
+                  style:  TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w700,
                     color: AppTheme.textPrimary,
@@ -117,7 +117,7 @@ class _ResultsHeader extends StatelessWidget {
                 const SizedBox(height: 3),
                 Text(
                   subtitle,
-                  style: const TextStyle(
+                  style:  TextStyle(
                     fontSize: 12,
                     color: AppTheme.textSecondary,
                   ),
@@ -166,12 +166,12 @@ class _RouteResultCard extends StatelessWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(route.name,
-                          style: const TextStyle(
+                          style:  TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
                               color: AppTheme.textPrimary)),
                       Text(route.nameTelugu,
-                          style: const TextStyle(
+                          style:  TextStyle(
                               fontSize: 11, color: AppTheme.textSecondary)),
                     ],
                   ),
@@ -223,17 +223,17 @@ class _RouteResultCard extends StatelessWidget {
             ),
           ),
 
-          const Divider(color: AppTheme.divider, height: 1),
+           Divider(color: AppTheme.divider, height: 1),
 
           // ── Live buses on this route ──
           if (liveBuses.isEmpty)
             Padding(
               padding: const EdgeInsets.all(12),
               child: Row(children: [
-                const Icon(Icons.schedule, size: 13, color: AppTheme.textMuted),
+                 Icon(Icons.schedule, size: 13, color: AppTheme.textMuted),
                 const SizedBox(width: 6),
                 Text('Every ${route.frequencyMins} min · No live bus data',
-                    style: const TextStyle(
+                    style:  TextStyle(
                         fontSize: 12, color: AppTheme.textMuted)),
               ]),
             )
@@ -307,7 +307,7 @@ class _ConnectingRouteCard extends StatelessWidget {
                               fontSize: 13,
                             ),
                             if (i < result.legs.length - 1)
-                              const Icon(
+                               Icon(
                                 Icons.arrow_forward_rounded,
                                 size: 16,
                                 color: AppTheme.textMuted,
@@ -320,7 +320,7 @@ class _ConnectingRouteCard extends StatelessWidget {
                         transferLabel,
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style:  TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.w700,
                           color: AppTheme.textPrimary,
@@ -331,7 +331,7 @@ class _ConnectingRouteCard extends StatelessWidget {
                             '${result.totalStopCount} stops · ${result.changeCount} ${result.changeCount == 1 ? 'change' : 'changes'}',
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
+                        style:  TextStyle(
                           fontSize: 11,
                           color: AppTheme.textSecondary,
                         ),
@@ -347,7 +347,7 @@ class _ConnectingRouteCard extends StatelessWidget {
               ],
             ),
           ),
-          const Divider(color: AppTheme.divider, height: 1),
+           Divider(color: AppTheme.divider, height: 1),
           ..._buildLegRows(context),
         ],
       ),
@@ -446,7 +446,7 @@ class _ConnectionLegRow extends StatelessWidget {
                       '${leg.fromStop.name} → ${leg.toStop.name}',
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
+                      style:  TextStyle(
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                         color: AppTheme.textPrimary,
@@ -455,7 +455,7 @@ class _ConnectionLegRow extends StatelessWidget {
                     const SizedBox(height: 4),
                     Text(
                       '~${leg.rideMins} min ride · ${leg.stopCount} stops',
-                      style: const TextStyle(
+                      style:  TextStyle(
                         fontSize: 11,
                         color: AppTheme.textSecondary,
                       ),
@@ -470,7 +470,7 @@ class _ConnectionLegRow extends StatelessWidget {
                   Text(
                     trailingLabel,
                     textAlign: TextAlign.right,
-                    style: const TextStyle(
+                    style:  TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.w700,
                       color: AppTheme.amber,
@@ -478,7 +478,7 @@ class _ConnectionLegRow extends StatelessWidget {
                   ),
                   if (onTap != null) ...[
                     const SizedBox(height: 4),
-                    const Icon(
+                     Icon(
                       Icons.chevron_right_rounded,
                       size: 16,
                       color: AppTheme.textMuted,
@@ -507,7 +507,7 @@ class _TransferRow extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 10, 14, 10),
-      decoration: const BoxDecoration(
+      decoration:  BoxDecoration(
         border: Border(
           top: BorderSide(color: AppTheme.divider, width: 0.5),
           bottom: BorderSide(color: AppTheme.divider, width: 0.5),
@@ -515,7 +515,7 @@ class _TransferRow extends StatelessWidget {
       ),
       child: Row(
         children: [
-          const Icon(
+           Icon(
             Icons.transfer_within_a_station_rounded,
             size: 16,
             color: AppTheme.green,
@@ -526,7 +526,7 @@ class _TransferRow extends StatelessWidget {
               'Change buses at ${stop.name}',
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
+              style:  TextStyle(
                 fontSize: 12,
                 color: AppTheme.textPrimary,
                 fontWeight: FontWeight.w700,
@@ -536,7 +536,7 @@ class _TransferRow extends StatelessWidget {
           const SizedBox(width: 8),
           Text(
             '~$waitMins min wait',
-            style: const TextStyle(
+            style:  TextStyle(
               fontSize: 11,
               color: AppTheme.textSecondary,
               fontWeight: FontWeight.w600,
@@ -668,7 +668,7 @@ class _MiniTimeline extends StatelessWidget {
             Flexible(
               child: Text(
                 stops.first.name,
-                style: const TextStyle(
+                style:  TextStyle(
                     fontSize: 10,
                     color: AppTheme.textPrimary,
                     fontWeight: FontWeight.w500),
@@ -679,7 +679,7 @@ class _MiniTimeline extends StatelessWidget {
             Flexible(
               child: Text(
                 stops.last.name,
-                style: const TextStyle(
+                style:  TextStyle(
                     fontSize: 10,
                     color: AppTheme.textPrimary,
                     fontWeight: FontWeight.w500),
@@ -694,7 +694,7 @@ class _MiniTimeline extends StatelessWidget {
           const SizedBox(height: 6),
           Text(
             '$hiddenStopCount sub-stop${hiddenStopCount == 1 ? '' : 's'} hidden',
-            style: const TextStyle(
+            style:  TextStyle(
               fontSize: 10,
               color: AppTheme.textMuted,
               fontWeight: FontWeight.w600,
@@ -747,7 +747,7 @@ class _LiveBusRow extends StatelessWidget {
       onTap: onTap,
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-        decoration: const BoxDecoration(
+        decoration:  BoxDecoration(
           border: Border(
             top: BorderSide(color: AppTheme.divider, width: 0.5),
           ),
@@ -763,7 +763,7 @@ class _LiveBusRow extends StatelessWidget {
                 children: [
                   Text(
                     statusLabel,
-                    style: const TextStyle(
+                    style:  TextStyle(
                       fontSize: 12,
                       color: AppTheme.textPrimary,
                       fontWeight: FontWeight.w600,
@@ -837,7 +837,7 @@ class _NoDataFallback extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(
+             Icon(
               Icons.route_outlined,
               size: 44,
               color: AppTheme.textMuted,
@@ -848,7 +848,7 @@ class _NoDataFallback extends StatelessWidget {
                 'No bus data for this destination',
                 'ఈ గమ్యాలకు బస్సు సమాచారం లేదు'),
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style:  TextStyle(
                 color: AppTheme.textPrimary,
                 fontSize: 16,
                 fontWeight: FontWeight.w800,
@@ -860,7 +860,7 @@ class _NoDataFallback extends StatelessWidget {
                 'Our network does not cover it yet. Try a nearby stop, or search the trip in Google Maps.',
                 'మా నెట్వర్క్ ఇంకా అక్కడికి విస్తరించదు. పక్క స్టాప్ ప్రయత్నించండి లేదా Google Maps లో వెతకండి.'),
               textAlign: TextAlign.center,
-              style: const TextStyle(
+              style:  TextStyle(
                 color: AppTheme.textSecondary,
                 fontSize: 13,
                 height: 1.4,
@@ -875,7 +875,7 @@ class _NoDataFallback extends StatelessWidget {
               ),
               style: OutlinedButton.styleFrom(
                 foregroundColor: AppTheme.green,
-                side: const BorderSide(color: AppTheme.green, width: 0.8),
+                side:  BorderSide(color: AppTheme.green, width: 0.8),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),

@@ -2,15 +2,6 @@
 // ✏️  Replace TODO values before production build
 
 class AppConstants {
-  // ── Google Maps ──
-  // TODO: Replace with your Android Maps API key before enabling the map UI.
-  static const String googleMapsApiKey = 'YOUR_GOOGLE_MAPS_API_KEY';
-
-  // ── Firebase Realtime Database ──
-  // TODO: Replace after creating project at console.firebase.google.com
-  static const String firebaseDatabaseUrl =
-      'https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com';
-
   // ── Vizag centre coordinates ──
   static const double vizagLat = 17.724044586973633;
   static const double vizagLng = 83.30707513638193;
@@ -36,8 +27,4 @@ class AppConstants {
   static const int beaconIntervalSec   = 10;
   static const double minSpeedKmh      = 3.0;
 
-  // ── Firebase paths ──
-  static const String busLocPath   = 'bus_locations';
-  static const String manualPath   = 'manual_updates';
-  static const String reportPath   = 'crowd_reports';
 }

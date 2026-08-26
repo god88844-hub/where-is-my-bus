@@ -77,7 +77,7 @@ class _StopSearchFieldState extends State<StopSearchField> {
             child: Row(
               children: [
                 const SizedBox(width: 14),
-                const Icon(
+                 Icon(
                   Icons.search,
                   size: 20,
                   color: AppTheme.textSecondary,
@@ -87,11 +87,11 @@ class _StopSearchFieldState extends State<StopSearchField> {
                   child: TextField(
                   controller: _ctrl,
                   focusNode: _focus,
-                  style: const TextStyle(
+                  style:  TextStyle(
                       fontSize: 16, color: AppTheme.textPrimary),
                   decoration: InputDecoration(
                     hintText: widget.hint,
-                    hintStyle: const TextStyle(
+                    hintStyle:  TextStyle(
                         fontSize: 15, color: AppTheme.textMuted),
                     border: InputBorder.none,
                     isDense: true,
@@ -106,7 +106,7 @@ class _StopSearchFieldState extends State<StopSearchField> {
                     _ctrl.clear();
                     setState(() { _results = []; _open = false; });
                   },
-                  child: const Padding(
+                  child:  Padding(
                     padding: EdgeInsets.symmetric(horizontal: 12),
                     child: Icon(Icons.close, size: 18,
                         color: AppTheme.textSecondary),
@@ -142,7 +142,7 @@ class _StopSearchFieldState extends State<StopSearchField> {
                     decoration: BoxDecoration(
                       border: last
                           ? null
-                          : const Border(
+                          :  Border(
                               bottom: BorderSide(
                                 color: AppTheme.border,
                                 width: 0.5,
@@ -151,7 +151,7 @@ class _StopSearchFieldState extends State<StopSearchField> {
                     ),
                     child: Row(
                       children: [
-                        const Icon(
+                         Icon(
                           Icons.place_outlined,
                           size: 18,
                           color: AppTheme.textMuted,
@@ -161,13 +161,13 @@ class _StopSearchFieldState extends State<StopSearchField> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(stop.name,
-                                style: const TextStyle(
+                                style:  TextStyle(
                                     fontSize: 15,
                                     color: AppTheme.textPrimary,
                                     fontWeight: FontWeight.w600)),
                             if (stop.nameTelugu.isNotEmpty)
                               Text(stop.nameTelugu,
-                                  style: const TextStyle(
+                                  style:  TextStyle(
                                       fontSize: 12,
                                       color: AppTheme.textSecondary)),
                           ],

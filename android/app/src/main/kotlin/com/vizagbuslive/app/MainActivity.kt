@@ -1,4 +1,4 @@
-package com.example.vizag_bus_live
+package com.vizagbuslive.app
 
 import io.flutter.embedding.android.FlutterActivity
 

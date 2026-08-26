@@ -109,7 +109,7 @@ class _BusJourneyScreenState extends State<BusJourneyScreen> {
           backgroundColor: AppTheme.surface,
           title: const Text('Journey'),
         ),
-        body: const Center(
+        body:  Center(
           child: Text(
             'Route not found',
             style: TextStyle(color: AppTheme.textSecondary),
@@ -189,14 +189,15 @@ class _BusJourneyScreenState extends State<BusJourneyScreen> {
                 color: Colors.white,
               ),
             ),
-            Text(
-              '${route.from} -> ${route.to}',
-              style: const TextStyle(
-                fontSize: 12,
-                color: Colors.white70,
-                fontWeight: FontWeight.w600,
+            if (liveBus.routeNumber.trim().isNotEmpty)
+              Text(
+                '${route.from} -> ${route.to}',
+                style: const TextStyle(
+                  fontSize: 12,
+                  color: Colors.white70,
+                  fontWeight: FontWeight.w600,
+                ),
               ),
-            ),
           ],
         ),
       ),
@@ -241,7 +242,7 @@ class _BusJourneyScreenState extends State<BusJourneyScreen> {
                       updatedLabel == 'Updated just now'
                           ? lang.t('Updated just now', 'ఇప్పుడే అప్డేట్ అయింది')
                           : updatedLabel,
-                      style: const TextStyle(
+                      style:  TextStyle(
                         color: AppTheme.textMuted,
                         fontSize: 12,
                       ),
@@ -252,7 +253,7 @@ class _BusJourneyScreenState extends State<BusJourneyScreen> {
                 if (currentIdx >= 0 && nextIdx >= 0) ...[
                   Text(
                     '${lang.t('Next', 'తదుపరి')}: $nextName',
-                    style: const TextStyle(
+                    style:  TextStyle(
                       color: AppTheme.textPrimary,
                       fontSize: 18,
                       fontWeight: FontWeight.w800,
@@ -263,7 +264,7 @@ class _BusJourneyScreenState extends State<BusJourneyScreen> {
                     '$progressPct% ${lang.t('covered', 'పూర్తయింది')}'
                     '${nextEta != null ? ' · ${lang.t('ETA', 'చేరే సమయం')} $nextEta ${lang.t('min', 'నిమి')}' : ''}'
                     ' · $speedLabel · ${liveBus.crowdLabel}',
-                    style: const TextStyle(
+                    style:  TextStyle(
                       color: AppTheme.textSecondary,
                       fontSize: 13,
                       fontWeight: FontWeight.w500,
@@ -396,7 +397,7 @@ class _BusMarkerRow extends StatelessWidget {
             ),
             child: Text(
               '${AppLanguage.instance.t('Bus running', 'బస్సు వెలుతోంది')} · $progressPct% ${AppLanguage.instance.t('to', 'కఁ')} $nextName',
-              style: const TextStyle(
+              style:  TextStyle(
                 color: AppTheme.green,
                 fontSize: 13,
                 fontWeight: FontWeight.w800,
@@ -571,7 +572,7 @@ class _StopRow extends StatelessWidget {
                     telugu,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
-                    style: const TextStyle(
+                    style:  TextStyle(
                       color: AppTheme.textMuted,
                       fontSize: 11,
                     ),
@@ -599,7 +600,7 @@ class _StopRow extends StatelessWidget {
               if (isUserStop && eta != null)
                 Text(
                   '$eta min',
-                  style: const TextStyle(
+                  style:  TextStyle(
                     color: AppTheme.green,
                     fontSize: 14,
                     fontWeight: FontWeight.w800,

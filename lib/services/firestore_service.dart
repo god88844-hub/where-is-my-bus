@@ -17,6 +17,14 @@ class StaffAccessStatus {
 }
 
 class FirestoreService {
+  /// Username of the shared depot staff account. Not a secret — the
+  /// password is. Conductors sign in with this account, so approval is
+  /// granted ONCE to the account (users/{staffUid}.role = conductor) and
+  /// every device that knows the password becomes a conductor. Rotate the
+  /// password from the Firebase console (Authentication -> Users) to revoke
+  /// access; no app release, no per-device approval.
+  static const String staffEmail = 'staff@vizagbus.in';
+
   FirestoreService({
     FirebaseFirestore? db,
     FirebaseAuth? auth,
@@ -89,6 +97,25 @@ class FirestoreService {
     return StaffAccessStatus(uid: uid, role: role);
   }
 
+  /// Signs the device in with the shared staff account. The entered
+  /// passcode is the Firebase Auth password — verification, brute-force
+  /// protection and revocation are all handled by Firebase Auth. Signing
+  /// in as the staff account makes the device a conductor immediately:
+  /// no approval step anywhere.
+  /// Throws [FirebaseAuthException] on a wrong password or a missing
+  /// account (first-time setup).
+  Future<StaffAccessStatus> signInAsStaff(String password) async {
+    final cred = await _auth.signInWithEmailAndPassword(
+      email: staffEmail,
+      password: password,
+    );
+    final user = cred.user!;
+    await _ensureUserProfile(user);
+    // Password holders are conductors by definition — the security rules
+    // grant live_buses writes to this account's email directly.
+    return StaffAccessStatus(uid: user.uid, role: 'conductor');
+  }
+
   Future<StaffAccessStatus> requireConductorAccess() async {
     final status = await getStaffAccessStatus();
     if (!status.isConductor) {
@@ -122,6 +149,7 @@ class FirestoreService {
     int? etaToNextStopMins,
     BusType? busType,
     String? writerUid,
+    String? tripFromStopId,
     String? tripToStopId,
   }) async {
     await _db.collection('live_buses').doc(busId).set({
@@ -151,6 +179,7 @@ class FirestoreService {
       'crowd': crowd.index,
       'source': BusDataSource.beacon.index,
       'writer_uid': writerUid,
+      'trip_from_stop': tripFromStopId ?? '',
       'trip_to_stop': tripToStopId ?? '',
       'ts': FieldValue.serverTimestamp(),
       'active': true,
@@ -178,6 +207,7 @@ class FirestoreService {
     double? effectiveSpeedKmh,
     int? etaToNextStopMins,
     BusType? busType,
+    String? tripFromStopId,
     String? tripToStopId,
   }) async {
     final uid = await ensureUserId();
@@ -202,6 +232,7 @@ class FirestoreService {
       effectiveSpeedKmh: effectiveSpeedKmh,
       etaToNextStopMins: etaToNextStopMins,
       busType: busType,
+      tripFromStopId: tripFromStopId,
       tripToStopId: tripToStopId,
       writerUid: uid,
     );
@@ -225,19 +256,23 @@ class FirestoreService {
       for (final doc in snap.docs) {
         try {
           final d = doc.data();
-          final rawRoute = _stringValue(d['route'], fallback: '?');
+          // 'route' is the conductor-typed display number — publish it
+          // VERBATIM. The corridor (route_key) is internal GPS geometry and
+          // its number must never replace what the conductor typed. Legacy
+          // docs missing the field fall back to the corridor's number.
+          final published = d['route']?.toString();
           final routeKey = _stringValue(
             d['route_key'],
-            fallback: rawRoute,
+            fallback: published ?? '?',
           );
-          final route =
-              VizagRoutes.byRouteId(routeKey) ?? VizagRoutes.byNumber(rawRoute);
+          final route = VizagRoutes.byRouteId(routeKey) ??
+              VizagRoutes.byNumber(published ?? '?');
 
           buses.add(
             LiveBus(
               id: doc.id,
               routeKey: routeKey,
-              routeNumber: route?.number ?? rawRoute,
+              routeNumber: published ?? route?.number ?? '?',
               busType: _busTypeFromValue(d['bus_type']),
               busPlateNumber: _stringValue(d['bus_plate']),
               currentStopId: _stringValue(d['current_stop']),
@@ -259,6 +294,7 @@ class FirestoreService {
                   _nullableDoubleValue(d['effective_speed_kmh']),
               crowd: _crowdFromValue(d['crowd']),
               source: _sourceFromValue(d['source']),
+              tripFromStopId: _nullableStringValue(d['trip_from_stop']),
               tripToStopId: _nullableStringValue(d['trip_to_stop']),
               lastUpdated: _dateTimeValue(d['ts']),
             ),
@@ -448,6 +484,34 @@ class FirestoreService {
       return true;
     } catch (e) {
       debugPrint('FirestoreService.submitComplaint failed: $e');
+      return false;
+    }
+  }
+
+  /// Emergency report (women safety / breakdown / medical / accident).
+  /// Best-effort like complaints; GPS coordinates attached by the caller
+  /// when available.
+  Future<bool> submitEmergencyReport({
+    required String type,
+    String note = '',
+    double? lat,
+    double? lng,
+  }) async {
+    try {
+      final uid = await ensureUserId();
+      await _db.collection('emergency_reports').add({
+        'type': type,
+        'note': note,
+        'route': '',
+        'stop_id': '',
+        'lat': lat,
+        'lng': lng,
+        'reporter_uid': uid,
+        'ts': FieldValue.serverTimestamp(),
+      });
+      return true;
+    } catch (e) {
+      debugPrint('FirestoreService.submitEmergencyReport failed: $e');
       return false;
     }
   }

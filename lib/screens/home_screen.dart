@@ -9,6 +9,7 @@ import '../utils/app_theme.dart';
 import '../widgets/shared_widgets.dart';
 import '../widgets/staff_mode_access.dart';
 import '../widgets/stop_search.dart';
+import '../widgets/emergency_report_sheet.dart';
 import 'bus_journey_screen.dart';
 import 'route_results_screen.dart';
 import 'stop_detail_screen.dart';
@@ -68,6 +69,17 @@ class HomeScreen extends StatelessWidget {
           final lang = AppLanguage.instance;
           return Scaffold(
             backgroundColor: AppTheme.bg,
+            floatingActionButton: FloatingActionButton.extended(
+              heroTag: 'emergency_report',
+              onPressed: () => showEmergencyReportSheet(context),
+              backgroundColor: AppTheme.red,
+              foregroundColor: Colors.white,
+              icon: const Icon(Icons.emergency_outlined, size: 22),
+              label: Text(
+                lang.t('Report', 'నివేదిక'),
+                style: const TextStyle(fontWeight: FontWeight.w800),
+              ),
+            ),
             body: SafeArea(
               child: CustomScrollView(
                 slivers: [
@@ -92,7 +104,7 @@ class HomeScreen extends StatelessWidget {
                               '${p.buses.length} on the road',
                               'రోడ్డుపై ${p.buses.length}'),
                       action: p.busLoading
-                          ? const SizedBox(
+                          ?  SizedBox(
                               width: 14,
                               height: 14,
                               child: CircularProgressIndicator(
@@ -172,7 +184,7 @@ class _TopBar extends StatelessWidget {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
+                   Text(
                     'Vizag Bus Live',
                     style: TextStyle(
                       fontSize: 18,
@@ -190,6 +202,21 @@ class _TopBar extends StatelessWidget {
                 ],
               ),
               const Spacer(),
+              // Theme toggle: dark <-> light (white & blue)
+              IconButton(
+                tooltip: AppTheme.isDark
+                    ? lang.t('Light theme', 'తెల్ల థీమ్')
+                    : lang.t('Dark theme', 'నలుపు థీమ్'),
+                onPressed: () => ThemeController.instance.toggle(),
+                icon: Icon(
+                  AppTheme.isDark
+                      ? Icons.light_mode_outlined
+                      : Icons.dark_mode_outlined,
+                  size: 22,
+                  color: AppTheme.textSecondary,
+                ),
+              ),
+              const SizedBox(width: 4),
               // Language toggle: English / తెలుగు
               Container(
                 decoration: BoxDecoration(
@@ -350,7 +377,7 @@ class _ModeCard extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               title,
-              style: const TextStyle(
+              style:  TextStyle(
                 color: AppTheme.textPrimary,
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
@@ -359,7 +386,7 @@ class _ModeCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               subtitle,
-              style: const TextStyle(
+              style:  TextStyle(
                 color: AppTheme.textSecondary,
                 fontSize: 11,
                 height: 1.35,
@@ -402,7 +429,7 @@ class _SearchPanel extends StatelessWidget {
             children: [
               Text(
                 lang.t('Find a route', 'మార్గం వెతకండి'),
-                style: const TextStyle(
+                style:  TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w700,
                   color: AppTheme.textPrimary,
@@ -413,7 +440,7 @@ class _SearchPanel extends StatelessWidget {
           const SizedBox(height: 12),
           Row(
             children: [
-              const _DotLine(color: AppTheme.green),
+               _DotLine(color: AppTheme.green),
               const SizedBox(width: 10),
               Expanded(
                 child: StopSearchField(
@@ -431,7 +458,7 @@ class _SearchPanel extends StatelessWidget {
           ),
           Row(
             children: [
-              const _DotLine(color: AppTheme.red),
+               _DotLine(color: AppTheme.red),
               const SizedBox(width: 10),
               Expanded(
                 child: StopSearchField(
@@ -452,12 +479,12 @@ class _SearchPanel extends StatelessWidget {
                       : null,
                   style: OutlinedButton.styleFrom(
                     padding: EdgeInsets.zero,
-                    side: const BorderSide(color: AppTheme.border, width: 0.5),
+                    side:  BorderSide(color: AppTheme.border, width: 0.5),
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
                   ),
-                  child: const Icon(
+                  child:  Icon(
                     Icons.swap_vert,
                     size: 22,
                     color: AppTheme.textSecondary,
@@ -502,7 +529,7 @@ class _SearchPanel extends StatelessWidget {
             ),
           ],
           const SizedBox(height: 14),
-          const _RouteNumberQuickSearch(),
+                    _RouteNumberQuickSearch(),
         ],
       ),
     );
@@ -533,18 +560,22 @@ class _RouteNumberQuickSearchState extends State<_RouteNumberQuickSearch> {
           backgroundColor: AppTheme.card,
           content: Text(
             'Route $query not found. Try the route number on the bus.',
-            style: const TextStyle(color: AppTheme.textPrimary),
+            style:  TextStyle(color: AppTheme.textPrimary),
           ),
         ),
       );
       return;
     }
 
-    // Live buses on this route number: open the live journey directly —
-    // that is what "where is my bus right now" means.
+    // Live buses on this route number — matched by the published number
+    // (conductor-typed) OR by the corridor geometry, so buses running this
+    // path under a new/custom number still show up.
     final provider = context.read<AppProvider>();
     final liveBuses = provider.buses
-        .where((b) => b.routeNumber == route.number)
+        .where((b) =>
+            b.routeNumber == route.number ||
+            b.routeKey == route.routeId ||
+            b.routeKey == '${route.routeId}-R')
         .toList()
       ..sort((a, b) => b.lastUpdated.compareTo(a.lastUpdated));
 
@@ -589,7 +620,7 @@ class _RouteNumberQuickSearchState extends State<_RouteNumberQuickSearch> {
             Text(
               AppLanguage.instance.t(
                   'Know the route number?', 'బస్సు నంబర్ తెలుసా?'),
-              style: const TextStyle(
+              style:  TextStyle(
                 fontSize: 13,
                 fontWeight: FontWeight.w600,
                 color: AppTheme.textSecondary,
@@ -608,7 +639,7 @@ class _RouteNumberQuickSearchState extends State<_RouteNumberQuickSearch> {
           child: Row(
             children: [
               const SizedBox(width: 14),
-              const Icon(
+               Icon(
                 Icons.directions_bus_outlined,
                 size: 20,
                 color: AppTheme.textSecondary,
@@ -618,12 +649,12 @@ class _RouteNumberQuickSearchState extends State<_RouteNumberQuickSearch> {
                 child: TextField(
                   controller: _ctrl,
                   textCapitalization: TextCapitalization.characters,
-                  style: const TextStyle(
+                  style:  TextStyle(
                     fontSize: 16,
                     color: AppTheme.textPrimary,
                     fontWeight: FontWeight.w600,
                   ),
-                  decoration: const InputDecoration(
+                  decoration:  InputDecoration(
                     hintText: 'e.g. 28K, 10K, 300C',
                     hintStyle: TextStyle(
                       fontSize: 15,
@@ -743,12 +774,33 @@ class _LiveBusCard extends StatelessWidget {
           children: [
             Row(
               children: [
-                RouteBadge(bus.routeNumber),
+                bus.routeNumber.trim().isEmpty
+                    ? Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color: AppTheme.textSecondary.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color:
+                                AppTheme.textSecondary.withValues(alpha: 0.4),
+                            width: 0.5,
+                          ),
+                        ),
+                        child:  Icon(
+                          Icons.directions_bus_outlined,
+                          size: 14,
+                          color: AppTheme.textSecondary,
+                        ),
+                      )
+                    : RouteBadge(bus.routeNumber),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     bus.displayBusIdentity,
-                    style: const TextStyle(
+                    style:  TextStyle(
                       color: AppTheme.textPrimary,
                       fontSize: 14,
                       fontWeight: FontWeight.w700,
@@ -773,7 +825,7 @@ class _LiveBusCard extends StatelessWidget {
                     ),
                     child: Text(
                       '$etaMins min to ${approachStop!.name}',
-                      style: const TextStyle(
+                      style:  TextStyle(
                         color: AppTheme.green,
                         fontSize: 11,
                         fontWeight: FontWeight.w700,
@@ -788,7 +840,7 @@ class _LiveBusCard extends StatelessWidget {
                 Container(
                   width: 8,
                   height: 8,
-                  decoration: const BoxDecoration(
+                  decoration:  BoxDecoration(
                     color: AppTheme.green,
                     shape: BoxShape.circle,
                   ),
@@ -800,7 +852,7 @@ class _LiveBusCard extends StatelessWidget {
                         ? lang.t('At', 'వద్ద') + ' $currentName'
                         : lang.t('Passed', 'దాటింది') + ' $currentName -> '
                             + lang.t('Next', 'తదుపరి') + ': $nextName',
-                    style: const TextStyle(
+                    style:  TextStyle(
                       color: AppTheme.textPrimary,
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
@@ -811,7 +863,7 @@ class _LiveBusCard extends StatelessWidget {
                 ),
                 Text(
                   '$progressPct%',
-                  style: const TextStyle(
+                  style:  TextStyle(
                     color: AppTheme.textSecondary,
                     fontSize: 12,
                     fontWeight: FontWeight.w700,
@@ -823,7 +875,7 @@ class _LiveBusCard extends StatelessWidget {
             Row(
               children: [
                 if (dist != null) ...[
-                  const Icon(
+                   Icon(
                     Icons.near_me_outlined,
                     size: 12,
                     color: AppTheme.textMuted,
@@ -833,7 +885,7 @@ class _LiveBusCard extends StatelessWidget {
                     dist < 1
                         ? '${(dist * 1000).round()} ${lang.t('m away', 'మీ దూరంలో')}'
                         : '${dist.toStringAsFixed(1)} ${lang.t('km away', 'కి.మీ దూరంలో')}',
-                    style: const TextStyle(
+                    style:  TextStyle(
                       color: AppTheme.textSecondary,
                       fontSize: 11,
                       fontWeight: FontWeight.w600,
@@ -845,7 +897,7 @@ class _LiveBusCard extends StatelessWidget {
                   stale
                       ? lang.t('Last seen', 'చివరిగా కనిపించింది')
                       : lang.t('Updated', 'అప్డేట్'),
-                  style: const TextStyle(
+                  style:  TextStyle(
                     color: AppTheme.textMuted,
                     fontSize: 11,
                   ),
@@ -854,7 +906,7 @@ class _LiveBusCard extends StatelessWidget {
                   ' ${_timeAgo(bus.lastUpdated)}'
                   ' · ${lang.t(bus.crowdLabel, _crowdTelugu(bus))}'
                   ' · ' + lang.t('tap for live journey', 'లైవ్ జర్నీ కోసం నొక్కండి'),
-                  style: const TextStyle(
+                  style:  TextStyle(
                     color: AppTheme.textMuted,
                     fontSize: 11,
                   ),
@@ -914,7 +966,7 @@ class _NearbyStopChips extends StatelessWidget {
                   ),
                   child: Row(
                     children: [
-                      const Icon(
+                       Icon(
                         Icons.place_outlined,
                         size: 16,
                         color: AppTheme.textSecondary,
@@ -922,7 +974,7 @@ class _NearbyStopChips extends StatelessWidget {
                       const SizedBox(width: 6),
                       Text(
                         stop.name,
-                        style: const TextStyle(
+                        style:  TextStyle(
                           fontSize: 14,
                           color: AppTheme.textPrimary,
                           fontWeight: FontWeight.w600,

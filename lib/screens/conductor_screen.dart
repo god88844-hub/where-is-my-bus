@@ -45,6 +45,9 @@ class _ConductorScreenState extends State<ConductorScreen> {
   @override
   void initState() {
     super.initState();
+    // The field starts with exactly the conductor's typed route id (restored
+    // sessions included) — never a service-derived label.
+    _searchCtrl.text = _trackingService.draftRouteHint ?? '';
     _filtered = _sortedRoutes(_routeSelectionRoutes);
     _searchCtrl.addListener(_onSearch);
     _routeSearchFocus.addListener(() {
@@ -62,12 +65,19 @@ class _ConductorScreenState extends State<ConductorScreen> {
   }
 
   BusRoute? get _activeRoute {
-    if (_selectedRoute == null) return null;
-    return VizagRoutes.byRouteId(_selectedRoute!);
+    if (_selectedRoute != null) {
+      final bySelection = VizagRoutes.byRouteId(_selectedRoute!);
+      if (bySelection != null) return bySelection;
+    }
+    // Keep the route context (route chip, reverse button, stop lists)
+    // visible whenever a usable route hint exists, even if the service's
+    // selectedRoute is briefly unresolved after a failed start.
+    final hint = _trackingService.draftRouteHint?.trim() ?? '';
+    if (hint.isNotEmpty) {
+      return VizagRoutes.byRouteId(hint) ?? VizagRoutes.byNumber(hint);
+    }
+    return null;
   }
-
-  bool get _routeHintActive =>
-      (_trackingService.draftRouteHint ?? '').isNotEmpty;
 
   List<BusRoute> get _routeSelectionRoutes => VizagRoutes.primaryRoutes;
 
@@ -77,6 +87,10 @@ class _ConductorScreenState extends State<ConductorScreen> {
     if (returnRouteId == null) return null;
     return VizagRoutes.byRouteId(returnRouteId);
   }
+
+  /// The number passengers will see — exactly what the conductor typed,
+  /// or null for a numberless From - To trip.
+  String? get _displayNumber => _trackingService.publishedRouteNumber;
 
   BusType get _resolvedBusType => _busType;
 
@@ -103,7 +117,18 @@ class _ConductorScreenState extends State<ConductorScreen> {
       _nextStopId == null ? null : VizagStops.all[_nextStopId!]?.name;
 
   void _onSearch() {
-    final q = _searchCtrl.text.toLowerCase().trim();
+    final text = _searchCtrl.text;
+    final q = text.toLowerCase().trim();
+    // Free-typed text (not picked from the dropdown) becomes the route
+    // number passengers will see — brand-new numbers included. Guarded to
+    // the focused field and single-line tokens so synced labels like
+    // "28K: A -> B" are never mistaken for a typed number.
+    if (_routeSearchFocus.hasFocus &&
+        q.isNotEmpty &&
+        !text.contains('->') &&
+        _trackingService.draftRouteHint != text.trim()) {
+      _trackingService.setDraftRouteHint(text.trim());
+    }
     final routes = _routeSelectionRoutes;
     setState(() {
       _filtered = q.isEmpty
@@ -222,6 +247,26 @@ class _ConductorScreenState extends State<ConductorScreen> {
   void _showStartFailure(StartTrackingResult result) {
     final route = result.route ?? _activeRoute;
     final stops = route?.stopIds ?? const <String>[];
+    final fromId = _tripFromStopId;
+    final toId = _tripToStopId;
+    final canSwapTripStops =
+        fromId != null && toId != null && fromId != toId;
+    Future<void> onSwapStops() async {
+      if (fromId == null || toId == null) return;
+      setState(() => _loading = true);
+      try {
+        await _trackingService.setDraftTripStops(
+          fromStopId: toId,
+          toStopId: fromId,
+        );
+      } finally {
+        if (mounted) {
+          setState(() => _loading = false);
+          _syncFromService();
+        }
+      }
+    }
+
     showModalBottomSheet<void>(
       context: context,
       isScrollControlled: true,
@@ -265,7 +310,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                   padding: const EdgeInsets.fromLTRB(20, 0, 20, 10),
                   child: Text(
                     result.message ?? '',
-                    style: const TextStyle(
+                    style:  TextStyle(
                       color: AppTheme.textSecondary,
                       fontSize: 13,
                       height: 1.4,
@@ -299,7 +344,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                     ),
                   ),
                 if (stops.isNotEmpty) ...[
-                  const Padding(
+                   Padding(
                     padding: EdgeInsets.fromLTRB(20, 4, 20, 6),
                     child: Text(
                       'Stops on this route:',
@@ -320,7 +365,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                           dense: true,
                           leading: Text(
                             '${i + 1}',
-                            style: const TextStyle(
+                            style:  TextStyle(
                               color: AppTheme.textMuted,
                               fontSize: 12,
                               fontWeight: FontWeight.w700,
@@ -328,7 +373,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                           ),
                           title: Text(
                             stop?.name ?? stops[i],
-                            style: const TextStyle(
+                            style:  TextStyle(
                               color: AppTheme.textPrimary,
                               fontSize: 14,
                             ),
@@ -340,26 +385,62 @@ class _ConductorScreenState extends State<ConductorScreen> {
                 ],
                 Padding(
                   padding: const EdgeInsets.fromLTRB(20, 6, 20, 18),
-                  child: SizedBox(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: () => Navigator.pop(sheetContext),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: AppTheme.green,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(vertical: 14),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
+                  child: Column(
+                    children: [
+                      if (canSwapTripStops) ...[
+                        SizedBox(
+                          width: double.infinity,
+                          child: OutlinedButton.icon(
+                            onPressed: () {
+                              Navigator.pop(sheetContext);
+                              onSwapStops();
+                            },
+                            icon: const Icon(Icons.swap_horiz, size: 18),
+                            label: const Text(
+                              'Swap From - To and retry',
+                              style: TextStyle(
+                                fontSize: 15,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
+                            style: OutlinedButton.styleFrom(
+                              foregroundColor: const Color(0xFF185FA5),
+                              side: const BorderSide(
+                                color: Color(0xFF185FA5),
+                                width: 0.8,
+                              ),
+                              padding:
+                                  const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 10),
+                      ],
+                      SizedBox(
+                        width: double.infinity,
+                        child: ElevatedButton(
+                          onPressed: () => Navigator.pop(sheetContext),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: AppTheme.green,
+                            foregroundColor: Colors.white,
+                            padding: const EdgeInsets.symmetric(vertical: 14),
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          child: const Text(
+                            'OK, I will fix the From - To',
+                            style: TextStyle(
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
                         ),
                       ),
-                      child: const Text(
-                        'OK, I will fix the From - To',
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                    ),
+                    ],
                   ),
                 ),
               ],
@@ -480,7 +561,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                           ),
                           Text(
                             '${filtered.length} stops',
-                            style: const TextStyle(
+                            style:  TextStyle(
                               color: AppTheme.textMuted,
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
@@ -493,18 +574,18 @@ class _ConductorScreenState extends State<ConductorScreen> {
                       padding: const EdgeInsets.fromLTRB(20, 4, 20, 8),
                       child: TextField(
                         autofocus: route == null,
-                        style: const TextStyle(
+                        style:  TextStyle(
                           color: AppTheme.textPrimary,
                           fontSize: 15,
                         ),
                         decoration: InputDecoration(
                           hintText: AppLanguage.instance.t(
                               'Search stop name...', 'స్టాప్ పేరు వెతకండి...'),
-                          hintStyle: const TextStyle(
+                          hintStyle:  TextStyle(
                             color: AppTheme.textMuted,
                             fontSize: 14,
                           ),
-                          prefixIcon: const Icon(
+                          prefixIcon:  Icon(
                             Icons.search,
                             size: 20,
                             color: AppTheme.textSecondary,
@@ -514,7 +595,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                           isDense: true,
                           border: OutlineInputBorder(
                             borderRadius: BorderRadius.circular(12),
-                            borderSide: const BorderSide(
+                            borderSide:  BorderSide(
                               color: AppTheme.border,
                             ),
                           ),
@@ -523,14 +604,14 @@ class _ConductorScreenState extends State<ConductorScreen> {
                             setSheetState(() => query = value),
                       ),
                     ),
-                    const Divider(height: 1, color: AppTheme.divider),
+                     Divider(height: 1, color: AppTheme.divider),
                     Expanded(
                       child: filtered.isEmpty
                           ? Center(
                               child: Text(
                                 AppLanguage.instance.t(
                                     'No stops match', 'స్టాప్‌లు లేవు'),
-                                style: const TextStyle(
+                                style:  TextStyle(
                                     color: AppTheme.textMuted),
                               ),
                             )
@@ -554,7 +635,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                                       color: isSelected
                                           ? accent.withValues(alpha: 0.12)
                                           : null,
-                                      border: const Border(
+                                      border:  Border(
                                         bottom: BorderSide(
                                           color: AppTheme.divider,
                                           width: 0.5,
@@ -592,7 +673,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                                             children: [
                                               Text(
                                                 stop?.name ?? stopId,
-                                                style: const TextStyle(
+                                                style:  TextStyle(
                                                   color: AppTheme.textPrimary,
                                                   fontSize: 15,
                                                   fontWeight: FontWeight.w600,
@@ -602,7 +683,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                                                   stop.nameTelugu.isNotEmpty)
                                                 Text(
                                                   stop.nameTelugu,
-                                                  style: const TextStyle(
+                                                  style:  TextStyle(
                                                     color:
                                                         AppTheme.textSecondary,
                                                     fontSize: 12,
@@ -614,7 +695,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                                         if (stopIndex >= 0)
                                           Text(
                                             '#${stopIndex + 1}',
-                                            style: const TextStyle(
+                                            style:  TextStyle(
                                               color: AppTheme.textMuted,
                                               fontSize: 12,
                                               fontWeight: FontWeight.w600,
@@ -697,17 +778,6 @@ class _ConductorScreenState extends State<ConductorScreen> {
     final serviceRoute = _trackingService.selectedRoute;
     final route =
         serviceRoute == null ? null : VizagRoutes.byRouteId(serviceRoute);
-    final hint = _trackingService.draftRouteHint;
-    final String routeLabel;
-    if (route != null) {
-      routeLabel = hint != null && hint != route.number
-          ? '$hint: ${route.from} -> ${route.to}'
-          : '${route.number}: ${route.from} -> ${route.to}';
-    } else if (hint != null && hint.isNotEmpty) {
-      routeLabel = hint;
-    } else {
-      routeLabel = '';
-    }
 
     setState(() {
       _tracking = _trackingService.tracking;
@@ -730,13 +800,9 @@ class _ConductorScreenState extends State<ConductorScreen> {
       _effectiveSpeedKmh = _trackingService.effectiveSpeedKmh;
       _autoStopEnabled = _trackingService.autoStopEnabled;
     });
-
-    if (!_routeSearchFocus.hasFocus && _searchCtrl.text != routeLabel) {
-      _searchCtrl.value = _searchCtrl.value.copyWith(
-        text: routeLabel,
-        selection: TextSelection.collapsed(offset: routeLabel.length),
-      );
-    }
+    // NOTE: the route id field is NEVER rewritten here. It shows exactly
+    // what the conductor typed (or picked); the internally-resolved corridor
+    // must not leak its endpoints or number into it.
   }
 
   Future<void> _reverseDirection() async {
@@ -801,7 +867,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
           ),
         ),
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: AppTheme.textPrimary),
+          icon:  Icon(Icons.arrow_back, color: AppTheme.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
       ),
@@ -813,7 +879,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
             children: [
               _StatusCard(
                 tracking: _tracking,
-                routeNumber: _activeRoute?.number,
+                routeNumber: _displayNumber,
                 busTypeLabel:
                     _activeRoute == null ? null : _resolvedBusType.label,
                 stopName: _selectedStopId == null
@@ -832,25 +898,13 @@ class _ConductorScreenState extends State<ConductorScreen> {
               ),
               const SizedBox(height: 24),
               _SectionCard(
-                title: AppLanguage.instance.t('Route ID (optional)', 'రూట్ నంబర్ (ఐచ్ఛికం)'),
+                title: AppLanguage.instance.t('Route number (optional)', 'రూట్ నంబర్ (ఐచ్ఛికం)'),
                 titleTelugu: 'రూట్ నంబర్',
                 accent: const Color(0xFF185FA5),
                 icon: Icons.confirmation_number_outlined,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      _routeHintActive
-                          ? 'Pinned to this route id. Leave it empty if the '
-                              'bus has no route number yet.'
-                          : 'Optional. Pick From - To and the route is found '
-                              'automatically.',
-                      style: const TextStyle(
-                        color: AppTheme.textMuted,
-                        fontSize: 12,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
                     _RouteSearchField(
                       controller: _searchCtrl,
                       focusNode: _routeSearchFocus,
@@ -876,29 +930,31 @@ class _ConductorScreenState extends State<ConductorScreen> {
                         ),
                         child: Row(
                           children: [
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF185FA5),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                _activeRoute!.number,
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.w800,
+                            if (_displayNumber != null) ...[
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 6,
+                                ),
+                                decoration: BoxDecoration(
+                                  color: const Color(0xFF185FA5),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  _displayNumber!,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 14,
+                                    fontWeight: FontWeight.w800,
+                                  ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 10),
+                              const SizedBox(width: 10),
+                            ],
                             Expanded(
                               child: Text(
                                 '${_activeRoute!.from} -> ${_activeRoute!.to}',
-                                style: const TextStyle(
+                                style:  TextStyle(
                                   color: AppTheme.textPrimary,
                                   fontSize: 14,
                                   fontWeight: FontWeight.w700,
@@ -907,7 +963,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                             ),
                             Text(
                               '${_activeRoute!.stopIds.length} stops',
-                              style: const TextStyle(
+                              style:  TextStyle(
                                 color: AppTheme.textMuted,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w600,
@@ -919,7 +975,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                     ],
                     if (_tracking) ...[
                       const SizedBox(height: 10),
-                      const Text(
+                       Text(
                         'Stop tracking before choosing another route number.',
                         style: TextStyle(
                           color: AppTheme.textMuted,
@@ -1071,7 +1127,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                                 child: Text(
                                   _currentStopName ??
                                       'Waiting for GPS to resolve the nearest stop',
-                                  style: const TextStyle(
+                                  style:  TextStyle(
                                     color: AppTheme.textPrimary,
                                     fontSize: 13,
                                     fontWeight: FontWeight.w600,
@@ -1090,7 +1146,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                                         (_segmentProgress ?? 0) < 0.98
                                     ? '${AppLanguage.instance.t('Between stops', 'స్టాప్ల మధ్యలో')} · ${(100 * (_segmentProgress ?? 0)).round()}% ${AppLanguage.instance.t('to', 'కఁ')} $_nextStopName'
                                     : '${AppLanguage.instance.t('Next stop', 'తదుపరి స్టాప్')}: $_nextStopName',
-                            style: const TextStyle(
+                            style:  TextStyle(
                               color: AppTheme.textMuted,
                               fontSize: 12,
                             ),
@@ -1106,7 +1162,8 @@ class _ConductorScreenState extends State<ConductorScreen> {
                           onPressed: _loading ? null : _reverseDirection,
                           icon: const Icon(Icons.swap_horiz, size: 18),
                           label: Text(
-                            'Switch to ${_returnRoute!.number}: ${_returnRoute!.from} -> ${_returnRoute!.to}',
+                            'Switch to ${_displayNumber ?? _returnRoute!.number}: '
+                            '${_returnRoute!.from} -> ${_returnRoute!.to}',
                           ),
                           style: OutlinedButton.styleFrom(
                             foregroundColor: const Color(0xFF185FA5),
@@ -1201,7 +1258,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                     'Auto-detect stops from GPS',
                     'గ్పస్ ద్వారా స్టాప్లు గుర్తించు',
                   ),
-                  style: const TextStyle(
+                  style:  TextStyle(
                     color: AppTheme.textPrimary,
                     fontWeight: FontWeight.w600,
                   ),
@@ -1211,7 +1268,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                     'Moves forward as the bus enters each stop zone (0.5-1 km by stop spacing).',
                     'బస్సు స్టాప్ జోన్ లోకి వచ్చినప్పుడు ముందుకు వెళ్తుంది (0.5-1 కి.మీ).',
                   ),
-                  style: const TextStyle(
+                  style:  TextStyle(
                     color: AppTheme.textMuted,
                     fontSize: 12,
                   ),
@@ -1230,7 +1287,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                       Text(
                         'Manual Stop Control',
                         style: TextStyle(
                           color: AppTheme.textPrimary,
@@ -1238,7 +1295,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                         ),
                       ),
                       const SizedBox(height: 4),
-                      const Text(
+                       Text(
                         'Use only if GPS misses a stop.',
                         style: TextStyle(
                           color: AppTheme.textMuted,
@@ -1393,7 +1450,7 @@ class _ConductorScreenState extends State<ConductorScreen> {
                   _tracking
                       ? 'Live tracking is active. Stop tracking before changing the route number.'
                       : 'Select a route, choose the bus type, and start tracking once',
-                  style: const TextStyle(
+                  style:  TextStyle(
                     color: AppTheme.textMuted,
                     fontSize: 13,
                   ),
@@ -1504,7 +1561,7 @@ class _StatusCard extends StatelessWidget {
               isBetweenStops
                   ? 'Last passed stop: $stopName'
                   : 'Current stop: $stopName',
-              style: const TextStyle(
+              style:  TextStyle(
                 color: AppTheme.textPrimary,
                 fontWeight: FontWeight.w600,
                 fontSize: 13,
@@ -1517,7 +1574,7 @@ class _StatusCard extends StatelessWidget {
               distanceToNextStopKm == null
                   ? 'Next stop: $nextStopName'
                   : 'Next stop: $nextStopName · ${distanceToNextStopKm!.toStringAsFixed(2)} km left',
-              style: const TextStyle(
+              style:  TextStyle(
                 color: AppTheme.textMuted,
                 fontSize: 12,
               ),
@@ -1539,7 +1596,7 @@ class _StatusCard extends StatelessWidget {
           ],
           if (tracking && lat != null) ...[
             const SizedBox(height: 12),
-            const Divider(color: AppTheme.divider, height: 1),
+             Divider(color: AppTheme.divider, height: 1),
             const SizedBox(height: 12),
             Row(
               children: [
@@ -1565,7 +1622,7 @@ class _StatusCard extends StatelessWidget {
             const SizedBox(height: 10),
             Text(
               statusMessage!,
-              style: const TextStyle(color: AppTheme.textMuted, fontSize: 12),
+              style:  TextStyle(color: AppTheme.textMuted, fontSize: 12),
             ),
           ],
         ],
@@ -1587,11 +1644,11 @@ class _Stat extends StatelessWidget {
       children: [
         Text(
           label,
-          style: const TextStyle(color: AppTheme.textMuted, fontSize: 11),
+          style:  TextStyle(color: AppTheme.textMuted, fontSize: 11),
         ),
         Text(
           value,
-          style: const TextStyle(
+          style:  TextStyle(
             color: AppTheme.textPrimary,
             fontWeight: FontWeight.w600,
             fontSize: 13,
@@ -1627,7 +1684,7 @@ class _InfoChip extends StatelessWidget {
           const SizedBox(width: 5),
           Text(
             label,
-            style: const TextStyle(
+            style:  TextStyle(
               color: AppTheme.textPrimary,
               fontSize: 11,
               fontWeight: FontWeight.w600,
@@ -1669,27 +1726,27 @@ class _RouteSearchField extends StatelessWidget {
               controller: controller,
               focusNode: focusNode,
               enabled: enabled,
-              style: const TextStyle(color: AppTheme.textPrimary),
+              style:  TextStyle(color: AppTheme.textPrimary),
               decoration: InputDecoration(
                 hintText: 'Search bus number (e.g. 28K, 38Y)',
-                hintStyle: const TextStyle(color: AppTheme.textMuted),
+                hintStyle:  TextStyle(color: AppTheme.textMuted),
                 filled: true,
                 fillColor: AppTheme.surface,
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 14, vertical: 14),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: AppTheme.divider),
+                  borderSide:  BorderSide(color: AppTheme.divider),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
-                  borderSide: const BorderSide(color: AppTheme.divider),
+                  borderSide:  BorderSide(color: AppTheme.divider),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(10),
                   borderSide: const BorderSide(color: Color(0xFF185FA5)),
                 ),
-                prefixIcon: const Icon(
+                prefixIcon:  Icon(
                   Icons.search,
                   color: AppTheme.textMuted,
                   size: 20,
@@ -1699,7 +1756,7 @@ class _RouteSearchField extends StatelessWidget {
                     : IconButton(
                         onPressed: onClear,
                         tooltip: 'Clear route',
-                        icon: const Icon(
+                        icon:  Icon(
                           Icons.close,
                           color: AppTheme.textMuted,
                           size: 20,
@@ -1722,7 +1779,7 @@ class _RouteSearchField extends StatelessWidget {
               padding: EdgeInsets.zero,
               itemCount: filtered.length > 15 ? 15 : filtered.length,
               separatorBuilder: (_, __) =>
-                  const Divider(height: 1, color: AppTheme.divider),
+                   Divider(height: 1, color: AppTheme.divider),
               itemBuilder: (_, i) {
                 final route = filtered[i];
                 return ListTile(
@@ -1748,7 +1805,7 @@ class _RouteSearchField extends StatelessWidget {
                   ),
                   title: Text(
                     '${route.from} -> ${route.to}',
-                    style: const TextStyle(
+                    style:  TextStyle(
                       color: AppTheme.textPrimary,
                       fontSize: 13,
                     ),
@@ -1756,7 +1813,7 @@ class _RouteSearchField extends StatelessWidget {
                   subtitle: route.viaStops.isNotEmpty
                       ? Text(
                           'via ${route.viaStops.take(2).join(', ')}',
-                          style: const TextStyle(
+                          style:  TextStyle(
                             color: AppTheme.textMuted,
                             fontSize: 11,
                           ),
@@ -1880,7 +1937,7 @@ class _StopEndpointRow extends StatelessWidget {
                     : label == 'To'
                         ? AppLanguage.instance.t('To', 'వరకు')
                         : label,
-                style: const TextStyle(
+                style:  TextStyle(
                   color: AppTheme.textMuted,
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
@@ -1891,7 +1948,7 @@ class _StopEndpointRow extends StatelessWidget {
             Expanded(
               child: Text(
                 stopName,
-                style: const TextStyle(
+                style:  TextStyle(
                   color: AppTheme.textPrimary,
                   fontSize: 14,
                   fontWeight: FontWeight.w700,

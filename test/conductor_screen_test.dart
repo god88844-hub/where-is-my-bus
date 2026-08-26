@@ -33,6 +33,7 @@ void main() {
     final service = ConductorTrackingService.instance;
     service.tracking = tracking;
     service.selectedRoute = routeId;
+    service.draftRouteHint = routeId;
     service.selectedStopId = null;
     service.selectedBusType = VizagRoutes.byRouteId(routeId)?.busType;
     service.crowd = BusCrowd.moderate;
@@ -52,6 +53,7 @@ void main() {
     final service = ConductorTrackingService.instance;
     service.tracking = false;
     service.selectedRoute = null;
+    service.draftRouteHint = null;
     service.selectedStopId = null;
     service.selectedBusType = null;
     service.busId = null;
@@ -114,7 +116,7 @@ void main() {
     await tester.pump();
 
     // The two sections render independently.
-    expect(find.text('Route ID (optional)'), findsOneWidget);
+    expect(find.text('Route number (optional)'), findsOneWidget);
     expect(find.text('From - To Stops'), findsOneWidget);
     expect(find.text('28K'), findsWidgets);
     expect(find.text('RK Beach'), findsWidgets);
@@ -174,9 +176,15 @@ void main() {
     // The hint narrows the resolution and must serve the range.
     await service.setDraftRouteHint('28K');
     expect(service.resolveTripRoute()!.routeId, '28K');
-    // A hint that does not serve the range fails resolution.
+    // A hint that cannot serve the range falls back to a route that does
+    // (the route id is optional; From - To defines the trip).
     await service.setDraftRouteHint('10K');
-    expect(service.resolveTripRoute(), isNull);
+    final fallback = service.resolveTripRoute();
+    expect(fallback, isNotNull);
+    expect(
+      fallback!.stopIds.indexOf('pendurthi'),
+      lessThan(fallback.stopIds.indexOf('kothavalasa_jn')),
+    );
     await service.setDraftRouteHint(null);
   });
 }

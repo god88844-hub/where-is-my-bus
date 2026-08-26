@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../data/vizag_data.dart';
@@ -68,7 +69,8 @@ class SmartGeoService {
         'lat': lat,
         'lng': lng,
       };
-    } catch (_) {
+    } catch (e) {
+      debugPrint('SmartGeoService.fetch("$place") failed: $e');
       return null;
     } finally {
       client.close(force: true);
@@ -100,7 +102,8 @@ class BusStopCoordinateCache {
       }
 
       return BusStop.fromJson(Map<String, dynamic>.from(decoded));
-    } catch (_) {
+    } catch (e) {
+      debugPrint('BusStopCoordinateCache: corrupt cache entry for $stopId: $e');
       return null;
     }
   }

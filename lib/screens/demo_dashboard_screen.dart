@@ -48,7 +48,7 @@ class DemoDashboardScreen extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 18),
-          const Text(
+           Text(
             'System overview',
             style: TextStyle(
               color: AppTheme.textPrimary,
@@ -66,7 +66,7 @@ class DemoDashboardScreen extends StatelessWidget {
                 : '${buses.length} active live buses',
           ),
           if (buses.isEmpty)
-            const EmptyState(
+            EmptyState(
               'No active live buses',
               sub: 'Start one conductor trip to demonstrate live tracking',
             )
@@ -80,7 +80,7 @@ class DemoDashboardScreen extends StatelessWidget {
                 : '${routes.length} routes in live demo',
           ),
           if (routes.isEmpty)
-            const EmptyState(
+            EmptyState(
               'No live routes',
               sub: 'Open Staff Mode and start a trip to populate this section',
             )
@@ -164,7 +164,7 @@ class _HeroCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+           Text(
             'Vizag Bus Live',
             style: TextStyle(
               color: AppTheme.green,
@@ -174,7 +174,7 @@ class _HeroCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 8),
-          const Text(
+           Text(
             'Real-time conductor tracking for Vizag city buses',
             style: TextStyle(
               color: AppTheme.textPrimary,
@@ -186,7 +186,7 @@ class _HeroCard extends StatelessWidget {
           const SizedBox(height: 10),
           Text(
             lastUpdatedText,
-            style: const TextStyle(
+            style:  TextStyle(
               color: AppTheme.textSecondary,
               fontSize: 13,
             ),
@@ -254,7 +254,7 @@ class _HeroStat extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               label,
-              style: const TextStyle(
+              style:  TextStyle(
                 color: AppTheme.textSecondary,
                 fontSize: 12,
               ),
@@ -355,7 +355,7 @@ class _ActionCard extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               title,
-              style: const TextStyle(
+              style:  TextStyle(
                 color: AppTheme.textPrimary,
                 fontSize: 13,
                 fontWeight: FontWeight.w700,
@@ -364,7 +364,7 @@ class _ActionCard extends StatelessWidget {
             const SizedBox(height: 4),
             Text(
               subtitle,
-              style: const TextStyle(
+              style:  TextStyle(
                 color: AppTheme.textSecondary,
                 fontSize: 11,
                 height: 1.4,
@@ -389,7 +389,7 @@ class _OverviewCard extends StatelessWidget {
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: AppTheme.border, width: 0.5),
       ),
-      child: const Column(
+      child:  Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
@@ -445,7 +445,7 @@ class _LiveBusTile extends StatelessWidget {
               Expanded(
                 child: Text(
                   route?.name ?? bus.routeNumber,
-                  style: const TextStyle(
+                  style:  TextStyle(
                     color: AppTheme.textPrimary,
                     fontSize: 13,
                     fontWeight: FontWeight.w700,
@@ -461,7 +461,7 @@ class _LiveBusTile extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 8),
               child: Text(
                 bus.busPlateNumber,
-                style: const TextStyle(
+                style:  TextStyle(
                   color: AppTheme.textSecondary,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -479,7 +479,7 @@ class _LiveBusTile extends StatelessWidget {
                       : bus.isBetweenStops
                           ? 'Passed ${current.name}'
                           : current.name,
-                  style: const TextStyle(
+                  style:  TextStyle(
                     color: AppTheme.textPrimary,
                     fontSize: 12,
                     fontWeight: FontWeight.w600,
@@ -488,7 +488,7 @@ class _LiveBusTile extends StatelessWidget {
               ),
               Text(
                 _timeAgo(bus.lastUpdated),
-                style: const TextStyle(
+                style:  TextStyle(
                   color: AppTheme.textSecondary,
                   fontSize: 11,
                 ),
@@ -498,12 +498,12 @@ class _LiveBusTile extends StatelessWidget {
           const SizedBox(height: 6),
           Row(
             children: [
-              const Icon(Icons.arrow_forward, size: 12, color: AppTheme.green),
+               Icon(Icons.arrow_forward, size: 12, color: AppTheme.green),
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
                   next == null ? 'Next stop unavailable' : next.name,
-                  style: const TextStyle(
+                  style:  TextStyle(
                     color: AppTheme.textSecondary,
                     fontSize: 12,
                   ),

@@ -27,7 +27,8 @@ class AppLanguage extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       _isTelugu = prefs.getBool(_prefsKey) ?? false;
-    } catch (_) {
+    } catch (e) {
+      debugPrint('AppLanguage.load failed: $e');
       _isTelugu = false;
     }
   }
@@ -39,7 +40,8 @@ class AppLanguage extends ChangeNotifier {
     try {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_prefsKey, value);
-    } catch (_) {
+    } catch (e) {
+      debugPrint('AppLanguage.save failed: $e');
       // persistence is best-effort; the toggle still works this session
     }
   }

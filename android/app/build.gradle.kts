@@ -9,7 +9,7 @@ plugins {
 }
 
 android {
-    namespace = "com.example.vizag_bus_live"
+    namespace = "com.vizagbuslive.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -24,8 +24,10 @@ android {
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
-        applicationId = "com.example.vizag_bus_live"
+        // Production application id. Registered in the Firebase console and
+        // future Play Store listing — never use com.example.* in releases,
+        // it cannot be changed once users have installed the app.
+        applicationId = "com.vizagbuslive.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion

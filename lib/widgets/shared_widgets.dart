@@ -153,22 +153,44 @@ class IncomingBusCard extends StatelessWidget {
             // Row 1: badge + destination + ETA
             Row(
               children: [
-                RouteBadge(bus.routeNumber),
+                bus.routeNumber.trim().isEmpty
+                    ? Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 10,
+                          vertical: 4,
+                        ),
+                        decoration: BoxDecoration(
+                          color:
+                              AppTheme.textSecondary.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(6),
+                          border: Border.all(
+                            color: AppTheme.textSecondary
+                                .withValues(alpha: 0.4),
+                            width: 0.5,
+                          ),
+                        ),
+                        child: Icon(
+                          Icons.directions_bus_outlined,
+                          size: 14,
+                          color: AppTheme.textSecondary,
+                        ),
+                      )
+                    : RouteBadge(bus.routeNumber),
                 const SizedBox(width: 10),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(route?.name ?? bus.routeNumber,
-                          style: const TextStyle(
+                      Text(bus.displayBusIdentity,
+                          style:  TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w500,
                               color: AppTheme.textPrimary),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis),
-                      if (route != null)
+                      if (route != null && bus.routeNumber.trim().isNotEmpty)
                         Text(route.nameTelugu,
-                            style: const TextStyle(
+                            style:  TextStyle(
                                 fontSize: 11, color: AppTheme.textSecondary)),
                       const SizedBox(height: 4),
                       Wrap(
@@ -220,7 +242,7 @@ class IncomingBusCard extends StatelessWidget {
             ),
 
             const SizedBox(height: 10),
-            const Divider(color: AppTheme.divider, height: 1),
+             Divider(color: AppTheme.divider, height: 1),
             const SizedBox(height: 10),
 
             // Row 2: current stop → next stop + crowd + source
@@ -236,7 +258,7 @@ class IncomingBusCard extends StatelessWidget {
                         child: Text(
                           _stopName(currentStop.id) +
                               (nextStop != null ? ' → ${nextStop.name}' : ''),
-                          style: const TextStyle(
+                          style:  TextStyle(
                               fontSize: 11, color: AppTheme.textSecondary),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
@@ -266,7 +288,7 @@ class IncomingBusCard extends StatelessWidget {
               Text(
                 '${(bus.segmentProgressResolved * 100).round()}% to ${nextStop.name}'
                 '${bus.distanceToNextStopKmResolved == null ? '' : ' · ${bus.distanceToNextStopKmResolved!.toStringAsFixed(2)} km left'}',
-                style: const TextStyle(
+                style:  TextStyle(
                   fontSize: 11,
                   color: AppTheme.textSecondary,
                 ),
@@ -277,7 +299,7 @@ class IncomingBusCard extends StatelessWidget {
               const SizedBox(height: 6),
               Text(
                 'Stop ${stop.name} · ${(nb.distanceKm * 1000).round()} m away',
-                style: const TextStyle(fontSize: 11, color: AppTheme.textMuted),
+                style:  TextStyle(fontSize: 11, color: AppTheme.textMuted),
               ),
             ],
           ],
@@ -303,13 +325,13 @@ class SectionHeader extends StatelessWidget {
           children: [
             Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(title,
-                  style: const TextStyle(
+                  style:  TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.w600,
                       color: AppTheme.textPrimary)),
               if (subtitle != null)
                 Text(subtitle!,
-                    style: const TextStyle(
+                    style:  TextStyle(
                         fontSize: 11, color: AppTheme.textSecondary)),
             ]),
             const Spacer(),
@@ -336,7 +358,7 @@ class EmptyState extends StatelessWidget {
             Icon(icon, size: 40, color: AppTheme.textMuted),
             const SizedBox(height: 12),
             Text(message,
-                style: const TextStyle(
+                style:  TextStyle(
                     fontSize: 14,
                     color: AppTheme.textSecondary,
                     fontWeight: FontWeight.w500),
@@ -345,7 +367,7 @@ class EmptyState extends StatelessWidget {
               const SizedBox(height: 6),
               Text(sub!,
                   style:
-                      const TextStyle(fontSize: 12, color: AppTheme.textMuted),
+                       TextStyle(fontSize: 12, color: AppTheme.textMuted),
                   textAlign: TextAlign.center),
             ],
           ],

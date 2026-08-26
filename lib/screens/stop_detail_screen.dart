@@ -36,19 +36,19 @@ class StopDetailScreen extends StatelessWidget {
         ],
         backgroundColor: AppTheme.surface,
         leading: IconButton(
-          icon: const Icon(Icons.arrow_back,
+          icon:  Icon(Icons.arrow_back,
               size: 20, color: AppTheme.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
         title: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
           Text(stop.name,
-              style: const TextStyle(fontSize: 16,
+              style:  TextStyle(fontSize: 16,
                   fontWeight: FontWeight.w600, color: AppTheme.textPrimary)),
           Text(stop.nameTelugu,
-              style: const TextStyle(
+              style:  TextStyle(
                   fontSize: 11, color: AppTheme.textSecondary)),
         ]),
-        bottom: const PreferredSize(
+        bottom:  PreferredSize(
           preferredSize: Size.fromHeight(0.5),
           child: Divider(height: 0.5, color: AppTheme.divider),
         ),
@@ -97,8 +97,8 @@ class StopDetailScreen extends StatelessWidget {
                         Padding(
                           padding: const EdgeInsets.only(left: 12, bottom: 10),
                           child: Text(
-                            '$following more ${nb.bus.routeNumber} bus${following == 1 ? '' : 'es'} after this',
-                            style: const TextStyle(
+                            '$following more ${nb.bus.routeNumber.trim().isEmpty ? nb.bus.displayBusIdentity : nb.bus.routeNumber} bus${following == 1 ? '' : 'es'} after this',
+                            style:  TextStyle(
                               color: AppTheme.textSecondary,
                               fontSize: 11,
                               fontWeight: FontWeight.w500,
@@ -168,7 +168,7 @@ class _Stat extends StatelessWidget {
     child: Column(children: [
       Text(value, style: TextStyle(fontSize: 22,
           fontWeight: FontWeight.w700, color: color)),
-      Text(label, style: const TextStyle(
+      Text(label, style:  TextStyle(
           fontSize: 11, color: AppTheme.textSecondary)),
     ]),
   );
@@ -204,10 +204,10 @@ class _RouteChip extends StatelessWidget {
         Expanded(
           child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
             Text(route.name,
-                style: const TextStyle(fontSize: 13,
+                style:  TextStyle(fontSize: 13,
                     color: AppTheme.textPrimary, fontWeight: FontWeight.w500)),
             Text(route.nameTelugu,
-                style: const TextStyle(fontSize: 11,
+                style:  TextStyle(fontSize: 11,
                     color: AppTheme.textSecondary)),
           ]),
         ),

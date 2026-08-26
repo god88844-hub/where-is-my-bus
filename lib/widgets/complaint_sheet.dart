@@ -166,7 +166,7 @@ class _ComplaintSheetState extends State<ComplaintSheet> {
                   if (stopName != null)
                     lang.t('Stop', '\u0c38\u0c4d\u0c1f\u0c3e\u0c2a\u0c4d') + ': $stopName',
                 ].join('  ·  '),
-                style: const TextStyle(
+                style:  TextStyle(
                   color: AppTheme.textSecondary,
                   fontSize: 12,
                   fontWeight: FontWeight.w600,
@@ -209,7 +209,7 @@ class _ComplaintSheetState extends State<ComplaintSheet> {
                       Expanded(
                         child: Text(
                           lang.t(reason.$2, reason.$3),
-                          style: const TextStyle(
+                          style:  TextStyle(
                             color: AppTheme.textPrimary,
                             fontSize: 14,
                             fontWeight: FontWeight.w600,
@@ -225,17 +225,17 @@ class _ComplaintSheetState extends State<ComplaintSheet> {
             TextField(
               controller: _noteCtrl,
               maxLines: 2,
-              style: const TextStyle(color: AppTheme.textPrimary, fontSize: 14),
+              style:  TextStyle(color: AppTheme.textPrimary, fontSize: 14),
               decoration: InputDecoration(
                 hintText: lang.t(
                   'Details (optional)',
                   '\u0c35\u0c3f\u0c35\u0c30\u0c3e\u0c32\u0c41 (\u0c10\u0c1a\u0c4d\u0c1b\u0c3f\u0c15\u0c02)'),
-                hintStyle: const TextStyle(color: AppTheme.textMuted),
+                hintStyle:  TextStyle(color: AppTheme.textMuted),
                 filled: true,
                 fillColor: AppTheme.card,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppTheme.border),
+                  borderSide:  BorderSide(color: AppTheme.border),
                 ),
               ),
             ),

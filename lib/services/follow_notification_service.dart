@@ -84,7 +84,7 @@ class FollowBusNotification {
     final nextName = nextId.isEmpty ? '' : VizagStops.resolve(nextId).name;
     final progressPct = (bus.segmentProgressResolved * 100).round();
 
-    final title = '${bus.routeNumber} · $currentName';
+    final title = '${bus.displayBusIdentity} · $currentName';
     final body = nextName.isEmpty
         ? 'At $currentName · ${bus.crowdLabel}'
         : 'Next: $nextName · $progressPct% · ${bus.crowdLabel}';

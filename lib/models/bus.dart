@@ -31,6 +31,7 @@ class LiveBus {
   final BusCrowd crowd;
   final BusDataSource source;
   final DateTime lastUpdated;
+  final String? tripFromStopId;
   final String? tripToStopId;
 
   const LiveBus({
@@ -55,20 +56,25 @@ class LiveBus {
     this.effectiveSpeedKmh,
     this.crowd = BusCrowd.moderate,
     this.source = BusDataSource.timetable,
+    this.tripFromStopId,
     this.tripToStopId,
     required this.lastUpdated,
   }) : routeKey = routeKey ?? routeNumber;
 
   factory LiveBus.fromMap(String id, Map<dynamic, dynamic> m) {
-    final rawRoute = m['route'] as String? ?? '?';
-    final routeKey = m['route_key'] as String? ?? rawRoute;
+    // 'route' is the conductor-typed display number and is shown VERBATIM —
+    // it must never be swapped for the internal corridor's number (the
+    // corridor resolved from route_key is only GPS/geofencing geometry).
+    // Only legacy docs missing the field fall back to the corridor number.
+    final published = m['route']?.toString();
+    final routeKey = m['route_key']?.toString() ?? published ?? '?';
     final route =
-        VizagRoutes.byRouteId(routeKey) ?? VizagRoutes.byNumber(rawRoute);
+        VizagRoutes.byRouteId(routeKey) ?? VizagRoutes.byNumber(published ?? '?');
 
     return LiveBus(
       id: id,
       routeKey: routeKey,
-      routeNumber: route?.number ?? rawRoute,
+      routeNumber: published ?? route?.number ?? '?',
       busType: _busTypeFromValue(m['bus_type']),
       busPlateNumber: m['bus_plate'] as String? ?? '',
       currentStopId: m['current_stop'] as String? ?? '',
@@ -87,6 +93,7 @@ class LiveBus {
       effectiveSpeedKmh: (m['effective_speed_kmh'] as num?)?.toDouble(),
       crowd: _crowdFromValue(m['crowd']),
       source: _sourceFromValue(m['source']),
+      tripFromStopId: m['trip_from_stop'] as String?,
       tripToStopId: m['trip_to_stop'] as String?,
       lastUpdated: DateTime.fromMillisecondsSinceEpoch(
           (m['ts'] as num?)?.toInt() ?? DateTime.now().millisecondsSinceEpoch),
@@ -114,6 +121,8 @@ class LiveBus {
         'effective_speed_kmh': effectiveSpeedKmh,
         'crowd': crowd.index,
         'source': source.index,
+        'trip_from_stop': tripFromStopId ?? '',
+        'trip_to_stop': tripToStopId ?? '',
         'ts': lastUpdated.millisecondsSinceEpoch,
       };
 
@@ -269,9 +278,29 @@ class LiveBus {
   }
 
   String get busTypeLabel => routeBusType.label;
-  String get displayBusIdentity => busPlateNumber.trim().isEmpty
-      ? routeNumber
-      : '$routeNumber • $busPlateNumber';
+
+  /// What passengers see as the bus's identity. Trips published without a
+  /// route number (From - To only) display exactly the stops the conductor
+  /// picked — never the internal corridor's number or full endpoints.
+  String get displayBusIdentity {
+    final plate = busPlateNumber.trim();
+    if (routeNumber.trim().isNotEmpty) {
+      return plate.isEmpty ? routeNumber : '$routeNumber • $plate';
+    }
+    final ref = routeRef;
+    final fromName = _stopNameFor(tripFromStopId) ?? ref?.from;
+    final toName = _stopNameFor(tripToStopId) ?? ref?.to;
+    if (fromName != null && toName != null && fromName.isNotEmpty) {
+      return '$fromName -> $toName';
+    }
+    return plate.isEmpty ? 'Bus' : plate;
+  }
+
+  static String? _stopNameFor(String? stopId) {
+    final id = stopId?.trim() ?? '';
+    if (id.isEmpty) return null;
+    return VizagStops.get(id)?.name ?? id;
+  }
 
   String get crowdLabel {
     switch (crowd) {
